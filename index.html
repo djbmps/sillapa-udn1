@@ -377,6 +377,7 @@ body[data-view="admin"] .utilbar{display:none}
       <button class="nv" data-p="results"><i>📣</i>ผลการแข่งขัน</button>
       <button class="nv" data-p="medals"><i>🥇</i>ตารางเหรียญ</button>
       <button class="nv" data-p="schools"><i>🏫</i>ทะเบียนโรงเรียน</button>
+      <button class="nv" data-p="apply"><i>⚖️</i>สมัครกรรมการตัดสิน</button>
     </div>
     <div class="ng" id="navAdmin"><span>งานของผู้ดูแล</span>
       <button class="nv" data-p="dash"><i>📊</i>แดชบอร์ด</button>
@@ -386,6 +387,7 @@ body[data-view="admin"] .utilbar{display:none}
       <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ประกาศผล</button>
       <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
       <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
+      <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกกรรมการ</button>
       <button class="nv" data-p="certadm" data-role="district_admin,group_admin" data-perm="certadm"><i>🎖️</i>ระบบเกียรติบัตร</button>
       <button class="nv" data-p="cards" data-role="district_admin,group_admin,school" data-perm="cards"><i>🪪</i>บัตรประจำตัว</button>
       <button class="nv" data-p="perm" data-role="district_admin,group_admin" data-perm="perm"><i>🔐</i>เปิด-ปิดระบบ &amp; สิทธิ์การพิมพ์</button>
@@ -622,6 +624,124 @@ body[data-view="admin"] .utilbar{display:none}
           <select id="prFilter" onchange="drawPromoteDetail()"
                   style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select></div>
           <div class="cb" style="padding:0;overflow:auto"><table id="prDetail"></table></div></div>
+      </div>
+    </section>
+
+    <!-- ---------- สมัครเป็นกรรมการตัดสิน (หน้าสาธารณะ) ---------- -->
+    <section class="page" id="p-apply">
+      <div class="hd"><div><h2>สมัครเป็นคณะกรรมการตัดสิน</h2>
+        <p>เปิดรับครู บุคลากรทางการศึกษา และผู้ทรงคุณวุฒิ ที่ประสงค์เป็นกรรมการตัดสินการแข่งขัน · เลือกกิจกรรมได้ 3 อันดับ</p></div></div>
+
+      <div id="apWin" style="margin-bottom:13px"></div>
+
+      <div class="card" id="apFormCard" style="margin-bottom:14px">
+        <div class="ch"><h3>แบบฟอร์มใบสมัคร</h3><span class="sp"></span><span class="hint" id="apEditHint"></span></div>
+        <div class="cb">
+          <div class="row">
+            <div class="fld" style="margin:0;width:120px"><label>คำนำหน้า</label><input id="ap_prefix" placeholder="นาย / นาง / นางสาว"></div>
+            <div class="fld" style="margin:0;flex:1;min-width:220px"><label>ชื่อ-สกุล *</label><input id="ap_name" placeholder="ชื่อ นามสกุล"></div>
+            <div class="fld" style="margin:0;flex:1;min-width:200px"><label>ตำแหน่ง / วิทยฐานะ</label><input id="ap_position" placeholder="ครู ชำนาญการพิเศษ"></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div class="fld" style="margin:0;width:190px"><label>ประเภทหน่วยงาน</label>
+              <select id="ap_orgtype" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%">
+                <option>สถานศึกษา</option><option>สำนักงานเขตพื้นที่การศึกษา</option>
+                <option>หน่วยงานอื่น</option><option>ผู้ทรงคุณวุฒิอิสระ</option></select></div>
+            <div class="fld" style="margin:0;flex:1;min-width:240px"><label>โรงเรียน / หน่วยงานที่สังกัด *</label><input id="ap_org" placeholder="เช่น โรงเรียนบ้านหมากแข้ง"></div>
+            <div class="fld" style="margin:0;min-width:200px"><label>กลุ่มโรงเรียน (ถ้ามี)</label>
+              <select id="ap_group" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%"></select></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div class="fld" style="margin:0;width:170px"><label>เบอร์โทรศัพท์ *</label><input id="ap_phone" placeholder="0812345678"></div>
+            <div class="fld" style="margin:0;flex:1;min-width:240px"><label>อีเมล * (ใช้แจ้งผลการคัดเลือก)</label><input id="ap_email" placeholder="you@example.com"></div>
+            <div class="fld" style="margin:0;width:150px"><label>ประสบการณ์ (ปี)</label><input id="ap_exp" type="number" min="0" placeholder="5"></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div class="fld" style="margin:0;flex:1;min-width:200px"><label>วุฒิการศึกษาสูงสุด</label><input id="ap_edu" placeholder="ค.บ. / ศษ.ม."></div>
+            <div class="fld" style="margin:0;flex:1;min-width:200px"><label>วิชาเอก</label><input id="ap_major" placeholder="ภาษาไทย"></div>
+            <div class="fld" style="margin:0;flex:1;min-width:220px"><label>เคยเป็นกรรมการตัดสินระดับใดบ้าง</label><input id="ap_past" placeholder="ระดับกลุ่มโรงเรียน / เขตพื้นที่ / ภาค"></div>
+          </div>
+          <div class="fld" style="margin-top:10px"><label>ความรู้ ความสามารถ และผลงานที่เกี่ยวข้อง</label>
+            <textarea id="ap_expertise" rows="3" placeholder="เช่น เป็นวิทยากรด้านภาษาไทย · ผ่านการอบรมกรรมการตัดสิน · ผลงานนักเรียนได้รับรางวัลระดับชาติ"></textarea></div>
+          <div class="fld" style="margin-top:10px"><label>ลิงก์เอกสารประกอบ (ถ้ามี — Google Drive ที่เปิดให้ดูได้)</label>
+            <input id="ap_doc" placeholder="https://drive.google.com/..."></div>
+
+          <div class="note i" style="margin-top:14px"><span>🎯</span><div><b>เลือกกิจกรรมที่ขอเป็นกรรมการตัดสิน 3 อันดับ</b>
+            — เลือกกลุ่มสาระก่อน แล้วเลือกรายการแข่งขัน · อันดับ 1 คือกิจกรรมที่ถนัดที่สุด (อย่างน้อย 1 อันดับ)</div></div>
+          <div id="apPicks" style="margin-top:10px"></div>
+
+          <label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;cursor:pointer">
+            <input type="checkbox" id="ap_confirm" style="width:20px;height:20px;margin-top:2px">
+            <span style="font-size:14.5px">ข้าพเจ้าขอรับรองว่าข้อมูลข้างต้นเป็นความจริง และยินดีปฏิบัติหน้าที่กรรมการตัดสินตามที่ได้รับมอบหมาย</span></label>
+
+          <div class="row" style="margin-top:14px"><span class="sp"></span>
+            <button class="btn g" onclick="apClear()">ล้างฟอร์ม</button>
+            <button class="btn" id="apSubmit" onclick="submitApply()">ส่งใบสมัคร</button></div>
+          <div id="apMsg" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><h3>ตรวจสอบสถานะใบสมัคร / แก้ไขใบสมัคร</h3></div>
+        <div class="cb">
+          <div class="row">
+            <div class="fld" style="margin:0;width:190px"><label>รหัสอ้างอิง</label><input id="ap_ref" placeholder="เช่น J1A2B3"></div>
+            <div class="fld" style="margin:0;width:190px"><label>เบอร์โทรศัพท์ที่สมัคร</label><input id="ap_refphone" placeholder="0812345678"></div>
+            <span class="sp"></span><button class="btn" onclick="trackApply()">ตรวจสอบสถานะ</button></div>
+          <div id="apTrack" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- รับสมัคร & คัดเลือกกรรมการ (หลังบ้าน) ---------- -->
+    <section class="page" id="p-judgeapp">
+      <div class="hd"><div><h2>รับสมัคร &amp; คัดเลือกคณะกรรมการตัดสิน</h2><p id="jaSub"></p></div></div>
+
+      <div class="card" id="jaWinCard" style="margin-bottom:14px">
+        <div class="ch"><h3>ช่วงเวลารับสมัคร</h3><span class="sp"></span><span id="jaWinState"></span></div>
+        <div class="cb">
+          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+            <input type="checkbox" id="ja_open" style="width:20px;height:20px"> เปิดรับสมัครคณะกรรมการตัดสิน</label>
+          <div class="row" style="margin-top:12px">
+            <div class="fld" style="margin:0"><label>เปิดรับตั้งแต่วันที่</label><input id="ja_from" placeholder="2569-10-20" style="width:150px"></div>
+            <div class="fld" style="margin:0"><label>ถึงวันที่</label><input id="ja_to" placeholder="2569-10-31" style="width:150px"></div>
+            <div class="fld" style="margin:0;flex:1;min-width:240px"><label>ข้อความประกาศ / คุณสมบัติผู้สมัคร</label>
+              <input id="ja_note" placeholder="เช่น รับครูผู้สอนที่มีประสบการณ์ไม่น้อยกว่า 3 ปี"></div>
+          </div>
+          <div class="row" style="margin-top:12px"><span class="hint" style="flex:1">วันที่ใช้รูปแบบ พ.ศ. ปี-เดือน-วัน เช่น 2569-10-20 · เว้นว่าง = ไม่จำกัดวัน</span>
+            <button class="btn" onclick="saveApplyWin()">บันทึกช่วงเวลา</button></div>
+        </div>
+      </div>
+
+      <div class="card" id="jaSelCard" style="margin-bottom:14px">
+        <div class="ch"><h3>คณะกรรมการคัดเลือก (รายกลุ่มสาระ)</h3><span class="sp"></span>
+          <span class="hint">ผู้ดูแลหลักของเขตเป็นผู้เพิ่ม · แต่ละท่านเห็นเฉพาะใบสมัครในกลุ่มสาระของตน</span></div>
+        <div class="cb">
+          <div class="row">
+            <div class="fld" style="margin:0;width:150px"><label>ชื่อผู้ใช้</label><input id="sel_user" placeholder="sel-thai"></div>
+            <div class="fld" style="margin:0;width:140px"><label>รหัสผ่าน</label><input id="sel_pass" placeholder="เว้นว่าง = สุ่มให้"></div>
+            <div class="fld" style="margin:0;flex:1;min-width:200px"><label>ชื่อ-สกุล</label><input id="sel_name" placeholder="นางสาว ... "></div>
+            <div class="fld" style="margin:0;min-width:200px"><label>กลุ่มสาระที่รับผิดชอบ</label>
+              <select id="sel_cat" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%"></select></div>
+            <span class="sp"></span><button class="btn" onclick="addSelector()">+ เพิ่มกรรมการคัดเลือก</button></div>
+          <div id="selMsg" style="margin-top:10px"></div>
+          <div style="overflow:auto;margin-top:12px"><table id="selTbl"></table></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><h3>ใบสมัคร</h3><span class="sp"></span>
+          <select id="ja_fcat" onchange="drawApplications()" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select>
+          <select id="ja_fst" onchange="drawApplications()" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select>
+          <input id="ja_q" placeholder="ค้นชื่อ / โรงเรียน…" oninput="drawApplications()"
+                 style="min-width:180px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
+        <div class="cb">
+          <div class="row" style="margin-bottom:12px"><span class="hint" id="jaSum" style="flex:1"></span>
+            <button class="btn g" onclick="copyEmails()">คัดลอกอีเมลผู้ผ่าน</button>
+            <button class="btn g" id="jaNotify" onclick="notifyApplicants()">แจ้งผลทางอีเมล</button>
+            <button class="btn" id="jaImport" onclick="importJudges()">ส่งผู้ผ่านเข้าทำเนียบกรรมการ</button></div>
+          <div id="jaList"></div>
+        </div>
       </div>
     </section>
 
@@ -1183,7 +1303,7 @@ async function api(action, params={}){
 
 /* ---------- โหมดตัวอย่าง: ทำงานได้เต็มรูปแบบในเครื่อง ---------- */
 const MEM = JSON.parse(LS.getItem(K.demo)||'null') || {
-  entries:[], students:[], coaches:[], scores:[], results:[], promotions:[],
+  entries:[], students:[], coaches:[], scores:[], results:[], promotions:[], applies:[], japply_win:{},
   activities:null, criteria:null, schedule:[], docs:[], site:{}, news:[
     {id:'N0001',scope:'ALL',date:'2569-08-20',pin:'Y',title:'ประกาศเกณฑ์การแข่งขัน งานศิลปหัตถกรรมนักเรียน ครั้งที่ 74',
      body:'สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1 ประกาศเกณฑ์การแข่งขันทั้ง 188 รายการ 21 หมวดหมู่ ให้โรงเรียนศึกษารายละเอียดและเตรียมนักเรียนเข้าแข่งขันในรอบคัดเลือกระดับกลุ่มโรงเรียน',image:''},
@@ -1194,6 +1314,20 @@ function memSave(){ LS.setItem(K.demo, JSON.stringify(MEM)); }
 /** ช่วงเวลารับโอนตัวแทน — โหมดตัวอย่าง */
 function demoBeToday(){ const d=new Date();
   return (d.getFullYear()+543)+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+const JA_STATUS=['รอพิจารณา','ผ่านคุณสมบัติ','สำรอง','ไม่ผ่าน','บรรจุแล้ว'];
+function demoJaWin(){
+  const c=MEM.japply_win||{};
+  const flag=String(c.flag||'N').toUpperCase(), from=c.open_at||'', to=c.close_at||'', note=c.open_note||'';
+  const today=demoBeToday(); let open=(flag==='Y'), why='';
+  if(!open) why=note||'ขณะนี้ยังไม่เปิดรับสมัครคณะกรรมการตัดสิน';
+  else if(from && today<from){ open=false; why='จะเปิดรับสมัครวันที่ '+from; }
+  else if(to && today>to){ open=false; why='ปิดรับสมัครแล้วเมื่อ '+to; }
+  return {open:open,note:why,flag:flag,open_at:from,close_at:to,open_note:note,today:today,max_choice:3};
+}
+function demoActName(id){
+  const a=(MEM.activities||[]).find(x=>x.act_id===id);
+  return a? (a.act_name+' · '+a.level) : '';
+}
 function demoPromoteWin(){
   const c=MEM.promote_win||{};
   const flag=String(c.flag||'Y').toUpperCase(), from=c.open_at||'', to=c.close_at||'', note=c.open_note||'';
@@ -1210,8 +1344,10 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveStaff:'certadm',deleteStaff:'certadm',saveCertTemplate:'certadm',saveCertConfig:'certadm',
   saveCardTemplate:'cards',savePersonPhoto:'cards',saveNews:'newsmgr',deleteNews:'newsmgr',
   saveDocument:'newsmgr',deleteDocument:'newsmgr',saveSiteSettings:'site',savePermConfig:'perm',
-  printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote'};
-const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin'];
+  printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',
+  saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges'};
+const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
+  'listSelectors','saveSelector','deleteSelector'];
 
 function demoApi(action,p){
   /* ให้โหมดตัวอย่างกันสิทธิ์แบบเดียวกับ Apps Script จะได้ทดสอบได้ตรงกัน */
@@ -1670,6 +1806,159 @@ function demoApi(action,p){
       MEM.results=MEM.results.filter(x=>ids.indexOf(x.entry_id)<0);
       MEM.promotions=MEM.promotions.filter(r=>!(r.from_group===g&&(!act||r.act_id===act)));
       memSave(); return {teams:hit.length,entries:ids.length}; }
+    case 'judgeApplyConfig':{
+      const cats=[...new Set((MEM.activities||[]).map(a=>a.category).filter(Boolean))];
+      const out={window:demoJaWin(), categories:cats};
+      if(ME&&(ME.role==='district_admin'||ME.role==='group_admin'||ME.role==='selector')){
+        const all=MEM.applies||[];
+        out.stats={total:all.length,
+          pending:all.filter(r=>r.status==='รอพิจารณา').length,
+          passed:all.filter(r=>r.status==='ผ่านคุณสมบัติ').length};
+      }
+      return out; }
+    case 'applyJudge':{
+      const w=demoJaWin();
+      if(!w.open) throw new Error('ยังไม่เปิดรับสมัครคณะกรรมการตัดสิน — '+w.note);
+      MEM.applies=MEM.applies||[];
+      const a=p.apply||{};
+      const name=String(a.full_name||'').trim();
+      const phone=String(a.phone||'').replace(/[^0-9]/g,'');
+      if(!name) throw new Error('ต้องกรอกชื่อ-สกุล');
+      if(phone.length<9||phone.length>10) throw new Error('กรอกเบอร์โทรศัพท์ให้ถูกต้อง (9-10 หลัก)');
+      if(!String(a.org_name||'').trim()) throw new Error('ต้องระบุโรงเรียน/หน่วยงานที่สังกัด');
+      const mail=String(a.email||'').trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail))
+        throw new Error('กรอกอีเมลให้ถูกต้อง — ระบบจะแจ้งผลการคัดเลือกทางอีเมลนี้');
+      const picks=[a.act1,a.act2,a.act3].map(x=>String(x||'').trim()).filter(Boolean);
+      if(!picks.length) throw new Error('เลือกกิจกรรมที่ขอเป็นกรรมการอย่างน้อย 1 รายการ');
+      if(new Set(picks).size!==picks.length) throw new Error('เลือกกิจกรรมซ้ำกัน กรุณาเลือกให้ต่างกันทั้ง 3 อันดับ');
+      const act1=(MEM.activities||[]).find(x=>x.act_id===picks[0])||{};
+      const body={updated_at:nowStr(),prefix:a.prefix||'',full_name:name,position:a.position||'',
+        org_type:a.org_type||'สถานศึกษา',org_name:String(a.org_name).trim(),group_code:a.group_code||'',
+        phone:phone,email:mail,education:a.education||'',major:a.major||'',
+        experience_years:a.experience_years||'',past_judge:a.past_judge||'',expertise:a.expertise||'',
+        category:act1.category||'',act1:picks[0]||'',act2:picks[1]||'',act3:picks[2]||'',
+        doc_url:a.doc_url||''};
+      const ref=String(a.ref_code||'').trim().toUpperCase();
+      if(ref){
+        const old=MEM.applies.find(r=>String(r.ref_code).toUpperCase()===ref&&String(r.phone)===phone);
+        if(!old) throw new Error('รหัสอ้างอิงหรือเบอร์โทรไม่ตรงกับใบสมัครเดิม');
+        if(old.status!=='รอพิจารณา') throw new Error('ใบสมัครนี้คณะกรรมการพิจารณาแล้ว แก้ไขไม่ได้');
+        Object.assign(old,body); memSave();
+        return {apply_id:old.apply_id,ref_code:old.ref_code,status:old.status,updated:true}; }
+      if(MEM.applies.some(r=>String(r.phone)===phone))
+        throw new Error('เบอร์โทรนี้สมัครไว้แล้ว — ใช้รหัสอ้างอิงที่ได้รับเพื่อแก้ไขใบสมัครเดิมแทน');
+      body.apply_id='JA'+String(MEM.applies.length+1).padStart(5,'0');
+      body.ref_code='J'+Math.random().toString(36).slice(2,7).toUpperCase();
+      body.created_at=nowStr(); body.status='รอพิจารณา';
+      body.decided_act=''; body.decided_by=''; body.decided_at=''; body.note=''; body.notified_at='';
+      MEM.applies.push(body); memSave();
+      return {apply_id:body.apply_id,ref_code:body.ref_code,status:body.status,created:true}; }
+    case 'myJudgeApplication':{
+      const ref=String(p.ref_code||'').trim().toUpperCase(), ph=String(p.phone||'').replace(/[^0-9]/g,'');
+      const r=(MEM.applies||[]).find(x=>String(x.ref_code).toUpperCase()===ref&&String(x.phone)===ph);
+      if(!r) throw new Error('ไม่พบใบสมัคร — ตรวจรหัสอ้างอิงและเบอร์โทรอีกครั้ง');
+      return {apply_id:r.apply_id,ref_code:r.ref_code,full_name:r.full_name,org_name:r.org_name,
+        category:r.category,status:r.status,note:r.note||'',created_at:r.created_at,
+        decided_at:r.decided_at||'',decided_act:r.decided_act||'',
+        decided_act_name:demoActName(r.decided_act),editable:r.status==='รอพิจารณา',
+        choices:[r.act1,r.act2,r.act3].filter(Boolean).map((id,i)=>({order:i+1,act_id:id,act_name:demoActName(id)})),
+        apply:{prefix:r.prefix,full_name:r.full_name,position:r.position,org_type:r.org_type,
+          org_name:r.org_name,group_code:r.group_code,phone:r.phone,email:r.email,education:r.education,
+          major:r.major,experience_years:r.experience_years,past_judge:r.past_judge,
+          expertise:r.expertise,act1:r.act1,act2:r.act2,act3:r.act3,doc_url:r.doc_url}}; }
+    case 'listJudgeApplications':{
+      if(!ME||['district_admin','selector'].indexOf(ME.role)<0)
+        throw new Error('ไม่มีสิทธิ์ใช้คำสั่งนี้');
+      if(ME.role!=='selector'&&!canDo('judges'))
+        throw new Error('บัญชีของท่านไม่ได้รับสิทธิ์ใน “ทำเนียบกรรมการตัดสิน” — ติดต่อผู้ดูแลหลักให้เปิดสิทธิ์ให้');
+      let rows=(MEM.applies||[]);
+      if(ME.role==='selector'&&ME.scope&&ME.scope!=='ALL') rows=rows.filter(r=>r.category===ME.scope);
+      return {window:demoJaWin(), status_list:JA_STATUS,
+        categories:[...new Set((MEM.activities||[]).map(a=>a.category).filter(Boolean))],
+        me:{role:ME.role,scope:ME.scope,name:ME.name,own:ME.own},
+        items:rows.map(r=>Object.assign({},r,{
+          decided_act_name:demoActName(r.decided_act),
+          choices:[r.act1,r.act2,r.act3].filter(Boolean).map((id,i)=>({order:i+1,act_id:id,act_name:demoActName(id)}))
+        }))}; }
+    case 'reviewJudgeApplication':{
+      if(!ME||['district_admin','selector'].indexOf(ME.role)<0)
+        throw new Error('ไม่มีสิทธิ์ใช้คำสั่งนี้');
+      if(ME.role!=='selector'&&!canDo('judges'))
+        throw new Error('บัญชีของท่านไม่ได้รับสิทธิ์ใน “ทำเนียบกรรมการตัดสิน”');
+      const r=(MEM.applies||[]).find(x=>x.apply_id===p.apply_id);
+      if(!r) throw new Error('ไม่พบใบสมัครนี้');
+      if(ME.role==='selector'&&ME.scope&&ME.scope!=='ALL'&&r.category!==ME.scope)
+        throw new Error('พิจารณาได้เฉพาะกลุ่มสาระที่ท่านรับผิดชอบ');
+      const st=String(p.status||'');
+      if(JA_STATUS.indexOf(st)<0) throw new Error('สถานะไม่ถูกต้อง');
+      if(st==='บรรจุแล้ว'&&ME.role==='selector') throw new Error('การบรรจุเข้าทำเนียบเป็นหน้าที่ของผู้ดูแลเขต');
+      let act=String(p.decided_act||'');
+      if(st==='ผ่านคุณสมบัติ'){
+        const mine=[r.act1,r.act2,r.act3].filter(Boolean);
+        if(!act) act=mine[0]||'';
+        if(mine.indexOf(act)<0) throw new Error('กิจกรรมที่อนุมัติต้องเป็น 1 ใน 3 อันดับที่ผู้สมัครเลือกไว้');
+      } else act='';
+      Object.assign(r,{status:st,decided_act:act,decided_by:ME.name,decided_at:nowStr(),
+        note:String(p.note||''),updated_at:nowStr()});
+      memSave(); return {apply_id:r.apply_id,status:st,decided_act:act}; }
+    case 'saveJudgeApplyWindow':{
+      if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
+      MEM.japply_win={flag:p.judge_apply_open||'N',open_at:p.judge_apply_open_at||'',
+        close_at:p.judge_apply_close_at||'',open_note:p.judge_apply_note||''};
+      memSave(); return demoJaWin(); }
+    case 'listSelectors':{
+      MEM.admins=MEM.admins||[];
+      return {categories:[...new Set((MEM.activities||[]).map(a=>a.category).filter(Boolean))],
+        me:ME?ME.uid:'', items:MEM.admins.filter(a=>a.role==='selector').map(a=>({
+          user_id:a.user_id,username:a.username,name:a.name,scope:a.scope,email:a.email||'',
+          status:a.status||'ใช้งาน',last_login:a.last_login||''}))}; }
+    case 'saveSelector':{
+      MEM.admins=MEM.admins||[];
+      const a=p.selector||{};
+      if(!String(a.name||'').trim()) throw new Error('ต้องกรอกชื่อ-สกุล');
+      if(!String(a.scope||'').trim()) throw new Error('เลือกกลุ่มสาระที่รับผิดชอบก่อน');
+      if(!a.user_id){
+        const un=String(a.username||'').trim();
+        if(!un) throw new Error('ต้องตั้งชื่อผู้ใช้');
+        if(MEM.admins.some(x=>x.username===un)) throw new Error('ชื่อผู้ใช้ “'+un+'” ถูกใช้แล้ว');
+        const pass=String(a.pass_code||'').trim()||Math.random().toString(36).slice(2,10);
+        const row={user_id:'US'+String(MEM.admins.length+1).padStart(3,'0'),username:un,pass_code:pass,
+          role:'selector',scope:a.scope,name:a.name,email:a.email||'',status:'ใช้งาน',
+          last_login:'',is_owner:'N',perms:''};
+        MEM.admins.push(row); memSave();
+        return {user_id:row.user_id,username:un,pass_code:pass,created:true}; }
+      const t=MEM.admins.find(x=>x.user_id===a.user_id);
+      if(!t) throw new Error('ไม่พบบัญชีนี้');
+      Object.assign(t,{name:a.name,scope:a.scope,email:a.email||''});
+      if(String(a.pass_code||'').trim()) t.pass_code=a.pass_code.trim();
+      memSave(); return {user_id:t.user_id,updated:true}; }
+    case 'deleteSelector':{
+      MEM.admins=(MEM.admins||[]).filter(x=>x.user_id!==p.user_id); memSave(); return true; }
+    case 'notifyJudgeApplicants':{
+      if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
+      const rows=(MEM.applies||[]).filter(r=>['ผ่านคุณสมบัติ','สำรอง','ไม่ผ่าน'].indexOf(r.status)>=0
+        && (!r.notified_at||p.resend));
+      if(!rows.length) throw new Error('ไม่มีใบสมัครที่ต้องแจ้งผล (แจ้งครบแล้ว หรือยังไม่ได้พิจารณา)');
+      rows.forEach(r=>{ r.notified_at=nowStr(); });
+      memSave(); return {sent:rows.length,failed:[],quota_left:'(โหมดตัวอย่าง ไม่ได้ส่งจริง)'}; }
+    case 'importApprovedJudges':{
+      if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
+      const rows=(MEM.applies||[]).filter(r=>r.status==='ผ่านคุณสมบัติ');
+      if(!rows.length) throw new Error('ยังไม่มีผู้สมัครที่ผ่านคุณสมบัติรอการบรรจุ');
+      MEM.judges=MEM.judges||[]; MEM.assign=MEM.assign||[];
+      let nj=0,na=0;
+      rows.forEach(r=>{
+        let j=MEM.judges.find(x=>String(x.phone)===String(r.phone));
+        if(!j){ j={judge_id:'J'+String(MEM.judges.length+1).padStart(4,'0'),group_code:'ALL',
+          prefix:r.prefix||'',name:r.full_name,position:r.position||'',org:r.org_name||'',
+          phone:r.phone,email:r.email||'',expertise:r.expertise||r.category||'',status:'อนุมัติ'};
+          MEM.judges.push(j); nj++; }
+        if(r.decided_act){ MEM.assign.push({id:'JA'+String(MEM.assign.length+1).padStart(5,'0'),
+          act_id:r.decided_act,judge_id:j.judge_id,role:'กรรมการ',note:'จากระบบรับสมัคร '+r.ref_code}); na++; }
+        r.status='บรรจุแล้ว'; r.updated_at=nowStr();
+      });
+      memSave(); return {judges:nj,assigned:na,applications:rows.length}; }
     case 'savePromoteWindow':{
       if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
       MEM.promote_win={flag:p.promote_open||'Y',open_at:p.promote_open_at||'',
@@ -1777,7 +2066,13 @@ function applyScope(){
     if(ME.role!=='district_admin' && ME.role!=='group_admin'){ b.style.display=''; return; }
     b.style.display = canDo(b.dataset.perm) ? '' : 'none';
   });
-  $('#navDistrict').style.display = (!g && (!ME || ME.role==='district_admin')) ? '' : 'none';
+  /* กรรมการคัดเลือกเห็นเมนูเดียว — หน้ารับสมัคร & คัดเลือกกรรมการ */
+  if(ME && ME.role==='selector'){
+    $$('#navAdmin .nv').forEach(b=>{ b.style.display = (b.dataset.p==='judgeapp')?'':'none'; });
+    const ow2=$('#navOwner'); if(ow2) ow2.style.display='none';
+  }
+  $('#navDistrict').style.display =
+    (!g && (!ME || ME.role==='district_admin')) ? '' : 'none';
   const own = $('#ownerNote');
   if(own) own.style.display = (ME && ME.role!=='district_admin') ? 'flex' : 'none';
   document.body.dataset.view=VIEW;
@@ -1804,21 +2099,22 @@ const PERM_PRESET={
 };
 
 function roleTh(r){ const t={district_admin:'ผู้ดูแลเขต',group_admin:'ผู้ดูแลกลุ่ม',school:'โรงเรียน',
-  judge:'กรรมการ',head_judge:'ประธานกรรมการ',venue_staff:'เจ้าหน้าที่สนาม'}[r]||r;
+  judge:'กรรมการ',head_judge:'ประธานกรรมการ',venue_staff:'เจ้าหน้าที่สนาม',
+  selector:'กรรมการคัดเลือก'}[r]||r;
   return (ME && ME.role===r && ME.own && (r==='district_admin'||r==='group_admin')) ? t+'หลัก' : t; }
 
 
 /* ============================ หน้าเว็บสาธารณะ / หลังบ้าน ============================ */
-const PUBLIC_PAGES=[['home','หน้าแรก'],['news','ข่าวประชาสัมพันธ์'],['acts','รายการแข่งขัน'],
+const PUBLIC_PAGES=[['home','หน้าแรก'],['news','ข่าวประชาสัมพันธ์'],['acts','รายการแข่งขัน'],['apply','สมัครกรรมการตัดสิน'],
   ['sched','ตารางแข่งขัน'],['results','ผลการแข่งขัน'],['medals','ตารางเหรียญ'],
   ['schools','ทะเบียนโรงเรียน'],['cert','เกียรติบัตร'],['docs','เอกสารดาวน์โหลด']];
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','entries','score','publish','promote','certadm','cards',
-  'judges','perm','season','newsmgr','site','print','groups','admins'];
+  'judges','judgeapp','perm','season','newsmgr','site','print','groups','admins'];
 /** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
 const PAGE_PERM={actedit:'actedit',entries:'entries',score:'score',publish:'publish',
-  promote:'promote',judges:'judges',certadm:'certadm',cards:'cards',
+  promote:'promote',judges:'judges',judgeapp:'judges',certadm:'certadm',cards:'cards',
   newsmgr:'newsmgr',site:'site',print:'print',perm:'perm'};
 const OWNER_PAGES=['admins','season'];
 function isAdminPage(p){ return ADMIN_PAGES.indexOf(p)>=0; }
@@ -2857,6 +3153,7 @@ function go(p){
   /* กันไม่ให้ผู้ที่ยังไม่เข้าสู่ระบบเปิดหน้าหลังบ้าน แม้จะพิมพ์ URL เข้ามาเอง */
   if(isAdminPage(p) && !ME){ PAGE='home'; openLogin(); return; }
   if(p==='setup' && ME && ME.role!=='district_admin'){ p='dash'; }
+  if(ME && ME.role==='selector' && isAdminPage(p) && p!=='judgeapp') p='judgeapp';
   /* กันคนที่ไม่มีสิทธิ์เปิดหน้านั้น แม้จะพิมพ์ลิงก์เข้ามาเอง */
   if(ME && (ME.role==='district_admin'||ME.role==='group_admin')){
     if(OWNER_PAGES.indexOf(p)>=0 && !ME.own){
@@ -2875,7 +3172,8 @@ function go(p){
     entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',
     print:'พิมพ์เอกสาร',setup:'ตั้งค่า',news:'ข่าวประชาสัมพันธ์',docs:'เอกสารดาวน์โหลด',
     site:'หน้าเว็บ & แบนเนอร์',newsmgr:'ประชาสัมพันธ์',cert:'เกียรติบัตร',certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',
-    judges:'ทำเนียบกรรมการตัดสิน',perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
+    judges:'ทำเนียบกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกกรรมการ',apply:'สมัครกรรมการตัดสิน',
+    perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',admins:'จัดการผู้ดูแล'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
@@ -2898,7 +3196,8 @@ function renderPage(p){
     promote:renderPromote, print:renderPrint, setup:renderSetup, results:renderResults, medals:renderMedals,
     sched:renderSched, news:renderNews, docs:renderDocs, site:renderSite,
     newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
-    judges:renderJudges, perm:renderPerm, season:renderSeason, admins:renderAdmins}[p]||(()=>{}))();
+    judges:renderJudges, perm:renderPerm, season:renderSeason, admins:renderAdmins,
+    apply:renderApply, judgeapp:renderJudgeApp}[p]||(()=>{}))();
 }
 
 function renderHome(){
@@ -3637,6 +3936,265 @@ async function doPromote(){
   }catch(e){ alert(e.message); }
 }
 
+/* ============================ รับสมัคร & คัดเลือกคณะกรรมการตัดสิน ============================ */
+let APW=null, JAB=null;
+
+/* ---------- หน้าสาธารณะ: ใบสมัคร ---------- */
+function actsByCat(cat){
+  return (DB.activities||[]).filter(a=>!cat||a.category===cat)
+    .sort((x,y)=>String(x.act_code||'').localeCompare(String(y.act_code||'')));
+}
+function allCats(){ return [...new Set((DB.activities||[]).map(a=>a.category).filter(Boolean))]; }
+
+function apPickRow(i){
+  const cats=allCats();
+  return `<div class="row" style="margin-bottom:8px;align-items:flex-end">
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--brand,#E2620E);color:#fff;
+         display:flex;align-items:center;justify-content:center;font-weight:800">${i}</div>
+    <div class="fld" style="margin:0;min-width:190px"><label>กลุ่มสาระ อันดับ ${i}</label>
+      <select id="ap_c${i}" onchange="apFillActs(${i})"
+        style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%">
+        <option value="">— เลือกกลุ่มสาระ —</option>${cats.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    <div class="fld" style="margin:0;flex:1;min-width:280px"><label>รายการแข่งขัน อันดับ ${i}</label>
+      <select id="ap_a${i}" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%">
+        <option value="">— เลือกกลุ่มสาระก่อน —</option></select></div></div>`;
+}
+function apFillActs(i, keep){
+  const cat=$('#ap_c'+i).value, sel=$('#ap_a'+i);
+  const list=actsByCat(cat);
+  sel.innerHTML='<option value="">— ไม่เลือก —</option>'+list.map(a=>
+    `<option value="${a.act_id}">${a.act_code? a.act_code+' · ':''}${a.act_name} · ${a.level}</option>`).join('');
+  if(keep) sel.value=keep;
+}
+function renderApply(){
+  $('#ap_group').innerHTML='<option value="">— ไม่ระบุ / หน่วยงานอื่น —</option>'+
+    (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
+  if(!$('#ap_c1')) $('#apPicks').innerHTML=[1,2,3].map(apPickRow).join('');
+  api('judgeApplyConfig',{}).then(r=>{
+    APW=r.window;
+    const w=APW, open=w.open;
+    $('#apWin').innerHTML = open
+      ? `<div class="note g"><span>📣</span><div><b>เปิดรับสมัครคณะกรรมการตัดสิน</b>
+          ${w.open_at||w.close_at? ' · ช่วงเวลา '+(w.open_at||'วันนี้')+' ถึง '+(w.close_at||'ไม่กำหนด'):''}
+          ${w.open_note? '<div class="hint" style="margin-top:6px">'+w.open_note+'</div>':''}</div></div>`
+      : `<div class="note w"><span>⏸️</span><div><b>ยังไม่เปิดรับสมัคร</b> — ${w.note||''}</div></div>`;
+    $('#apFormCard').style.display = open? '' : 'none';
+  }).catch(()=>{});
+}
+function apClear(){
+  ['ap_prefix','ap_name','ap_position','ap_org','ap_phone','ap_email','ap_exp','ap_edu','ap_major',
+   'ap_past','ap_expertise','ap_doc'].forEach(k=>{ const e=$('#'+k); if(e) e.value=''; });
+  [1,2,3].forEach(i=>{ $('#ap_c'+i).value=''; apFillActs(i); });
+  $('#ap_confirm').checked=false; $('#apMsg').innerHTML=''; $('#apEditHint').textContent='';
+  $('#apSubmit').textContent='ส่งใบสมัคร'; $('#apFormCard').dataset.ref='';
+}
+async function submitApply(){
+  if(!$('#ap_confirm').checked) return alert('กรุณาติ๊กยืนยันรับรองข้อมูลก่อนส่งใบสมัคร');
+  const body={ prefix:$('#ap_prefix').value.trim(), full_name:$('#ap_name').value.trim(),
+    position:$('#ap_position').value.trim(), org_type:$('#ap_orgtype').value,
+    org_name:$('#ap_org').value.trim(), group_code:$('#ap_group').value,
+    phone:$('#ap_phone').value.trim(), email:$('#ap_email').value.trim(),
+    education:$('#ap_edu').value.trim(), major:$('#ap_major').value.trim(),
+    experience_years:$('#ap_exp').value, past_judge:$('#ap_past').value.trim(),
+    expertise:$('#ap_expertise').value.trim(), doc_url:$('#ap_doc').value.trim(),
+    act1:$('#ap_a1').value, act2:$('#ap_a2').value, act3:$('#ap_a3').value };
+  const ref=$('#apFormCard').dataset.ref||'';
+  if(ref) body.ref_code=ref;
+  try{
+    const r=await api('applyJudge',{apply:body});
+    $('#apMsg').innerHTML=`<div class="note g"><span>✅</span><div>
+      <b>${r.updated?'แก้ไขใบสมัครเรียบร้อย':'ส่งใบสมัครเรียบร้อยแล้ว'}</b>
+      <div style="margin-top:6px;font-size:18px">รหัสอ้างอิงของท่านคือ
+        <b style="letter-spacing:1px">${r.ref_code}</b></div>
+      <div class="hint" style="margin-top:6px">กรุณาบันทึกรหัสนี้ไว้ ใช้คู่กับเบอร์โทรศัพท์เพื่อตรวจสอบสถานะหรือแก้ไขใบสมัคร ·
+        ผลการคัดเลือกจะแจ้งไปที่อีเมลที่กรอกไว้</div></div></div>`;
+    $('#ap_ref').value=r.ref_code; $('#ap_refphone').value=body.phone;
+    $('#apFormCard').dataset.ref=''; $('#ap_confirm').checked=false;
+    $('#apSubmit').textContent='ส่งใบสมัคร'; $('#apEditHint').textContent='';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){ $('#apMsg').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+}
+async function trackApply(){
+  try{
+    const r=await api('myJudgeApplication',{ref_code:$('#ap_ref').value.trim(), phone:$('#ap_refphone').value.trim()});
+    const pill={'รอพิจารณา':'w','ผ่านคุณสมบัติ':'ok','สำรอง':'i','ไม่ผ่าน':'b','บรรจุแล้ว':'ok'}[r.status]||'';
+    $('#apTrack').innerHTML=`<div class="note i"><span>🔎</span><div>
+      <b>${r.full_name}</b> · ${r.org_name||''} <span class="pill ${pill}">${r.status}</span>
+      <div style="margin-top:8px">กิจกรรมที่สมัคร:<br>${r.choices.map(c=>'อันดับ '+c.order+' — '+c.act_name).join('<br>')}</div>
+      ${r.decided_act_name? '<div style="margin-top:8px"><b>รายการที่ได้รับมอบหมาย:</b> '+r.decided_act_name+'</div>':''}
+      ${r.note? '<div class="hint" style="margin-top:6px">หมายเหตุ: '+r.note+'</div>':''}
+      ${r.editable? '<div style="margin-top:10px"><button class="btn g" onclick=\'editApply('+JSON.stringify(JSON.stringify(r))+')\'>แก้ไขใบสมัครนี้</button></div>':''}
+      </div></div>`;
+  }catch(e){ $('#apTrack').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+}
+function editApply(json){
+  const r=JSON.parse(json), a=r.apply||{};
+  $('#ap_prefix').value=a.prefix||''; $('#ap_name').value=a.full_name||'';
+  $('#ap_position').value=a.position||''; $('#ap_orgtype').value=a.org_type||'สถานศึกษา';
+  $('#ap_org').value=a.org_name||''; $('#ap_group').value=a.group_code||'';
+  $('#ap_phone').value=a.phone||''; $('#ap_email').value=a.email||'';
+  $('#ap_edu').value=a.education||''; $('#ap_major').value=a.major||'';
+  $('#ap_exp').value=a.experience_years||''; $('#ap_past').value=a.past_judge||'';
+  $('#ap_expertise').value=a.expertise||''; $('#ap_doc').value=a.doc_url||'';
+  [1,2,3].forEach(i=>{
+    const id=a['act'+i]||''; const act=(DB.activities||[]).find(x=>x.act_id===id);
+    $('#ap_c'+i).value = act? act.category : ''; apFillActs(i, id);
+  });
+  $('#apFormCard').dataset.ref=r.ref_code;
+  $('#apSubmit').textContent='บันทึกการแก้ไข';
+  $('#apEditHint').textContent='กำลังแก้ไขใบสมัครรหัส '+r.ref_code;
+  $('#apFormCard').style.display='';
+  $('#apFormCard').scrollIntoView({behavior:'smooth'});
+}
+
+/* ---------- หลังบ้าน: คัดเลือก ---------- */
+async function renderJudgeApp(){
+  if(!ME) return;
+  const dist = ME.role==='district_admin';
+  $('#jaWinCard').style.display = dist? '' : 'none';
+  $('#jaSelCard').style.display = (dist && ME.own)? '' : 'none';
+  $('#jaNotify').style.display  = dist? '' : 'none';
+  $('#jaImport').style.display  = dist? '' : 'none';
+  $('#jaSub').textContent = ME.role==='selector'
+    ? 'พิจารณาคุณสมบัติผู้สมัครเป็นกรรมการตัดสิน กลุ่มสาระ '+(ME.scope||'-')
+    : 'เปิด-ปิดรับสมัคร · ตั้งคณะกรรมการคัดเลือกรายกลุ่มสาระ · พิจารณาคุณสมบัติผู้สมัคร';
+  try{ JAB = await api('listJudgeApplications',{}); }catch(e){
+    $('#jaList').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; return; }
+
+  const w=JAB.window;
+  $('#jaWinState').innerHTML = (w.open? '<span class="pill ok">เปิดรับสมัคร</span>':'<span class="pill b">ปิดรับสมัคร</span>')+
+    ' <span class="hint">'+((w.open_at||w.close_at)? (w.open_at||'—')+' → '+(w.close_at||'—') : 'ไม่จำกัดวัน')+'</span>';
+  $('#ja_open').checked = w.flag==='Y';
+  $('#ja_from').value=w.open_at||''; $('#ja_to').value=w.close_at||''; $('#ja_note').value=w.open_note||'';
+
+  const cats=JAB.categories||[];
+  const fc=$('#ja_fcat'), cur=fc.value;
+  fc.innerHTML='<option value="">ทุกกลุ่มสาระ</option>'+cats.map(c=>`<option>${c}</option>`).join('');
+  if(cur) fc.value=cur;
+  const fs=$('#ja_fst'), curs=fs.value;
+  fs.innerHTML='<option value="">ทุกสถานะ</option>'+(JAB.status_list||[]).map(c=>`<option>${c}</option>`).join('');
+  if(curs) fs.value=curs;
+  if(dist && ME.own) renderSelectors(cats);
+  drawApplications();
+}
+
+function drawApplications(){
+  if(!JAB) return;
+  const cat=$('#ja_fcat').value, st=$('#ja_fst').value, q=$('#ja_q').value.trim();
+  let items=JAB.items||[];
+  const all=items.length;
+  if(cat) items=items.filter(x=>x.category===cat);
+  if(st)  items=items.filter(x=>x.status===st);
+  if(q)   items=items.filter(x=>(x.full_name+' '+x.org_name+' '+x.ref_code).indexOf(q)>=0);
+  const n=k=>(JAB.items||[]).filter(x=>x.status===k).length;
+  $('#jaSum').textContent = `ใบสมัครทั้งหมด ${all} ใบ · รอพิจารณา ${n('รอพิจารณา')} · ผ่าน ${n('ผ่านคุณสมบัติ')} · สำรอง ${n('สำรอง')} · ไม่ผ่าน ${n('ไม่ผ่าน')} · บรรจุแล้ว ${n('บรรจุแล้ว')}`;
+  if(!items.length){ $('#jaList').innerHTML='<div class="hint" style="text-align:center;padding:26px">ยังไม่มีใบสมัครตามเงื่อนไขที่เลือก</div>'; return; }
+  const pill={'รอพิจารณา':'w','ผ่านคุณสมบัติ':'ok','สำรอง':'i','ไม่ผ่าน':'b','บรรจุแล้ว':'ok'};
+  $('#jaList').innerHTML = items.map(x=>`
+    <div class="card" style="margin-bottom:12px"><div class="cb">
+      <div class="row" style="align-items:flex-start">
+        <div style="flex:1;min-width:260px">
+          <div style="font-size:16px;font-weight:700">${x.prefix||''}${x.full_name}
+            <span class="pill ${pill[x.status]||''}">${x.status}</span></div>
+          <div class="hint">${x.position||''} · ${x.org_name||''} ${x.group_code? '· '+groupName(x.group_code):''}</div>
+          <div class="hint">รหัส ${x.ref_code} · สมัคร ${x.created_at||''} · ${x.phone} · ${x.email||'(ไม่มีอีเมล)'}</div>
+          <div style="margin-top:8px;font-size:14.5px"><b>กลุ่มสาระ:</b> ${x.category||'-'}
+            &nbsp;·&nbsp; <b>วุฒิ:</b> ${x.education||'-'} ${x.major? '('+x.major+')':''}
+            &nbsp;·&nbsp; <b>ประสบการณ์:</b> ${x.experience_years||'-'} ปี</div>
+          ${x.past_judge? `<div class="hint">เคยเป็นกรรมการ: ${x.past_judge}</div>`:''}
+          ${x.expertise? `<div style="margin-top:6px;font-size:14px">${x.expertise}</div>`:''}
+          ${x.doc_url? `<div style="margin-top:6px"><a href="${x.doc_url}" target="_blank" rel="noopener">เอกสารประกอบ ↗</a></div>`:''}
+          <div style="margin-top:8px;font-size:14.5px">${x.choices.map(c=>`อันดับ ${c.order} — ${c.act_name}`).join('<br>')}</div>
+          ${x.decided_act_name? `<div style="margin-top:6px"><b>มอบหมาย:</b> ${x.decided_act_name}</div>`:''}
+          ${x.decided_by? `<div class="hint">พิจารณาโดย ${x.decided_by} ${x.decided_at||''}</div>`:''}
+        </div>
+        <div style="min-width:280px">
+          <div class="fld" style="margin:0"><label>ผลการพิจารณา</label>
+            <select id="st_${x.apply_id}" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;width:100%">
+              ${(JAB.status_list||[]).filter(k=>k!=='บรรจุแล้ว'||x.status==='บรรจุแล้ว')
+                .map(k=>`<option ${k===x.status?'selected':''}>${k}</option>`).join('')}</select></div>
+          <div class="fld" style="margin:8px 0 0"><label>กิจกรรมที่อนุมัติ</label>
+            <select id="ac_${x.apply_id}" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;width:100%">
+              ${x.choices.map(c=>`<option value="${c.act_id}" ${c.act_id===x.decided_act?'selected':''}>อันดับ ${c.order} — ${c.act_name}</option>`).join('')}</select></div>
+          <div class="fld" style="margin:8px 0 0"><label>หมายเหตุถึงผู้สมัคร</label>
+            <input id="nt_${x.apply_id}" value="${(x.note||'').replace(/"/g,'&quot;')}" placeholder="เหตุผล / ข้อแนะนำ"></div>
+          <div class="row" style="margin-top:10px"><span class="sp"></span>
+            <button class="btn" onclick="saveReview('${x.apply_id}')">บันทึกผล</button></div>
+        </div>
+      </div></div></div>`).join('');
+}
+
+async function saveReview(id){
+  try{
+    await api('reviewJudgeApplication',{apply_id:id, status:$('#st_'+id).value,
+      decided_act:$('#ac_'+id)? $('#ac_'+id).value:'', note:$('#nt_'+id).value.trim()});
+    renderJudgeApp();
+  }catch(e){ alert(e.message); }
+}
+async function saveApplyWin(){
+  try{
+    await api('saveJudgeApplyWindow',{judge_apply_open:$('#ja_open').checked?'Y':'N',
+      judge_apply_open_at:$('#ja_from').value.trim(), judge_apply_close_at:$('#ja_to').value.trim(),
+      judge_apply_note:$('#ja_note').value.trim()});
+    alert('บันทึกช่วงเวลารับสมัครแล้ว'); renderJudgeApp();
+  }catch(e){ alert(e.message); }
+}
+function copyEmails(){
+  const list=(JAB&&JAB.items||[]).filter(x=>x.status==='ผ่านคุณสมบัติ'||x.status==='บรรจุแล้ว')
+    .map(x=>x.email).filter(Boolean);
+  if(!list.length) return alert('ยังไม่มีผู้ผ่านคุณสมบัติที่มีอีเมล');
+  const txt=list.join(', ');
+  (navigator.clipboard? navigator.clipboard.writeText(txt):Promise.reject())
+    .then(()=>alert('คัดลอกอีเมลผู้ผ่านคุณสมบัติ '+list.length+' รายแล้ว'))
+    .catch(()=>prompt('คัดลอกรายชื่ออีเมลด้านล่างนี้', txt));
+}
+async function notifyApplicants(){
+  if(!confirm('ส่งอีเมลแจ้งผลการคัดเลือกให้ผู้สมัครที่พิจารณาแล้วและยังไม่เคยแจ้ง?')) return;
+  try{
+    const r=await api('notifyJudgeApplicants',{});
+    alert('ส่งอีเมลแจ้งผลแล้ว '+r.sent+' ราย'+(r.failed&&r.failed.length? '\nไม่สำเร็จ: '+r.failed.join(', '):''));
+    renderJudgeApp();
+  }catch(e){ alert(e.message); }
+}
+async function importJudges(){
+  if(!confirm('ส่งผู้ผ่านคุณสมบัติทั้งหมดเข้าทำเนียบกรรมการตัดสิน และมอบหมายรายการที่อนุมัติไว้?')) return;
+  try{
+    const r=await api('importApprovedJudges',{});
+    alert('บรรจุเข้าทำเนียบกรรมการแล้ว '+r.judges+' ท่าน · มอบหมายรายการ '+r.assigned+' รายการ');
+    renderJudgeApp();
+  }catch(e){ alert(e.message); }
+}
+
+/* ---------- คณะกรรมการคัดเลือก ---------- */
+async function renderSelectors(cats){
+  try{
+    const r=await api('listSelectors',{});
+    const cs=(r.categories&&r.categories.length? r.categories : cats)||[];
+    const sc=$('#sel_cat'), cur=sc.value;
+    sc.innerHTML='<option value="ALL">ทุกกลุ่มสาระ</option>'+cs.map(c=>`<option>${c}</option>`).join('');
+    if(cur) sc.value=cur;
+    tbl($('#selTbl'),['ชื่อ-สกุล','ชื่อผู้ใช้','กลุ่มสาระ','เข้าระบบล่าสุด','จัดการ'],
+      (r.items||[]).map(x=>`<tr><td>${x.name}</td><td>${x.username}</td>
+        <td>${x.scope==='ALL'?'ทุกกลุ่มสาระ':x.scope}</td><td class="hint">${x.last_login||'-'}</td>
+        <td><button class="btn g sm" onclick="delSelector('${x.user_id}','${x.name.replace(/'/g,'')}')">ลบ</button></td></tr>`).join(''));
+  }catch(e){ $('#selTbl').innerHTML=''; }
+}
+async function addSelector(){
+  try{
+    const r=await api('saveSelector',{selector:{username:$('#sel_user').value.trim(),
+      pass_code:$('#sel_pass').value.trim(), name:$('#sel_name').value.trim(), scope:$('#sel_cat').value}});
+    $('#selMsg').innerHTML=`<div class="note g"><span>🔑</span><div>เพิ่มกรรมการคัดเลือกแล้ว ·
+      ชื่อผู้ใช้ <b>${r.username}</b> · รหัสผ่าน <b>${r.pass_code}</b>
+      <div class="hint" style="margin-top:4px">กรุณาคัดลอกรหัสผ่านนี้ส่งให้เจ้าตัว — ระบบจะไม่แสดงอีก</div></div></div>`;
+    $('#sel_user').value=''; $('#sel_pass').value=''; $('#sel_name').value='';
+    renderJudgeApp();
+  }catch(e){ $('#selMsg').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+}
+async function delSelector(id,name){
+  if(!confirm('ลบบัญชีกรรมการคัดเลือก '+name+' ?')) return;
+  try{ await api('deleteSelector',{user_id:id}); renderJudgeApp(); }catch(e){ alert(e.message); }
+}
+
 /* ---------- ผล / เหรียญ / ตาราง ---------- */
 function renderResults(){}
 function renderMedals(){}
@@ -3752,7 +4310,7 @@ async function doLogin(){
     if(ME.role==='group_admin'&&ME.scope) SCOPE=ME.scope;
     LS.setItem(K.scope,SCOPE);
     closeLogin(); VIEW='admin'; LS.setItem(K.view,'admin');
-    applyScope(); renderAll(); go('dash');
+    applyScope(); renderAll(); go(ME.role==='selector'?'judgeapp':'dash');
   }catch(e){ $('#lgErr').style.display='flex'; $('#lgErr').innerHTML='<span>⚠️</span><div>'+e.message+'</div>'; }
 }
 
