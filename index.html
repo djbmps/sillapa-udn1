@@ -384,7 +384,7 @@ body[data-view="admin"] .utilbar{display:none}
       <button class="nv" data-p="entries" data-perm="entries"><i>📝</i>ผู้สมัครแข่งขัน</button>
       <button class="nv" data-p="score" data-role="district_admin,group_admin,head_judge,judge" data-perm="score"><i>✍️</i>ให้คะแนน</button>
       <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ประกาศผล</button>
-      <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i>โอนตัวแทนเข้าเขต</button>
+      <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
       <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
       <button class="nv" data-p="certadm" data-role="district_admin,group_admin" data-perm="certadm"><i>🎖️</i>ระบบเกียรติบัตร</button>
       <button class="nv" data-p="cards" data-role="district_admin,group_admin,school" data-perm="cards"><i>🪪</i>บัตรประจำตัว</button>
@@ -573,19 +573,56 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- โอนตัวแทน ---------- -->
     <section class="page" id="p-promote">
-      <div class="hd"><div><h2>โอนตัวแทนเข้าระดับเขต</h2><p>ทีมที่ติดโควตาของกลุ่มจะถูกสร้างเป็นผู้สมัครระดับเขต พร้อมป้ายบอกกลุ่มต้นทางและอันดับ</p></div></div>
-      <div class="card" style="margin-bottom:13px"><div class="cb row">
-        <div class="fld" style="margin:0"><label>รายการแข่งขัน</label>
-          <select id="prAct" style="min-width:320px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select></div>
-        <div class="fld" style="margin:0"><label>โควตาต่อกลุ่ม</label><input id="prQuota" type="number" value="1" min="1" style="width:90px"></div>
-        <div class="fld" style="margin:0"><label>เกณฑ์ขั้นต่ำ</label>
-          <select id="prMin" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
-            <option>ส่งขึ้นทุกกรณี</option><option>ต้องได้เหรียญทองแดงขึ้นไป</option><option>ต้องได้เหรียญทองเท่านั้น</option></select></div>
-        <span class="sp"></span>
-        <button class="btn" onclick="doPromote()">โอนตัวแทนขึ้นระดับเขต</button>
-      </div></div>
-      <div class="note w" style="margin-bottom:13px"><span>⚖️</span><div><b>คะแนนเท่ากันที่เส้นโควตา ระบบจะส่งขึ้นทั้งคู่</b> — เป็นไปตามกฎ “เท่ากันได้เท่ากัน” ให้เผื่อสนามและเวลาระดับเขตไว้ด้วย</div></div>
-      <div class="card"><div class="cb" style="padding:0;overflow:auto"><table id="prTbl"></table></div></div>
+      <div class="hd"><div><h2 id="prTitle">โอนตัวแทนเข้าระดับเขต</h2><p id="prSub"></p></div></div>
+
+      <!-- ===== โหมดกลุ่มโรงเรียน — เป็นคนโอนตัวแทน ===== -->
+      <div id="prGroupBox">
+        <div id="prWin" style="margin-bottom:13px"></div>
+        <div class="card" style="margin-bottom:13px"><div class="cb row">
+          <div class="fld" style="margin:0"><label>รายการแข่งขัน</label>
+            <select id="prAct" style="min-width:320px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select></div>
+          <div class="fld" style="margin:0"><label>โควตาต่อกลุ่ม</label><input id="prQuota" type="number" value="1" min="1" style="width:90px"></div>
+          <div class="fld" style="margin:0"><label>เกณฑ์ขั้นต่ำ</label>
+            <select id="prMin" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
+              <option>ส่งขึ้นทุกกรณี</option><option>ต้องได้เหรียญทองแดงขึ้นไป</option><option>ต้องได้เหรียญทองเท่านั้น</option></select></div>
+          <span class="sp"></span>
+          <button class="btn" id="prBtn" onclick="doPromote()">โอนตัวแทนขึ้นระดับเขต</button>
+        </div></div>
+        <div class="note w" style="margin-bottom:13px"><span>⚖️</span><div><b>คะแนนเท่ากันที่เส้นโควตา ระบบจะส่งขึ้นทั้งคู่</b> — เป็นไปตามกฎ “เท่ากันได้เท่ากัน” ให้เผื่อสนามและเวลาระดับเขตไว้ด้วย
+          <div class="hint" style="margin-top:6px">ถ้าโอนผิดรายการหรือต้องแก้ไข แจ้งเขตให้รีเซ็ตการโอนของกลุ่ม แล้วโอนใหม่ได้</div></div></div>
+        <div class="card"><div class="ch"><h3>ตัวแทนที่โอนไปแล้ว</h3><span class="sp"></span><span class="hint" id="prMySum"></span></div>
+          <div class="cb" style="padding:0;overflow:auto"><table id="prTbl"></table></div></div>
+      </div>
+
+      <!-- ===== โหมดเขตพื้นที่ — ติดตาม รีเซ็ต เปิด-ปิดช่วงเวลา ===== -->
+      <div id="prDistBox" style="display:none">
+        <div class="card" style="margin-bottom:14px">
+          <div class="ch"><h3>ช่วงเวลารับโอนตัวแทน</h3><span class="sp"></span><span id="prWinState"></span></div>
+          <div class="cb">
+            <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+              <input type="checkbox" id="pw_open" style="width:20px;height:20px">
+              เปิดให้กลุ่มโรงเรียนโอนตัวแทนเข้าเขต</label>
+            <div class="row" style="margin-top:12px">
+              <div class="fld" style="margin:0"><label>เปิดรับตั้งแต่วันที่</label><input id="pw_from" placeholder="2569-10-20" style="width:150px"></div>
+              <div class="fld" style="margin:0"><label>ถึงวันที่</label><input id="pw_to" placeholder="2569-10-31" style="width:150px"></div>
+              <div class="fld" style="margin:0;flex:1;min-width:240px"><label>ข้อความที่แสดงเมื่อยังปิดอยู่</label>
+                <input id="pw_note" placeholder="เช่น จะเปิดรับโอนตัวแทนวันที่ 20 ต.ค. 2569"></div>
+            </div>
+            <div class="row" style="margin-top:12px"><span class="hint" style="flex:1">
+              วันที่ใช้รูปแบบ พ.ศ. ปี-เดือน-วัน เช่น 2569-10-20 · เว้นว่างไว้ = ไม่จำกัดวัน</span>
+              <button class="btn" onclick="savePromoteWin()">บันทึกช่วงเวลา</button></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:14px">
+          <div class="ch"><h3>การโอนของแต่ละกลุ่ม</h3><span class="sp"></span><span class="hint" id="prSum"></span></div>
+          <div class="cb" style="padding:0;overflow:auto"><table id="prBoard"></table></div></div>
+
+        <div class="card"><div class="ch"><h3>รายการที่โอนเข้ามา</h3><span class="sp"></span>
+          <select id="prFilter" onchange="drawPromoteDetail()"
+                  style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select></div>
+          <div class="cb" style="padding:0;overflow:auto"><table id="prDetail"></table></div></div>
+      </div>
     </section>
 
     <!-- ---------- พิมพ์เอกสาร ---------- -->
@@ -1154,6 +1191,18 @@ const MEM = JSON.parse(LS.getItem(K.demo)||'null') || {
      body:'ให้ทุกกลุ่มโรงเรียนดำเนินการแข่งขันรอบคัดเลือกให้แล้วเสร็จ และส่งตัวแทนเข้าแข่งขันระดับเขตพื้นที่ภายในวันที่ 15 ตุลาคม 2569',image:''}]
 };
 function memSave(){ LS.setItem(K.demo, JSON.stringify(MEM)); }
+/** ช่วงเวลารับโอนตัวแทน — โหมดตัวอย่าง */
+function demoBeToday(){ const d=new Date();
+  return (d.getFullYear()+543)+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function demoPromoteWin(){
+  const c=MEM.promote_win||{};
+  const flag=String(c.flag||'Y').toUpperCase(), from=c.open_at||'', to=c.close_at||'', note=c.open_note||'';
+  const today=demoBeToday(); let open=(flag==='Y'), why='';
+  if(!open) why=note||'เขตยังไม่เปิดระบบรับโอนตัวแทน';
+  else if(from && today<from){ open=false; why='จะเปิดให้โอนตัวแทนวันที่ '+from; }
+  else if(to && today>to){ open=false; why='ปิดรับโอนตัวแทนแล้วเมื่อ '+to; }
+  return {open:open,note:why,flag:flag,open_at:from,close_at:to,open_note:note,today:today};
+}
 const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'actedit',
   renameCategory:'actedit',saveCriteriaBulk:'actedit',duplicateActivity:'actedit',
   saveEntry:'entries',saveScores:'score',computeResults:'publish',publishResults:'publish',
@@ -1161,7 +1210,7 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveStaff:'certadm',deleteStaff:'certadm',saveCertTemplate:'certadm',saveCertConfig:'certadm',
   saveCardTemplate:'cards',savePersonPhoto:'cards',saveNews:'newsmgr',deleteNews:'newsmgr',
   saveDocument:'newsmgr',deleteDocument:'newsmgr',saveSiteSettings:'site',savePermConfig:'perm',
-  printPack:'print'};
+  printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote'};
 const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin'];
 
 function demoApi(action,p){
@@ -1563,6 +1612,8 @@ function demoApi(action,p){
         total:r.total,medal:r.medal,rank:r.rank,status:'ประกาศแล้ว',published_at:nowStr()}));
       memSave(); return {published:c.rows.length}; }
     case 'promoteToDistrict':{
+      if(ME&&ME.role==='group_admin'){ const w=demoPromoteWin();
+        if(!w.open) throw new Error('ยังไม่เปิดให้โอนตัวแทนเข้าเขต — '+w.note); }
       const res=MEM.results.filter(r=>r.act_id===p.act_id).sort((a,b)=>a.rank-b.rank);
       if(!res.length) throw new Error('รายการนี้ยังไม่ประกาศผลของกลุ่ม');
       const need=p.min_medal.includes('ทองเท่านั้น')?3:p.min_medal.includes('ทองแดง')?1:0;
@@ -1582,6 +1633,48 @@ function demoApi(action,p){
           rank:r.rank,medal:r.medal,total:r.total,status:'โอนแล้ว',transferred_at:nowStr(),district_entry_id:nid});
         n++; });
       memSave(); return {promoted:n,quota:p.quota}; }
+    case 'promotionBoard':{
+      const w=demoPromoteWin();
+      const scope = (ME&&ME.role==='group_admin') ? ME.scope : (p.group==='ALL'?'':(p.group||''));
+      const pro=(MEM.promotions||[]).filter(r=>!scope||r.from_group===scope);
+      const G={}, A={};
+      pro.forEach(r=>{
+        const src=MEM.entries.find(e=>e.entry_id===r.entry_id)||{};
+        const sc=S.find(x=>String(x.smis)===String(src.school_smis))||{};
+        const a=MEM.activities.find(x=>x.act_id===r.act_id)||{};
+        const g=r.from_group, k=g+'|'+r.act_id;
+        G[g]=G[g]||{group_code:g,group_name:groupName(g),acts:{},teams:0,withdrawn:0,last_at:''};
+        G[g].teams++; G[g].acts[r.act_id]=1;
+        if(r.status==='สละสิทธิ์') G[g].withdrawn++;
+        if(String(r.transferred_at)>G[g].last_at) G[g].last_at=String(r.transferred_at);
+        A[k]=A[k]||{group_code:g,group_name:groupName(g),act_id:r.act_id,act_name:a.act_name||r.act_id,
+                    level:a.level||'',teams:[],last_at:''};
+        A[k].teams.push({promotion_id:r.id,entry_id:r.entry_id,district_entry_id:r.district_entry_id,
+          school:sc.school_name||src.school_smis||'',rank:r.rank,medal:r.medal,total:r.total,
+          status:r.status,transferred_at:r.transferred_at});
+        if(String(r.transferred_at)>A[k].last_at) A[k].last_at=String(r.transferred_at);
+      });
+      const gs=Object.values(G).map(o=>{o.act_count=Object.keys(o.acts).length; delete o.acts; return o;});
+      return {window:w, groups:gs, items:Object.values(A), total_teams:pro.length,
+              group_total:(DB.groups||[]).length, my_scope:scope, role:ME?ME.role:''}; }
+    case 'resetPromotion':{
+      if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
+      const g=p.group, act=p.act_id||'';
+      const hit=(MEM.promotions||[]).filter(r=>r.from_group===g&&(!act||r.act_id===act));
+      if(!hit.length) throw new Error('กลุ่มนี้ยังไม่มีรายการที่โอนเข้าเขต');
+      const ids=hit.map(r=>r.district_entry_id).filter(Boolean);
+      MEM.entries=MEM.entries.filter(e=>ids.indexOf(e.entry_id)<0);
+      MEM.students=MEM.students.filter(x=>ids.indexOf(x.entry_id)<0);
+      MEM.coaches=(MEM.coaches||[]).filter(x=>ids.indexOf(x.entry_id)<0);
+      MEM.scores=MEM.scores.filter(x=>ids.indexOf(x.entry_id)<0);
+      MEM.results=MEM.results.filter(x=>ids.indexOf(x.entry_id)<0);
+      MEM.promotions=MEM.promotions.filter(r=>!(r.from_group===g&&(!act||r.act_id===act)));
+      memSave(); return {teams:hit.length,entries:ids.length}; }
+    case 'savePromoteWindow':{
+      if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
+      MEM.promote_win={flag:p.promote_open||'Y',open_at:p.promote_open_at||'',
+                       close_at:p.promote_close_at||'',open_note:p.promote_open_note||''};
+      memSave(); return demoPromoteWin(); }
     case 'publicResults':{
       const rows=MEM.results.map(r=>{ const e=MEM.entries.find(x=>x.entry_id===r.entry_id)||{};
         const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
@@ -3410,23 +3503,125 @@ async function publishAct(){
 }
 
 /* ---------- โอนตัวแทน ---------- */
-function renderPromote(){
-  Promise.all([api('listEntries',{group:'DISTRICT'}), api('publicResults',{})]).then(([ent,pub])=>{
-    const S=schoolsOf('ALL'), acts=DB.activities||[];
-    const byEntry={}; pub.results.forEach(r=>{ byEntry[r.act_id+'|'+r.school] = r; });
-    tbl($('#prTbl'),['รายการแข่งขัน','โรงเรียน','มาจากกลุ่ม','อันดับในกลุ่ม','เหรียญ/คะแนนรอบกลุ่ม','สถานะ'],
-      ent.map(e=>{
-        const sc=S.find(x=>String(x.smis)===String(e.school_smis))||{};
-        const a=acts.find(x=>x.act_id===e.act_id)||{};
-        const r=byEntry[e.act_id+'|'+sc.school_name]||{};
-        return `<tr><td><b>${a.act_name||e.act_id}</b> <span class="hint">${a.level||''}</span></td>
-          <td>${cleanName(sc.school_name||e.school_smis)}</td>
-          <td>${groupName(e.from_group)}</td><td class="num">${e.from_rank||''}</td>
-          <td>${r.medal? r.medal+' · '+r.total : '-'}</td>
-          <td><span class="pill ${e.status==='สละสิทธิ์'?'b':'ok'}">${e.status==='สละสิทธิ์'?'สละสิทธิ์':'โอนเข้าเขตแล้ว'}</span></td></tr>`;
-      }).join(''));
-  });
+let PRB=null;
+/** หน้าตัวแทนเข้าเขต — กลุ่มเป็นคนโอน · เขตติดตาม รีเซ็ต และเปิด-ปิดช่วงเวลา */
+async function renderPromote(){
+  const grp = !!(ME && ME.role==='group_admin');
+  const gb=$('#prGroupBox'), db=$('#prDistBox');
+  if(!gb||!db) return;
+  gb.style.display = grp?'':'none';
+  db.style.display = grp?'none':'';
+  $('#prTitle').textContent = grp ? 'โอนตัวแทนเข้าระดับเขต'
+                                  : 'ตัวแทนเข้าเขต — ติดตามการโอนของกลุ่ม';
+  $('#prSub').textContent = grp
+    ? 'ทีมที่ติดโควตาของกลุ่มจะถูกส่งขึ้นเป็นผู้สมัครระดับเขต พร้อมป้ายบอกกลุ่มต้นทางและอันดับ'
+    : 'เขตเห็นข้อมูลที่กลุ่มโอนเข้ามา เปิด-ปิดช่วงเวลารับโอน และรีเซ็ตให้กลุ่มโอนใหม่ได้';
+  if(!ME) return;
+  try{
+    PRB = await api('promotionBoard', grp?{}:{group: SCOPE==='ALL'?'':SCOPE});
+  }catch(e){ PRB=null; return; }
+  grp ? drawPromoteGroup() : drawPromoteDistrict();
 }
+
+function prWinPill(w){
+  return w.open ? '<span class="pill ok">เปิดรับโอนอยู่</span>'
+                : '<span class="pill b">ปิดรับโอน</span>';
+}
+function prWinRange(w){
+  if(w.open_at && w.close_at) return w.open_at+' → '+w.close_at;
+  if(w.open_at) return 'ตั้งแต่ '+w.open_at;
+  if(w.close_at) return 'ถึง '+w.close_at;
+  return 'ไม่จำกัดวัน';
+}
+
+/* ---------- โหมดกลุ่ม ---------- */
+function drawPromoteGroup(){
+  const w=PRB.window;
+  $('#prWin').innerHTML = w.open
+    ? `<div class="note g"><span>✅</span><div><b>เขตเปิดระบบรับโอนตัวแทนแล้ว</b> · ช่วงเวลา ${prWinRange(w)}</div></div>`
+    : `<div class="note w"><span>⏸️</span><div><b>ยังโอนตัวแทนไม่ได้</b> — ${w.note||'เขตยังไม่เปิดระบบรับโอน'}</div></div>`;
+  const b=$('#prBtn'); if(b){ b.disabled=!w.open; b.style.opacity=w.open?'':'.5'; b.style.cursor=w.open?'':'not-allowed'; }
+
+  const items=PRB.items||[];
+  $('#prMySum').textContent = items.length
+    ? `โอนแล้ว ${items.length} รายการ · ${PRB.total_teams} ทีม` : '';
+  const rows=[];
+  items.forEach(it=>it.teams.forEach(t=>{
+    rows.push(`<tr><td><b>${it.act_name}</b> <span class="hint">${it.level||''}</span></td>
+      <td>${cleanName(t.school)}</td><td class="num">${t.rank||''}</td>
+      <td>${t.medal? t.medal+' · '+t.total : '-'}</td>
+      <td class="hint">${t.transferred_at||''}</td>
+      <td><span class="pill ${t.status==='สละสิทธิ์'?'b':'ok'}">${t.status==='สละสิทธิ์'?'สละสิทธิ์':'โอนเข้าเขตแล้ว'}</span></td></tr>`);
+  }));
+  tbl($('#prTbl'),['รายการแข่งขัน','โรงเรียน','อันดับในกลุ่ม','เหรียญ/คะแนนรอบกลุ่ม','โอนเมื่อ','สถานะ'],rows.join(''));
+}
+
+/* ---------- โหมดเขต ---------- */
+function drawPromoteDistrict(){
+  const w=PRB.window;
+  $('#prWinState').innerHTML = prWinPill(w)+' <span class="hint">'+prWinRange(w)+'</span>';
+  $('#pw_open').checked = (w.flag==='Y');
+  $('#pw_from').value = w.open_at||'';
+  $('#pw_to').value   = w.close_at||'';
+  $('#pw_note').value = w.open_note||'';
+
+  const done={}; (PRB.groups||[]).forEach(g=>done[g.group_code]=g);
+  const list = (SCOPE==='ALL') ? (DB.groups||[]).map(g=>done[g.group_code]||
+      {group_code:g.group_code,group_name:g.group_name,act_count:0,teams:0,withdrawn:0,last_at:''})
+    : (PRB.groups||[]);
+  const sent=list.filter(g=>g.teams>0).length;
+  $('#prSum').textContent = `โอนแล้ว ${sent}/${list.length} กลุ่ม · รวม ${PRB.total_teams} ทีม`;
+  tbl($('#prBoard'),['กลุ่มโรงเรียน','รายการที่โอน','จำนวนทีม','สละสิทธิ์','โอนล่าสุด','สถานะ','จัดการ'],
+    list.map(g=>`<tr><td><b>${g.group_name||g.group_code}</b></td>
+      <td class="num">${g.act_count||0}</td><td class="num">${g.teams||0}</td>
+      <td class="num">${g.withdrawn||0}</td><td class="hint">${g.last_at||'-'}</td>
+      <td>${g.teams? '<span class="pill ok">โอนแล้ว</span>':'<span class="pill w">ยังไม่โอน</span>'}</td>
+      <td>${g.teams? `<button class="btn g sm" onclick="resetPromote('${g.group_code}','','${(g.group_name||g.group_code).replace(/'/g,"")}')">รีเซ็ตทั้งกลุ่ม</button>`:'<span class="hint">-</span>'}</td></tr>`).join(''));
+
+  const f=$('#prFilter'), cur=f.value;
+  const gl=[...new Set((PRB.items||[]).map(i=>i.group_code))];
+  f.innerHTML = '<option value="">ทุกกลุ่ม</option>'+
+    gl.map(c=>`<option value="${c}">${groupName(c)}</option>`).join('');
+  if(cur && gl.indexOf(cur)>=0) f.value=cur;
+  drawPromoteDetail();
+}
+
+function drawPromoteDetail(){
+  if(!PRB) return;
+  const g=$('#prFilter').value;
+  const items=(PRB.items||[]).filter(i=>!g||i.group_code===g);
+  tbl($('#prDetail'),['กลุ่ม','รายการแข่งขัน','โรงเรียนที่เป็นตัวแทน','โอนเมื่อ','จัดการ'],
+    items.map(it=>`<tr><td>${it.group_name||it.group_code}</td>
+      <td><b>${it.act_name}</b> <span class="hint">${it.level||''}</span></td>
+      <td>${it.teams.map(t=>`${cleanName(t.school)} <span class="hint">(อันดับ ${t.rank}${t.medal?' · '+t.medal:''})</span>`+
+        (t.status==='สละสิทธิ์'?' <span class="pill b">สละสิทธิ์</span>':'')).join('<br>')}</td>
+      <td class="hint">${it.last_at||''}</td>
+      <td><button class="btn g sm" onclick="resetPromote('${it.group_code}','${it.act_id}','${(it.act_name||'').replace(/'/g,"")}')">รีเซ็ตรายการนี้</button></td></tr>`).join(''));
+}
+
+async function savePromoteWin(){
+  try{
+    await api('savePromoteWindow',{
+      promote_open: $('#pw_open').checked?'Y':'N',
+      promote_open_at: $('#pw_from').value.trim(),
+      promote_close_at: $('#pw_to').value.trim(),
+      promote_open_note: $('#pw_note').value.trim()});
+    alert('บันทึกช่วงเวลารับโอนตัวแทนแล้ว');
+    renderPromote();
+  }catch(e){ alert(e.message); }
+}
+
+async function resetPromote(group, actId, label){
+  const what = actId ? 'รายการ “'+label+'” ของ'+groupName(group)
+                     : 'ทุกรายการของ '+label;
+  if(!confirm('รีเซ็ตการโอน'+what+'?\n\nระบบจะถอนผู้สมัครระดับเขตที่เกิดจากการโอนนี้ออก แล้วให้กลุ่มโอนใหม่\nผลการแข่งขันรอบกลุ่มยังอยู่ครบเหมือนเดิม')) return;
+  try{
+    const r=await api('resetPromotion',{group:group, act_id:actId||''});
+    alert('รีเซ็ตแล้ว '+(r.teams||0)+' ทีม — กลุ่มโอนใหม่ได้ทันที');
+    renderPromote();
+  }catch(e){ alert(e.message); }
+}
+
 /** ชื่อโรงเรียนบางแห่งมีหมายเหตุเรียนรวมต่อท้ายด้วย # */
 function cleanName(n){
   const s=String(n||''); const i=s.indexOf('#');
@@ -3434,6 +3629,7 @@ function cleanName(n){
 }
 async function doPromote(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  if(ME.role!=='group_admin') return alert('การโอนตัวแทนเป็นงานของผู้ดูแลกลุ่มโรงเรียน — เขตมีหน้าที่ติดตามและรีเซ็ตให้กลุ่มโอนใหม่');
   if(SCOPE==='ALL') return alert('เลือกกลุ่มโรงเรียนที่ต้องการโอนตัวแทนก่อน (มุมขวาบน)');
   try{ const r=await api('promoteToDistrict',{act_id:$('#prAct').value, group:SCOPE,
         quota:$('#prQuota').value, min_medal:$('#prMin').value});
