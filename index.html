@@ -441,6 +441,12 @@ body[data-view="admin"] .utilbar{display:none}
         <h2 id="hTitle">ระดับเขตพื้นที่การศึกษา · สพป.อุดรธานี เขต 1</h2>
         <p>ปีการศึกษา 2569 — ติดตามรายการแข่งขัน ตารางแข่ง ผลการแข่งขัน และดาวน์โหลดเอกสารได้ที่นี่</p>
       </div>
+      <div id="homeNewsWrap" style="margin-top:18px">
+        <div style="display:flex;align-items:center;gap:10px;margin:0 0 12px">
+          <h3 style="font-size:17px">ข่าวประชาสัมพันธ์</h3><span class="sp" style="flex:1"></span>
+          <button class="btn g sm" onclick="go('news')">ดูทั้งหมด →</button></div>
+        <div id="homeNews"></div>
+      </div>
       <div class="grid g4" style="margin-top:16px" id="homeStats"></div>
       <div class="grid g2" style="margin-top:16px">
         <div class="card"><div class="ch"><h3>กลุ่มโรงเรียนในเขต</h3><span class="sp"></span><button class="btn g sm" id="homeGroupsMore">ดูทั้งหมด</button></div>
@@ -448,10 +454,6 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="card"><div class="ch"><h3>ตารางเหรียญ</h3><span class="sp"></span><span class="pill i" id="rankMethodTag">เรียงตามลำดับเหรียญ</span></div>
           <div class="cb" style="padding:0;max-height:340px;overflow:auto"><table id="homeMedals"></table></div></div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;margin:22px 0 12px">
-        <h3 style="font-size:17px">ข่าวประชาสัมพันธ์</h3><span class="sp" style="flex:1"></span>
-        <button class="btn g sm" onclick="go('news')">ดูทั้งหมด →</button></div>
-      <div id="homeNews"></div>
     </section>
 
     <!-- ---------- รายการแข่งขัน ---------- -->
@@ -2584,9 +2586,15 @@ function renderHome(){
   }).catch(()=>{});
   api('listNews',{scope:SCOPE==='ALL'?'':SCOPE}).then(rows=>{
     window.__NEWS=rows;
-    $('#homeNews').innerHTML = rows.length? rows.slice(0,3).map((n,i)=>newsCard(n,i)).join('')
-      : '<div class="note i"><span>📭</span><div>ยังไม่มีข่าวประชาสัมพันธ์</div></div>';
-  }).catch(()=>{});
+    const wrap=$('#homeNewsWrap'), canPost = ME && (ME.role==='district_admin'||ME.role==='group_admin');
+    /* ไม่มีข่าว: ผู้ชมทั่วไปไม่ต้องเห็นกล่องว่าง ส่วนผู้ดูแลเห็นทางลัดไปเพิ่มข่าว */
+    if(!rows.length && !canPost){ if(wrap) wrap.style.display='none'; return; }
+    if(wrap) wrap.style.display='';
+    $('#homeNews').innerHTML = rows.length
+      ? rows.slice(0,3).map((n,i)=>newsCard(n,i)).join('')
+      : `<div class="note i"><span>📭</span><div>ยังไม่มีข่าวประชาสัมพันธ์ — ข่าวที่เพิ่มจะขึ้นตรงนี้เป็นอันดับแรกของหน้าแรก
+         <div style="margin-top:9px"><button class="btn sm" onclick="go('newsmgr')">📣 ไปเพิ่มข่าว</button></div></div></div>`;
+  }).catch(()=>{ const w=$('#homeNewsWrap'); if(w) w.style.display='none'; });
 }
 
 function renderActs(){
