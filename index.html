@@ -380,19 +380,22 @@ body[data-view="admin"] .utilbar{display:none}
     </div>
     <div class="ng" id="navAdmin"><span>งานของผู้ดูแล</span>
       <button class="nv" data-p="dash"><i>📊</i>แดชบอร์ด</button>
-      <button class="nv" data-p="actedit" data-role="district_admin"><i>⚙️</i>จัดการรายการ &amp; เกณฑ์</button>
-      <button class="nv" data-p="entries"><i>📝</i>ผู้สมัครแข่งขัน</button>
-      <button class="nv" data-p="score" data-role="district_admin,group_admin,head_judge,judge"><i>✍️</i>ให้คะแนน</button>
-      <button class="nv" data-p="publish" data-role="district_admin,group_admin"><i>✅</i>ประกาศผล</button>
-      <button class="nv" data-p="promote" data-role="district_admin,group_admin"><i>⬆️</i>โอนตัวแทนเข้าเขต</button>
-      <button class="nv" data-p="judges" data-role="district_admin,group_admin"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
-      <button class="nv" data-p="certadm" data-role="district_admin,group_admin"><i>🎖️</i>ระบบเกียรติบัตร</button>
-      <button class="nv" data-p="cards" data-role="district_admin,group_admin,school"><i>🪪</i>บัตรประจำตัว</button>
-      <button class="nv" data-p="perm" data-role="district_admin,group_admin"><i>🔐</i>เปิด-ปิดระบบ &amp; สิทธิ์การพิมพ์</button>
-      <button class="nv" data-p="season" data-role="district_admin,group_admin"><i>🗄️</i>ปีการศึกษา &amp; สำรอง/ล้างข้อมูล</button>
-      <button class="nv" data-p="newsmgr" data-role="district_admin,group_admin"><i>📣</i>ประชาสัมพันธ์</button>
-      <button class="nv" data-p="site" data-role="district_admin,group_admin"><i>🖼️</i>หน้าเว็บ &amp; แบนเนอร์</button>
-      <button class="nv" data-p="print"><i>🖨️</i>พิมพ์เอกสาร</button>
+      <button class="nv" data-p="actedit" data-role="district_admin" data-perm="actedit"><i>⚙️</i>จัดการรายการ &amp; เกณฑ์</button>
+      <button class="nv" data-p="entries" data-perm="entries"><i>📝</i>ผู้สมัครแข่งขัน</button>
+      <button class="nv" data-p="score" data-role="district_admin,group_admin,head_judge,judge" data-perm="score"><i>✍️</i>ให้คะแนน</button>
+      <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ประกาศผล</button>
+      <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i>โอนตัวแทนเข้าเขต</button>
+      <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
+      <button class="nv" data-p="certadm" data-role="district_admin,group_admin" data-perm="certadm"><i>🎖️</i>ระบบเกียรติบัตร</button>
+      <button class="nv" data-p="cards" data-role="district_admin,group_admin,school" data-perm="cards"><i>🪪</i>บัตรประจำตัว</button>
+      <button class="nv" data-p="perm" data-role="district_admin,group_admin" data-perm="perm"><i>🔐</i>เปิด-ปิดระบบ &amp; สิทธิ์การพิมพ์</button>
+      <button class="nv" data-p="newsmgr" data-role="district_admin,group_admin" data-perm="newsmgr"><i>📣</i>ประชาสัมพันธ์</button>
+      <button class="nv" data-p="site" data-role="district_admin,group_admin" data-perm="site"><i>🖼️</i>หน้าเว็บ &amp; แบนเนอร์</button>
+      <button class="nv" data-p="print" data-perm="print"><i>🖨️</i>พิมพ์เอกสาร</button>
+    </div>
+    <div class="ng" id="navOwner"><span>เฉพาะผู้ดูแลหลัก</span>
+      <button class="nv" data-p="admins" data-role="district_admin,group_admin" data-owner="1"><i>👥</i>จัดการผู้ดูแล</button>
+      <button class="nv" data-p="season" data-role="district_admin,group_admin" data-owner="1"><i>🗄️</i>ปีการศึกษา &amp; สำรอง/ล้างข้อมูล</button>
     </div>
     <div class="ng" id="navDistrict"><span>เฉพาะระดับเขต</span>
       <button class="nv" data-p="groups"><i>🏘️</i>กลุ่มโรงเรียน 20 กลุ่ม</button>
@@ -800,6 +803,61 @@ body[data-view="admin"] .utilbar{display:none}
           <button class="btn g" onclick="go('certadm')">ไปหน้าระบบเกียรติบัตร →</button></div></div></div>
     </section>
 
+    <!-- ---------- จัดการผู้ดูแล (เฉพาะผู้ดูแลหลัก) ---------- -->
+    <section class="page" id="p-admins">
+      <div class="hd"><div><h2>จัดการผู้ดูแล</h2><p id="adSub"></p></div>
+        <span class="sp"></span><button class="btn" onclick="newAdmin()">+ เพิ่มผู้ดูแล</button></div>
+
+      <div class="note i" style="margin-bottom:12px"><span>🔑</span><div>
+        <b>ผู้ดูแลหลัก</b> ทำได้ทุกอย่าง รวมถึงจัดการผู้ใช้ ล้างข้อมูล และเปลี่ยนปีการศึกษา ·
+        <b>ผู้ดูแลรอง</b> ทำได้เฉพาะเมนูที่เปิดสิทธิ์ให้ และแตะเรื่องที่สงวนไว้ไม่ได้
+        <div class="hint" style="margin-top:6px">ต้องมีผู้ดูแลหลักอย่างน้อย 1 คนเสมอ ระบบจะกันไม่ให้ถอดคนสุดท้ายออก</div></div></div>
+
+      <div class="card"><div class="ch"><h3>รายชื่อผู้ดูแล</h3><span class="sp"></span>
+        <input id="ad_q" placeholder="ค้นชื่อ / ชื่อผู้ใช้…" oninput="drawAdmins()"
+               style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
+        <div class="cb" style="padding:0"><div style="overflow:auto"><table id="adTbl"></table></div></div></div>
+
+      <div class="card" id="adForm" style="display:none;margin-top:14px">
+        <div class="ch"><h3 id="adFormTitle">เพิ่มผู้ดูแล</h3></div>
+        <div class="cb">
+          <div class="grid g3">
+            <div class="fld"><label>ชื่อ-สกุล *</label><input id="ad_name" placeholder="เช่น นางสาวสมหญิง ใจดี"></div>
+            <div class="fld"><label>ชื่อผู้ใช้ *</label><input id="ad_user" placeholder="เช่น admin2"></div>
+            <div class="fld"><label>อีเมล</label><input id="ad_email"></div>
+          </div>
+          <div class="grid g3">
+            <div class="fld" id="ad_rolewrap"><label>ระดับ</label>
+              <select id="ad_role" onchange="adRoleChange()">
+                <option value="district_admin">ผู้ดูแลระดับเขต</option>
+                <option value="group_admin">ผู้ดูแลระดับกลุ่มโรงเรียน</option></select></div>
+            <div class="fld" id="ad_scopewrap" style="display:none"><label>กลุ่มโรงเรียน</label>
+              <select id="ad_scope"></select></div>
+            <div class="fld"><label>สถานะ</label><select id="ad_status">
+              <option>ใช้งาน</option><option>ระงับ</option></select></div>
+          </div>
+
+          <div class="fld"><label>ประเภทผู้ดูแล</label>
+            <select id="ad_owner" onchange="adOwnerChange()">
+              <option value="N">ผู้ดูแลรอง — ทำได้เฉพาะเมนูที่เปิดสิทธิ์ให้</option>
+              <option value="Y">ผู้ดูแลหลัก — ทำได้ทุกอย่าง รวมถึงจัดการผู้ใช้</option></select></div>
+
+          <div id="ad_permbox">
+            <div class="fld"><label>ชุดสิทธิ์สำเร็จรูป</label>
+              <select id="ad_preset" onchange="adPreset()"></select></div>
+            <label style="font-size:12.5px;font-weight:600">เปิด-ปิดรายเมนู (ปรับเพิ่มจากชุดด้านบนได้)</label>
+            <div class="grid g3" id="ad_perms" style="margin-top:8px"></div>
+          </div>
+
+          <div class="fld" style="margin-top:12px"><label id="ad_passlabel">รหัสผ่าน (เว้นว่างให้ระบบสุ่มให้)</label>
+            <input id="ad_pass" placeholder="เว้นว่าง = สุ่มรหัสใหม่ให้"></div>
+
+          <div class="row"><button class="btn" onclick="saveAdminF()">บันทึก</button>
+            <button class="btn g" onclick="document.getElementById('adForm').style.display='none'">ยกเลิก</button></div>
+          <div id="adResult" style="margin-top:12px"></div>
+        </div></div>
+    </section>
+
     <!-- ---------- ปีการศึกษา · สำรองข้อมูล · ล้างผลการแข่งขัน ---------- -->
     <section class="page" id="p-season">
       <div class="hd"><div><h2>ปีการศึกษา · สำรองข้อมูล · ล้างผลการแข่งขัน</h2><p id="ssSub"></p></div></div>
@@ -1096,7 +1154,25 @@ const MEM = JSON.parse(LS.getItem(K.demo)||'null') || {
      body:'ให้ทุกกลุ่มโรงเรียนดำเนินการแข่งขันรอบคัดเลือกให้แล้วเสร็จ และส่งตัวแทนเข้าแข่งขันระดับเขตพื้นที่ภายในวันที่ 15 ตุลาคม 2569',image:''}]
 };
 function memSave(){ LS.setItem(K.demo, JSON.stringify(MEM)); }
+const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'actedit',
+  renameCategory:'actedit',saveCriteriaBulk:'actedit',duplicateActivity:'actedit',
+  saveEntry:'entries',saveScores:'score',computeResults:'publish',publishResults:'publish',
+  promoteToDistrict:'promote',withdrawPromotion:'promote',saveJudge:'judges',deleteJudge:'judges',
+  saveStaff:'certadm',deleteStaff:'certadm',saveCertTemplate:'certadm',saveCertConfig:'certadm',
+  saveCardTemplate:'cards',savePersonPhoto:'cards',saveNews:'newsmgr',deleteNews:'newsmgr',
+  saveDocument:'newsmgr',deleteDocument:'newsmgr',saveSiteSettings:'site',savePermConfig:'perm',
+  printPack:'print'};
+const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin'];
+
 function demoApi(action,p){
+  /* ให้โหมดตัวอย่างกันสิทธิ์แบบเดียวกับ Apps Script จะได้ทดสอบได้ตรงกัน */
+  if(ME && (ME.role==='district_admin' || ME.role==='group_admin')){
+    if(DEMO_OWNER.indexOf(action)>=0 && !ME.own)
+      throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+    const pk=DEMO_PERM[action];
+    if(pk && !canDo(pk))
+      throw new Error('บัญชีของท่านไม่ได้รับสิทธิ์ใน “'+(PERM_LABEL[pk]||pk)+'” — ติดต่อผู้ดูแลหลักให้เปิดสิทธิ์ให้');
+  }
   if(!MEM.activities){ MEM.activities = SEED_ACTS.map(a=>Object.assign({},a));
                        MEM.criteria = SEED_CRIT.map(c=>Object.assign({},c)); memSave(); }
   const G = SEED_GROUPS.map(g=>({group_code:g[1],group_name:g[0],amphoe:g[2],schools:g[3],
@@ -1116,13 +1192,61 @@ function demoApi(action,p){
         documents:(MEM.docs||[]).filter(d=>!p.group||d.scope==='ALL'||d.scope===p.group),
         serverTime:nowStr()}; }
     case 'login':{
+      MEM.admins=MEM.admins||[];
+      const extra=MEM.admins.find(a=>a.username===p.username && String(a.pass_code)===String(p.password)
+                                     && a.status!=='ระงับ');
+      if(extra) return demoToken({uid:extra.user_id,name:extra.name,role:extra.role,scope:extra.scope,
+        own:extra.is_owner==='Y'?1:0,
+        perm:String(extra.perms||'').split(',').map(x=>x.trim()).filter(Boolean)});
       const g=G.find(x=>'admin-'+x.group_code===p.username);
-      if(p.username==='admin'&&p.password==='admin') return demoToken({name:'ผู้ดูแลระบบเขต',role:'district_admin',scope:'ALL'});
-      if(g&&p.password==='admin') return demoToken({name:'ผู้ดูแล '+g.group_name,role:'group_admin',scope:g.group_code});
+      if(p.username==='admin'&&p.password==='admin') return demoToken({uid:'U0001',name:'ผู้ดูแลระบบเขต',role:'district_admin',scope:'ALL',own:1,perm:[]});
+      if(g&&p.password==='admin') return demoToken({uid:'U-'+g.group_code,name:'ผู้ดูแล '+g.group_name,role:'group_admin',scope:g.group_code,own:1,perm:[]});
       const sc=S.find(x=>x.login_user===p.username);
-      if(sc&&p.password==='admin') return demoToken({name:sc.school_name,role:'school',scope:sc.smis});
+      if(sc&&p.password==='admin') return demoToken({uid:'U-'+sc.smis,name:sc.school_name,role:'school',scope:sc.smis,own:0,perm:[]});
       throw new Error('โหมดตัวอย่าง: ใช้ admin / admin-g01 / sc0001 รหัสผ่าน admin');
     }
+    case 'listAdmins':{
+      if(!ME||!ME.own) throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+      MEM.admins=MEM.admins||[];
+      const base=[{user_id:'U0001',username:'admin',name:'ผู้ดูแลระบบเขต',role:'district_admin',
+                   scope:'ALL',email:'',status:'ใช้งาน',is_owner:'Y',perms:'',last_login:''}]
+        .concat(G.map(g=>({user_id:'U-'+g.group_code,username:'admin-'+g.group_code,
+          name:'ผู้ดูแล '+g.group_name,role:'group_admin',scope:g.group_code,email:'',
+          status:'ใช้งาน',is_owner:'Y',perms:'',last_login:''})));
+      let rows=base.concat(MEM.admins);
+      if(ME.role==='group_admin') rows=rows.filter(r=>String(r.scope)===String(ME.scope));
+      return {items:rows, me:ME.uid}; }
+    case 'saveAdmin':{
+      if(!ME||!ME.own) throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+      MEM.admins=MEM.admins||[];
+      const a=Object.assign({},p.admin||{});
+      if(!String(a.name||'').trim()) throw new Error('ต้องกรอกชื่อ-สกุล');
+      if(ME.role==='group_admin'){ a.role='group_admin'; a.scope=ME.scope; }
+      let perms=(a.perms_list||[]);
+      if(a.role==='group_admin') perms=perms.filter(k=>k!=='actedit');
+      const owner=a.is_owner==='Y'?'Y':'N';
+      if(!a.user_id){
+        const un=String(a.username||'').trim();
+        if(!un) throw new Error('ต้องตั้งชื่อผู้ใช้');
+        if(un==='admin'||G.some(g=>'admin-'+g.group_code===un)||MEM.admins.some(x=>x.username===un))
+          throw new Error('ชื่อผู้ใช้ “'+un+'” ถูกใช้แล้ว กรุณาตั้งชื่ออื่น');
+        const pass=String(a.pass_code||'').trim()||Math.random().toString(36).slice(2,10);
+        const row={user_id:'U'+String(9000+MEM.admins.length+1),username:un,pass_code:pass,
+          role:a.role,scope:String(a.scope),name:a.name,email:a.email||'',status:a.status||'ใช้งาน',
+          is_owner:owner,perms:perms.join(','),last_login:''};
+        MEM.admins.push(row); memSave();
+        return {user_id:row.user_id,username:un,pass_code:pass,created:true};
+      }
+      const hit=MEM.admins.find(x=>x.user_id===a.user_id);
+      if(!hit) throw new Error('โหมดตัวอย่าง: แก้ได้เฉพาะบัญชีที่เพิ่มเองในรอบนี้');
+      Object.assign(hit,{name:a.name,email:a.email||'',status:a.status||'ใช้งาน',
+        is_owner:owner,perms:perms.join(',')});
+      if(String(a.pass_code||'').trim()) hit.pass_code=String(a.pass_code).trim();
+      memSave(); return {user_id:a.user_id,updated:true}; }
+    case 'deleteAdmin':{
+      if(!ME||!ME.own) throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+      if(p.user_id===ME.uid) throw new Error('ลบบัญชีของตัวเองไม่ได้');
+      MEM.admins=(MEM.admins||[]).filter(x=>x.user_id!==p.user_id); memSave(); return true; }
     case 'saveActivity':{ needD(); const a=p.activity; a.group_code='ALL';
       if(!a.act_id){ a.act_id='A'+String(MEM.activities.length+1).padStart(3,'0'); MEM.activities.push(a); }
       else Object.assign(MEM.activities.find(x=>x.act_id===a.act_id), a);
@@ -1547,9 +1671,18 @@ function applyScope(){
   $('#hTitle').textContent = g? groupName(SCOPE) : 'ระดับเขตพื้นที่การศึกษา · '+districtName();
   $('#scopeSel').value=SCOPE;
   $('#navAdmin').style.display = ME? '' : 'none';
+  const ow=$('#navOwner'); if(ow) ow.style.display = (ME && ME.own)? '' : 'none';
   $$('.nv[data-role]').forEach(b=>{
-    const ok = ME ? b.dataset.role.split(',').includes(ME.role) : b.dataset.anon==='1';
+    let ok = ME ? b.dataset.role.split(',').includes(ME.role) : b.dataset.anon==='1';
+    if(ok && ME && b.dataset.owner==='1' && !ME.own) ok=false;
     b.style.display = ok ? '' : 'none';
+  });
+  /* ซ่อนเมนูที่บัญชีนี้ไม่ได้รับสิทธิ์ — ต้องตั้งค่าใหม่ทุกครั้ง ไม่งั้นค่าของผู้ใช้คนก่อนจะค้าง */
+  $$('.nv[data-perm]').forEach(b=>{
+    const roleOk = !b.dataset.role || (ME && b.dataset.role.split(',').includes(ME.role));
+    if(!ME || !roleOk){ b.style.display = (ME && !roleOk) ? 'none' : (b.dataset.role?'none':''); return; }
+    if(ME.role!=='district_admin' && ME.role!=='group_admin'){ b.style.display=''; return; }
+    b.style.display = canDo(b.dataset.perm) ? '' : 'none';
   });
   $('#navDistrict').style.display = (!g && (!ME || ME.role==='district_admin')) ? '' : 'none';
   const own = $('#ownerNote');
@@ -1561,8 +1694,25 @@ function applyScope(){
   $('#whoami').textContent = ME? (ME.name+' · '+roleTh(ME.role)) : '';
   $('#authBtn').innerHTML = ME? '<i>🚪</i>ออกจากระบบ' : '<i>🔑</i>เข้าสู่ระบบ';
 }
-function roleTh(r){ return {district_admin:'ผู้ดูแลเขต',group_admin:'ผู้ดูแลกลุ่ม',school:'โรงเรียน',
-  judge:'กรรมการ',head_judge:'ประธานกรรมการ',venue_staff:'เจ้าหน้าที่สนาม'}[r]||r; }
+/** สิทธิ์ของบัญชีที่เข้าสู่ระบบอยู่ — ผู้ดูแลหลักผ่านทุกเมนู */
+function isOwner(){ return !!(ME && ME.own); }
+function canDo(key){ return !!(ME && (ME.own || (ME.perm||[]).indexOf(key)>=0)); }
+const PERM_LABEL={actedit:'จัดการรายการ & เกณฑ์',entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',
+  publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',judges:'ทำเนียบกรรมการตัดสิน',
+  certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',newsmgr:'ประชาสัมพันธ์',
+  site:'หน้าเว็บ & แบนเนอร์',print:'พิมพ์เอกสาร',perm:'เปิด-ปิดสิทธิ์การพิมพ์'};
+const PERM_PRESET={
+  full:   {name:'ผู้ดูแลเต็มสิทธิ์', keys:Object.keys(PERM_LABEL)},
+  reg:    {name:'ฝ่ายทะเบียน / รับสมัคร', keys:['entries','judges','print']},
+  scoring:{name:'ฝ่ายคะแนนและผลการแข่งขัน', keys:['score','publish','promote','print']},
+  pr:     {name:'ฝ่ายประชาสัมพันธ์', keys:['newsmgr','site']},
+  cert:   {name:'ฝ่ายเกียรติบัตร / บัตรประจำตัว', keys:['certadm','cards','print']},
+  view:   {name:'ดูอย่างเดียว (ไม่มีสิทธิ์แก้ไข)', keys:[]}
+};
+
+function roleTh(r){ const t={district_admin:'ผู้ดูแลเขต',group_admin:'ผู้ดูแลกลุ่ม',school:'โรงเรียน',
+  judge:'กรรมการ',head_judge:'ประธานกรรมการ',venue_staff:'เจ้าหน้าที่สนาม'}[r]||r;
+  return (ME && ME.role===r && ME.own && (r==='district_admin'||r==='group_admin')) ? t+'หลัก' : t; }
 
 
 /* ============================ หน้าเว็บสาธารณะ / หลังบ้าน ============================ */
@@ -1572,7 +1722,12 @@ const PUBLIC_PAGES=[['home','หน้าแรก'],['news','ข่าวปร
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','entries','score','publish','promote','certadm','cards',
-  'judges','perm','season','newsmgr','site','print','groups'];
+  'judges','perm','season','newsmgr','site','print','groups','admins'];
+/** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
+const PAGE_PERM={actedit:'actedit',entries:'entries',score:'score',publish:'publish',
+  promote:'promote',judges:'judges',certadm:'certadm',cards:'cards',
+  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm'};
+const OWNER_PAGES=['admins','season'];
 function isAdminPage(p){ return ADMIN_PAGES.indexOf(p)>=0; }
 
 /** สวิตช์เปิด-ปิดระบบ: ค่าของกลุ่มทับค่าของเขต ถ้ากลุ่มเว้นว่างให้ใช้ค่าของเขต */
@@ -2145,6 +2300,103 @@ function renderPrint(){
   $('#prtPerm').innerHTML=permNote('print_open','เอกสารการแข่งขัน');
 }
 
+/* ============================ จัดการผู้ดูแล ============================ */
+let ADMINS=[], ADEDIT=null;
+function renderAdmins(){
+  $('#adSub').textContent = (ME&&ME.role==='group_admin')
+    ? 'ผู้ดูแลของ '+groupName(ME.scope)
+    : 'ผู้ดูแลระดับเขตและระดับกลุ่มทั้งหมด';
+  $('#ad_rolewrap').style.display = (ME&&ME.role==='group_admin')? 'none':'';
+  const sc=$('#ad_scope');
+  sc.innerHTML=(DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
+  $('#ad_preset').innerHTML=Object.keys(PERM_PRESET)
+    .map(k=>`<option value="${k}">${PERM_PRESET[k].name}</option>`).join('')+'<option value="">— กำหนดเอง —</option>';
+  api('listAdmins',{}).then(r=>{ ADMINS=r.items||[]; drawAdmins(); })
+    .catch(e=>{ $('#adSub').textContent='โหลดไม่สำเร็จ: '+e.message; });
+}
+function permChips(a){
+  if(a.is_owner==='Y') return '<span class="pill i">ทุกเมนู</span>';
+  const ks=String(a.perms||'').split(',').map(x=>x.trim()).filter(Boolean);
+  if(!ks.length) return '<span class="hint">ดูอย่างเดียว</span>';
+  return ks.map(k=>`<span class="pill" style="background:var(--line-2);color:var(--ink-2)">${PERM_LABEL[k]||k}</span>`).join(' ');
+}
+function drawAdmins(){
+  const q=($('#ad_q').value||'').trim();
+  const rows=ADMINS.filter(a=>!q||[a.name,a.username].join(' ').includes(q));
+  tbl($('#adTbl'),['ชื่อ-สกุล','ชื่อผู้ใช้','ระดับ','ประเภท','สิทธิ์','สถานะ',''],
+    rows.map(a=>{
+      const i=ADMINS.indexOf(a);
+      return `<tr><td><b>${cleanTxt(a.name||'')}</b></td>
+        <td style="font-family:ui-monospace,monospace">${a.username}</td>
+        <td>${a.role==='district_admin'?'เขต':groupName(a.scope)}</td>
+        <td>${a.is_owner==='Y'?'<span class="pill w">ผู้ดูแลหลัก</span>':'ผู้ดูแลรอง'}</td>
+        <td style="max-width:320px">${permChips(a)}</td>
+        <td>${a.status||'ใช้งาน'}</td>
+        <td style="white-space:nowrap"><button class="btn g sm" onclick="editAdmin(${i})">แก้ไข</button>
+          <button class="btn g sm" onclick="delAdmin('${a.user_id}','${String(a.name||'').replace(/'/g,'')}')">ลบ</button></td></tr>`;
+    }).join(''));
+}
+function adPermBoxes(checked){
+  const set=new Set(checked||[]);
+  const grp = (ME&&ME.role==='group_admin') || $('#ad_role').value==='group_admin';
+  $('#ad_perms').innerHTML=Object.keys(PERM_LABEL)
+    .filter(k=>!(grp && k==='actedit'))   /* รายการแข่งขันเป็นของเขตเท่านั้น */
+    .map(k=>`<label class="hint" style="display:flex;gap:7px;align-items:center">
+      <input type="checkbox" class="adperm" value="${k}" ${set.has(k)?'checked':''} onchange="document.getElementById('ad_preset').value=''">
+      ${PERM_LABEL[k]}</label>`).join('');
+}
+function adPreset(){
+  const k=$('#ad_preset').value; if(!k) return;
+  adPermBoxes(PERM_PRESET[k].keys);
+  $('#ad_preset').value=k;
+}
+function adOwnerChange(){ $('#ad_permbox').style.display = $('#ad_owner').value==='Y'?'none':''; }
+function adRoleChange(){
+  $('#ad_scopewrap').style.display = $('#ad_role').value==='group_admin'?'':'none';
+  adPermBoxes([...document.querySelectorAll('.adperm:checked')].map(x=>x.value));
+}
+function adFill(a){
+  ADEDIT=a.user_id||null;
+  $('#ad_name').value=a.name||''; $('#ad_user').value=a.username||'';
+  $('#ad_email').value=a.email||''; $('#ad_status').value=a.status||'ใช้งาน';
+  $('#ad_role').value=a.role||'district_admin';
+  $('#ad_scope').value=a.scope&&a.scope!=='ALL'?a.scope:((DB.groups||[])[0]||{}).group_code;
+  $('#ad_owner').value=a.is_owner==='Y'?'Y':'N';
+  $('#ad_pass').value='';
+  $('#ad_user').disabled=!!a.user_id;
+  $('#ad_passlabel').textContent = a.user_id? 'รหัสผ่านใหม่ (เว้นว่าง = ไม่เปลี่ยน)' : 'รหัสผ่าน (เว้นว่างให้ระบบสุ่มให้)';
+  $('#ad_preset').value='';
+  adRoleChange(); adOwnerChange();
+  adPermBoxes(String(a.perms||'').split(',').map(x=>x.trim()).filter(Boolean));
+  $('#adResult').innerHTML='';
+  $('#adForm').style.display=''; $('#adForm').scrollIntoView({behavior:'smooth'});
+}
+function newAdmin(){ $('#adFormTitle').textContent='เพิ่มผู้ดูแล'; adFill({}); $('#ad_preset').value='reg'; adPreset(); }
+function editAdmin(i){ $('#adFormTitle').textContent='แก้ไขผู้ดูแล'; adFill(Object.assign({},ADMINS[i])); }
+async function saveAdminF(){
+  const a={ user_id:ADEDIT, name:$('#ad_name').value.trim(), username:$('#ad_user').value.trim(),
+    email:$('#ad_email').value.trim(), status:$('#ad_status').value,
+    role:$('#ad_role').value, scope:$('#ad_role').value==='group_admin'?$('#ad_scope').value:'ALL',
+    is_owner:$('#ad_owner').value, pass_code:$('#ad_pass').value.trim(),
+    perms_list:[...document.querySelectorAll('.adperm:checked')].map(x=>x.value) };
+  if(!a.name) return alert('กรุณากรอกชื่อ-สกุล');
+  if(!a.user_id && !a.username) return alert('กรุณาตั้งชื่อผู้ใช้');
+  if(a.is_owner!=='Y' && !a.perms_list.length &&
+     !confirm('ยังไม่ได้เปิดสิทธิ์เมนูใดเลย บัญชีนี้จะเข้าได้แต่ไม่แก้อะไรได้ — ยืนยันหรือไม่?')) return;
+  try{
+    const r=await api('saveAdmin',{admin:a});
+    $('#adForm').style.display='none'; renderAdmins();
+    if(r.created) $('#adResult').innerHTML='';
+    alert(r.created
+      ? 'เพิ่มผู้ดูแลแล้ว\n\nชื่อผู้ใช้: '+r.username+'\nรหัสผ่าน: '+r.pass_code+'\n\nคัดลอกเก็บไว้แจ้งเจ้าตัว (ดูย้อนหลังได้ในชีต Users)'
+      : 'บันทึกการแก้ไขแล้ว');
+  }catch(e){ alert(e.message); }
+}
+async function delAdmin(id,name){
+  if(!confirm('ลบบัญชีผู้ดูแล '+name+' ?')) return;
+  try{ await api('deleteAdmin',{user_id:id}); renderAdmins(); }catch(e){ alert(e.message); }
+}
+
 /* ============================ ปีการศึกษา · สำรองข้อมูล · ล้างข้อมูล ============================ */
 let BACKUP_DONE=false;
 function renderSeason(){
@@ -2512,6 +2764,14 @@ function go(p){
   /* กันไม่ให้ผู้ที่ยังไม่เข้าสู่ระบบเปิดหน้าหลังบ้าน แม้จะพิมพ์ URL เข้ามาเอง */
   if(isAdminPage(p) && !ME){ PAGE='home'; openLogin(); return; }
   if(p==='setup' && ME && ME.role!=='district_admin'){ p='dash'; }
+  /* กันคนที่ไม่มีสิทธิ์เปิดหน้านั้น แม้จะพิมพ์ลิงก์เข้ามาเอง */
+  if(ME && (ME.role==='district_admin'||ME.role==='group_admin')){
+    if(OWNER_PAGES.indexOf(p)>=0 && !ME.own){
+      alert('หน้านี้สงวนไว้สำหรับผู้ดูแลหลักเท่านั้น'); p='dash';
+    } else if(PAGE_PERM[p] && !canDo(PAGE_PERM[p])){
+      alert('บัญชีของท่านไม่ได้รับสิทธิ์ใน “'+PERM_LABEL[PAGE_PERM[p]]+'”\nติดต่อผู้ดูแลหลักให้เปิดสิทธิ์ให้'); p='dash';
+    }
+  }
   if(isAdminPage(p) && VIEW!=='admin'){ VIEW='admin'; LS.setItem(K.view,'admin');
     document.body.dataset.view='admin'; }
   PAGE=p; $$('.page').forEach(x=>x.classList.remove('on'));
@@ -2523,7 +2783,7 @@ function go(p){
     print:'พิมพ์เอกสาร',setup:'ตั้งค่า',news:'ข่าวประชาสัมพันธ์',docs:'เอกสารดาวน์โหลด',
     site:'หน้าเว็บ & แบนเนอร์',newsmgr:'ประชาสัมพันธ์',cert:'เกียรติบัตร',certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',
     judges:'ทำเนียบกรรมการตัดสิน',perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
-    season:'ปีการศึกษา & สำรอง/ล้างข้อมูล'}[p]||p;
+    season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',admins:'จัดการผู้ดูแล'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
   closeMenu(); closeSide();
@@ -2545,7 +2805,7 @@ function renderPage(p){
     promote:renderPromote, print:renderPrint, setup:renderSetup, results:renderResults, medals:renderMedals,
     sched:renderSched, news:renderNews, docs:renderDocs, site:renderSite,
     newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
-    judges:renderJudges, perm:renderPerm, season:renderSeason}[p]||(()=>{}))();
+    judges:renderJudges, perm:renderPerm, season:renderSeason, admins:renderAdmins}[p]||(()=>{}))();
 }
 
 function renderHome(){
