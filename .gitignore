@@ -1,0 +1,5 @@
+# ห้ามเผลอ commit ไฟล์เหล่านี้ขึ้น repo สาธารณะ
+Code.gs
+*.xlsx
+*.csv
+.DS_Store
