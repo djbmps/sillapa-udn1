@@ -1345,7 +1345,8 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveCardTemplate:'cards',savePersonPhoto:'cards',saveNews:'newsmgr',deleteNews:'newsmgr',
   saveDocument:'newsmgr',deleteDocument:'newsmgr',saveSiteSettings:'site',savePermConfig:'perm',
   printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',
-  saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges'};
+  saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
+  deleteJudgeApplication:'judges'};
 const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
   'listSelectors','saveSelector','deleteSelector'];
 
@@ -1935,6 +1936,12 @@ function demoApi(action,p){
       memSave(); return {user_id:t.user_id,updated:true}; }
     case 'deleteSelector':{
       MEM.admins=(MEM.admins||[]).filter(x=>x.user_id!==p.user_id); memSave(); return true; }
+    case 'deleteJudgeApplication':{
+      if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
+      const n=(MEM.applies||[]).length;
+      MEM.applies=(MEM.applies||[]).filter(r=>r.apply_id!==p.apply_id);
+      if(MEM.applies.length===n) throw new Error('ไม่พบใบสมัครนี้');
+      memSave(); return true; }
     case 'notifyJudgeApplicants':{
       if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
       const rows=(MEM.applies||[]).filter(r=>['ผ่านคุณสมบัติ','สำรอง','ไม่ผ่าน'].indexOf(r.status)>=0
@@ -4119,6 +4126,7 @@ function drawApplications(){
           <div class="fld" style="margin:8px 0 0"><label>หมายเหตุถึงผู้สมัคร</label>
             <input id="nt_${x.apply_id}" value="${(x.note||'').replace(/"/g,'&quot;')}" placeholder="เหตุผล / ข้อแนะนำ"></div>
           <div class="row" style="margin-top:10px"><span class="sp"></span>
+            ${ME.role==='district_admin'? `<button class="btn g sm" onclick="delApplication('${x.apply_id}','${(x.full_name||'').replace(/'/g,'')}')">ลบใบสมัคร</button>`:''}
             <button class="btn" onclick="saveReview('${x.apply_id}')">บันทึกผล</button></div>
         </div>
       </div></div></div>`).join('');
@@ -4130,6 +4138,10 @@ async function saveReview(id){
       decided_act:$('#ac_'+id)? $('#ac_'+id).value:'', note:$('#nt_'+id).value.trim()});
     renderJudgeApp();
   }catch(e){ alert(e.message); }
+}
+async function delApplication(id,name){
+  if(!confirm('ลบใบสมัครของ '+name+' ออกจากระบบถาวร?')) return;
+  try{ await api('deleteJudgeApplication',{apply_id:id}); renderJudgeApp(); }catch(e){ alert(e.message); }
 }
 async function saveApplyWin(){
   try{
