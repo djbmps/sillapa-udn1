@@ -623,8 +623,8 @@ body[data-view="admin"] .utilbar{display:none}
               <input type="checkbox" id="pw_open" style="width:20px;height:20px">
               เปิดให้กลุ่มโรงเรียนโอนตัวแทนเข้าเขต</label>
             <div class="row" style="margin-top:12px">
-              <div class="fld" style="margin:0"><label>เปิดรับตั้งแต่วันที่</label><input id="pw_from" placeholder="2569-10-20" style="width:150px"></div>
-              <div class="fld" style="margin:0"><label>ถึงวันที่</label><input id="pw_to" placeholder="2569-10-31" style="width:150px"></div>
+              <div class="fld" style="margin:0"><label>เปิดรับตั้งแต่วันที่</label><div id="pw_from_wrap"></div></div>
+              <div class="fld" style="margin:0"><label>ถึงวันที่</label><div id="pw_to_wrap"></div></div>
               <div class="fld" style="margin:0;flex:1;min-width:240px"><label>ข้อความที่แสดงเมื่อยังปิดอยู่</label>
                 <input id="pw_note" placeholder="เช่น จะเปิดรับโอนตัวแทนวันที่ 20 ต.ค. 2569"></div>
             </div>
@@ -656,28 +656,33 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="ch"><h3>แบบฟอร์มใบสมัคร</h3><span class="sp"></span><span class="hint" id="apEditHint"></span></div>
         <div class="cb">
           <div class="row">
-            <div class="fld" style="margin:0;width:120px"><label>คำนำหน้า</label><input id="ap_prefix" placeholder="นาย / นาง / นางสาว"></div>
+            <div class="fld" style="margin:0;width:150px"><label>คำนำหน้า *</label><div id="ap_prefix_wrap"></div></div>
             <div class="fld" style="margin:0;flex:1;min-width:220px"><label>ชื่อ-สกุล *</label><input id="ap_name" placeholder="ชื่อ นามสกุล"></div>
-            <div class="fld" style="margin:0;flex:1;min-width:200px"><label>ตำแหน่ง / วิทยฐานะ</label><input id="ap_position" placeholder="ครู ชำนาญการพิเศษ"></div>
+            <div class="fld" style="margin:0;width:190px"><label>ตำแหน่ง</label><div id="ap_pos_wrap"></div></div>
+            <div class="fld" style="margin:0;width:180px"><label>วิทยฐานะ</label><div id="ap_rank_wrap"></div></div>
           </div>
           <div class="row" style="margin-top:10px">
             <div class="fld" style="margin:0;width:190px"><label>ประเภทหน่วยงาน</label>
               <select id="ap_orgtype" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%">
                 <option>สถานศึกษา</option><option>สำนักงานเขตพื้นที่การศึกษา</option>
                 <option>หน่วยงานอื่น</option><option>ผู้ทรงคุณวุฒิอิสระ</option></select></div>
-            <div class="fld" style="margin:0;flex:1;min-width:240px"><label>โรงเรียน / หน่วยงานที่สังกัด *</label><input id="ap_org" placeholder="เช่น โรงเรียนบ้านหมากแข้ง"></div>
+            <div class="fld" style="margin:0;flex:1;min-width:260px"><label>โรงเรียน / หน่วยงานที่สังกัด *</label><div id="ap_org_wrap"></div></div>
             <div class="fld" style="margin:0;min-width:200px"><label>กลุ่มโรงเรียน (ถ้ามี)</label>
               <select id="ap_group" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%"></select></div>
           </div>
           <div class="row" style="margin-top:10px">
             <div class="fld" style="margin:0;width:170px"><label>เบอร์โทรศัพท์ *</label><input id="ap_phone" placeholder="0812345678"></div>
             <div class="fld" style="margin:0;flex:1;min-width:240px"><label>อีเมล * (ใช้แจ้งผลการคัดเลือก)</label><input id="ap_email" placeholder="you@example.com"></div>
-            <div class="fld" style="margin:0;width:150px"><label>ประสบการณ์ (ปี)</label><input id="ap_exp" type="number" min="0" placeholder="5"></div>
+            <div class="fld" style="margin:0;width:190px"><label>ประสบการณ์สอน (ปี)</label>
+              <select id="ap_exp" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%">
+                <option value="">— เลือก —</option><option>น้อยกว่า 1 ปี</option><option>1-3 ปี</option>
+                <option>4-6 ปี</option><option>7-10 ปี</option><option>11-15 ปี</option>
+                <option>16-20 ปี</option><option>มากกว่า 20 ปี</option></select></div>
           </div>
           <div class="row" style="margin-top:10px">
-            <div class="fld" style="margin:0;flex:1;min-width:200px"><label>วุฒิการศึกษาสูงสุด</label><input id="ap_edu" placeholder="ค.บ. / ศษ.ม."></div>
-            <div class="fld" style="margin:0;flex:1;min-width:200px"><label>วิชาเอก</label><input id="ap_major" placeholder="ภาษาไทย"></div>
-            <div class="fld" style="margin:0;flex:1;min-width:220px"><label>เคยเป็นกรรมการตัดสินระดับใดบ้าง</label><input id="ap_past" placeholder="ระดับกลุ่มโรงเรียน / เขตพื้นที่ / ภาค"></div>
+            <div class="fld" style="margin:0;flex:1;min-width:190px"><label>วุฒิการศึกษาสูงสุด</label><div id="ap_edu_wrap"></div></div>
+            <div class="fld" style="margin:0;flex:1;min-width:190px"><label>วิชาเอก</label><div id="ap_major_wrap"></div></div>
+            <div class="fld" style="margin:0;flex:1;min-width:220px"><label>เคยเป็นกรรมการตัดสินระดับสูงสุด</label><div id="ap_past_wrap"></div></div>
           </div>
           <div class="fld" style="margin-top:10px"><label>ความรู้ ความสามารถ และผลงานที่เกี่ยวข้อง</label>
             <textarea id="ap_expertise" rows="3" placeholder="เช่น เป็นวิทยากรด้านภาษาไทย · ผ่านการอบรมกรรมการตัดสิน · ผลงานนักเรียนได้รับรางวัลระดับชาติ"></textarea></div>
@@ -721,8 +726,8 @@ body[data-view="admin"] .utilbar{display:none}
           <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
             <input type="checkbox" id="ja_open" style="width:20px;height:20px"> เปิดรับสมัครคณะกรรมการตัดสิน</label>
           <div class="row" style="margin-top:12px">
-            <div class="fld" style="margin:0"><label>เปิดรับตั้งแต่วันที่</label><input id="ja_from" placeholder="2569-10-20" style="width:150px"></div>
-            <div class="fld" style="margin:0"><label>ถึงวันที่</label><input id="ja_to" placeholder="2569-10-31" style="width:150px"></div>
+            <div class="fld" style="margin:0"><label>เปิดรับตั้งแต่วันที่</label><div id="ja_from_wrap"></div></div>
+            <div class="fld" style="margin:0"><label>ถึงวันที่</label><div id="ja_to_wrap"></div></div>
             <div class="fld" style="margin:0;flex:1;min-width:240px"><label>ข้อความประกาศ / คุณสมบัติผู้สมัคร</label>
               <input id="ja_note" placeholder="เช่น รับครูผู้สอนที่มีประสบการณ์ไม่น้อยกว่า 3 ปี"></div>
           </div>
@@ -822,8 +827,8 @@ body[data-view="admin"] .utilbar{display:none}
           <div class="fld"><label>ข้อมูลติดต่อ (แสดงท้ายเว็บ)</label>
             <input id="st_contact" placeholder="กลุ่มส่งเสริมการจัดการศึกษา โทร. 0-4222-xxxx"></div>
           <div class="grid g2" id="fld_dates">
-            <div class="fld"><label>วันเปิดรับสมัคร</label><input id="st_open_at" placeholder="2569-09-01"></div>
-            <div class="fld"><label>วันปิดรับสมัคร</label><input id="st_close_at" placeholder="2569-09-30"></div>
+            <div class="fld"><label>วันเปิดรับสมัคร</label><div id="st_open_at_wrap"></div></div>
+            <div class="fld"><label>วันปิดรับสมัคร</label><div id="st_close_at_wrap"></div></div>
           </div>
           <div class="note i"><span>🔗</span><div id="siteScopeNote"></div></div>
         </div></div>
@@ -927,13 +932,17 @@ body[data-view="admin"] .utilbar{display:none}
 
       <div class="card" id="jgForm" style="display:none;margin-top:14px"><div class="ch"><h3 id="jgFormTitle">เพิ่มกรรมการ</h3></div>
         <div class="cb">
-          <div class="grid g2">
-            <div class="fld"><label>คำนำหน้า + ชื่อ-สกุล *</label><input id="jg_name" placeholder="เช่น นางสาวสมหญิง ใจดี"></div>
-            <div class="fld"><label>ตำแหน่ง</label><input id="jg_position" placeholder="เช่น ครูชำนาญการพิเศษ"></div>
+          <div class="grid g3">
+            <div class="fld"><label>คำนำหน้า *</label><div id="jg_prefix_wrap"></div></div>
+            <div class="fld" style="grid-column:span 2"><label>ชื่อ-สกุล *</label><input id="jg_name" placeholder="เช่น สมหญิง ใจดี"></div>
           </div>
           <div class="grid g2">
-            <div class="fld"><label>หน่วยงาน / โรงเรียน</label><input id="jg_org" placeholder="เช่น โรงเรียนบ้านหมากแข้ง"></div>
-            <div class="fld"><label>ความเชี่ยวชาญ / หมวดกิจกรรม</label><input id="jg_expertise" placeholder="เช่น ศิลปะ - ทัศนศิลป์"></div>
+            <div class="fld"><label>ตำแหน่ง</label><div id="jg_pos_wrap"></div></div>
+            <div class="fld"><label>วิทยฐานะ</label><div id="jg_rank_wrap"></div></div>
+          </div>
+          <div class="grid g2">
+            <div class="fld"><label>หน่วยงาน / โรงเรียน</label><div id="jg_org_wrap"></div></div>
+            <div class="fld"><label>ความเชี่ยวชาญ / กลุ่มสาระ</label><div id="jg_exp_wrap"></div></div>
           </div>
           <div class="grid g3">
             <div class="fld"><label>โทรศัพท์</label><input id="jg_phone"></div>
@@ -1086,9 +1095,9 @@ body[data-view="admin"] .utilbar{display:none}
           <div class="fld"><label>ชื่องาน (เว้นว่างระบบจะตั้งให้จากครั้งที่และปีการศึกษา)</label>
             <input id="ss_event" placeholder="งานศิลปหัตถกรรมนักเรียน ครั้งที่ 75 ปีการศึกษา 2570"></div>
           <div class="grid g3">
-            <div class="fld"><label>วันเปิดรับสมัคร</label><input id="ss_open" placeholder="2570-09-01"></div>
-            <div class="fld"><label>วันปิดรับสมัคร</label><input id="ss_close" placeholder="2570-09-30"></div>
-            <div class="fld"><label>เส้นตายกลุ่มส่งตัวแทนเข้าเขต</label><input id="ss_deadline" placeholder="2570-10-15"></div>
+            <div class="fld"><label>วันเปิดรับสมัคร</label><div id="ss_open_wrap"></div></div>
+            <div class="fld"><label>วันปิดรับสมัคร</label><div id="ss_close_wrap"></div></div>
+            <div class="fld"><label>เส้นตายกลุ่มส่งตัวแทนเข้าเขต</label><div id="ss_deadline_wrap"></div></div>
           </div>
           <div class="fld"><label>รูปแบบเลขที่เกียรติบัตร</label>
             <input id="ss_certno" placeholder="75/สพป.อด.1/{seq:04d}"></div>
@@ -2453,8 +2462,8 @@ function renderSite(){
   if($('#st_banner_url').value) showThumb('bnThumb',$('#st_banner_url').value,null,DEMO());
   else $('#bnThumb').style.display='none';
   $('#st_event_name').value=(DB.config||{}).event_name||'';
-  $('#st_open_at').value=(DB.config||{}).open_at||'';
-  $('#st_close_at').value=(DB.config||{}).close_at||'';
+  dateSelSet('st_open_at', (DB.config||{}).open_at||'');
+  dateSelSet('st_close_at', (DB.config||{}).close_at||'');
   $('#fld_event').style.display = isDist?'':'none';
   $('#fld_dates').style.display = isDist?'':'none';
   $('#siteScopeNote').innerHTML = isDist
@@ -2475,7 +2484,7 @@ async function saveSite(){
   const o={scope:SCOPE};
   ['banner_url','banner_title','banner_subtitle','banner_note','contact'].forEach(k=>o[k]=$('#st_'+k).value.trim());
   if(SCOPE==='ALL'){ o.event_name=$('#st_event_name').value.trim();
-    o.open_at=$('#st_open_at').value.trim(); o.close_at=$('#st_close_at').value.trim(); }
+    o.open_at=dateSelVal('st_open_at'); o.close_at=dateSelVal('st_close_at'); }
   try{ await api('saveSiteSettings',o);
     DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE});
     renderBanner(); alert('บันทึกแล้ว — หน้าเว็บสาธารณะเปลี่ยนทันที');
@@ -2513,7 +2522,7 @@ function editNews(id){
   openModal(id?'แก้ไขข่าว':'เขียนข่าวใหม่',
     `<div class="fld"><label>หัวข้อข่าว</label><input id="n_title" value="${(n.title||'').replace(/"/g,'&quot;')}"></div>
      <div class="grid g2">
-       <div class="fld"><label>วันที่</label><input id="n_date" value="${n.date||''}" placeholder="2569-09-01"></div>
+       <div class="fld"><label>วันที่</label><div id="n_date_wrap">${dateSelHTML('n_date', n.date||todayBE())}</div></div>
        <div class="fld"><label>ขอบเขตการแสดงผล</label>
          <select id="n_scope" ${canScope?'':'disabled'}>
            <option value="ALL" ${n.scope==='ALL'?'selected':''}>ทั้งเขต (แสดงทุกกลุ่ม)</option>
@@ -2525,7 +2534,7 @@ function editNews(id){
        <textarea id="n_body" rows="7" style="resize:vertical">${n.body||''}</textarea></div>
      <label style="font-size:13px"><input type="checkbox" id="n_pin" ${n.pin==='Y'?'checked':''}> ปักหมุดไว้บนสุด</label>`,
     async()=>{
-      const o={id:id||'', title:$('#n_title').value.trim(), date:$('#n_date').value.trim(),
+      const o={id:id||'', title:$('#n_title').value.trim(), date:dateSelVal('n_date'),
         scope:$('#n_scope').value, image:$('#n_image').value.trim(),
         body:$('#n_body').value, pin:$('#n_pin').checked?'Y':''};
       if(!o.title) throw new Error('กรุณากรอกหัวข้อข่าว');
@@ -2823,8 +2832,18 @@ function drawJudges(){
     }).join(''));
 }
 function fillJudge(j){
-  $('#jg_name').value=j.name||''; $('#jg_position').value=j.position||'';
-  $('#jg_org').value=j.org||''; $('#jg_expertise').value=j.expertise||'';
+  /* แยกคำนำหน้าออกจากชื่อ และแยกวิทยฐานะออกจากตำแหน่ง เพื่อเลือกจาก Dropdown */
+  let nm=String(j.name||'').trim(), pf=String(j.prefix||'');
+  if(!pf){ const hit=OPT_PREFIX_ADULT.filter(x=>nm.indexOf(x)===0).sort((a,b)=>b.length-a.length)[0];
+    if(hit){ pf=hit; nm=nm.slice(hit.length).trim(); } }
+  let pos=String(j.position||''), rank='';
+  OPT_RANK.forEach(r=>{ if(r!=='ไม่มีวิทยฐานะ' && pos.indexOf(r)>=0){ rank=r; pos=pos.replace(r,'').trim(); } });
+  $('#jg_prefix_wrap').innerHTML = selOther('jg_prefix', OPT_PREFIX_ADULT, pf, 'คำนำหน้าอื่น ๆ');
+  $('#jg_pos_wrap').innerHTML    = selOther('jg_position', OPT_POSITION, pos, 'ตำแหน่งอื่น ๆ');
+  $('#jg_rank_wrap').innerHTML   = selOther('jg_rank', OPT_RANK, rank, '', false);
+  $('#jg_org_wrap').innerHTML    = selOther('jg_org', orgOptions(), j.org||'', 'ชื่อหน่วยงาน');
+  $('#jg_exp_wrap').innerHTML    = selOther('jg_expertise', catOptions(), j.expertise||'', 'ความเชี่ยวชาญอื่น ๆ');
+  $('#jg_name').value=nm;
   $('#jg_phone').value=j.phone||''; $('#jg_email').value=j.email||'';
   $('#jg_status').value=j.status||'อนุมัติ';
   window.__JG=j;
@@ -2834,11 +2853,15 @@ function newJudge(){ $('#jgFormTitle').textContent='เพิ่มกรรม�
 function editJudge(i){ $('#jgFormTitle').textContent='แก้ไขข้อมูลกรรมการ'; fillJudge(Object.assign({},JUDGES[i])); }
 async function saveJudgeF(){
   const j=Object.assign({},window.__JG||{});
-  j.name=$('#jg_name').value.trim(); j.position=$('#jg_position').value.trim();
-  j.org=$('#jg_org').value.trim(); j.expertise=$('#jg_expertise').value.trim();
+  j.prefix=selVal('jg_prefix');
+  j.name=(j.prefix? j.prefix:'')+$('#jg_name').value.trim();
+  const rk=selVal('jg_rank');
+  j.position=[selVal('jg_position'), (rk&&rk!=='ไม่มีวิทยฐานะ')?rk:''].filter(Boolean).join(' ');
+  j.org=selVal('jg_org'); j.expertise=selVal('jg_expertise');
   j.phone=$('#jg_phone').value.trim(); j.email=$('#jg_email').value.trim();
   j.status=$('#jg_status').value;
-  if(!j.name) return alert('กรุณากรอกชื่อ-สกุล');
+  if(!$('#jg_name').value.trim()) return alert('กรุณากรอกชื่อ-สกุล');
+  if(!j.prefix) return alert('กรุณาเลือกคำนำหน้า');
   if(SCOPE!=='ALL' && !j.group_code) j.group_code=SCOPE;
   try{ await api('saveJudge',{judge:j, scope:SCOPE}); $('#jgForm').style.display='none'; renderJudges(); }
   catch(e){ alert(e.message); }
@@ -3008,8 +3031,8 @@ function renderSeason(){
   $('#ssCfgCard').style.display = d? '' : 'none';
   $('#ss_edition').value=c.edition||74;   $('#ss_year').value=c.academic_year||2569;
   $('#ss_district').value=c.district_name||''; $('#ss_event').value=c.event_name||'';
-  $('#ss_open').value=c.open_at||'';      $('#ss_close').value=c.close_at||'';
-  $('#ss_deadline').value=c.group_deadline||''; $('#ss_certno').value=c.cert_number_format||'';
+  dateSelSet('ss_open', c.open_at||''); dateSelSet('ss_close', c.close_at||'');
+  dateSelSet('ss_deadline', c.group_deadline||''); $('#ss_certno').value=c.cert_number_format||'';
   $('#ss_newed').value=Number(c.edition||74)+1;
   $('#ss_newyear').value=Number(c.academic_year||2569)+1;
   /* ผู้ดูแลกลุ่มไม่มีสิทธิ์เริ่มปีการศึกษาใหม่ */
@@ -3032,8 +3055,8 @@ async function saveSeason(){
     await api('saveSeason',{edition:ed, academic_year:yr,
       district_name:$('#ss_district').value.trim(),
       event_name:$('#ss_event').value.trim()||('งานศิลปหัตถกรรมนักเรียน ครั้งที่ '+ed+' ปีการศึกษา '+yr),
-      open_at:$('#ss_open').value.trim(), close_at:$('#ss_close').value.trim(),
-      group_deadline:$('#ss_deadline').value.trim(), cert_number_format:$('#ss_certno').value.trim()});
+      open_at:dateSelVal('ss_open'), close_at:dateSelVal('ss_close'),
+      group_deadline:dateSelVal('ss_deadline'), cert_number_format:$('#ss_certno').value.trim()});
     DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE});
     applyScope(); renderAll();
     alert('บันทึกแล้ว — ครั้งที่ '+ed+' ปีการศึกษา '+yr);
@@ -3339,18 +3362,20 @@ function editStaff(id){
   const x=(window.__STAFF||[]).find(v=>v.staff_id===id)||{scope:SCOPE,cert_ok:'Y'};
   openModal(id?'แก้ไขรายชื่อคณะกรรมการดำเนินงาน':'เพิ่มคณะกรรมการดำเนินงาน',
     `<div class="grid g3">
-      <div class="fld"><label>คำนำหน้า</label><input id="s_prefix" value="${x.prefix||''}" placeholder="นาย/นาง/นางสาว"></div>
+      <div class="fld"><label>คำนำหน้า</label>${selOther('s_prefix', OPT_PREFIX_ADULT, x.prefix||'', 'คำนำหน้าอื่น ๆ')}</div>
       <div class="fld" style="grid-column:span 2"><label>ชื่อ-สกุล</label><input id="s_name" value="${(x.name||'').replace(/"/g,'&quot;')}"></div></div>
-     <div class="grid g2">
-      <div class="fld"><label>ตำแหน่ง</label><input id="s_position" value="${x.position||''}" placeholder="ครูชำนาญการ"></div>
-      <div class="fld"><label>หน่วยงาน</label><input id="s_org" value="${x.org||''}" placeholder="สพป.อุดรธานี เขต 1"></div></div>
+     <div class="grid g3">
+      <div class="fld"><label>ตำแหน่ง</label>${selOther('s_position', OPT_POSITION, String(x.position||'').replace(/\s*(ชำนาญการพิเศษ|ชำนาญการ|เชี่ยวชาญพิเศษ|เชี่ยวชาญ)\s*/,'').trim(), 'ตำแหน่งอื่น ๆ')}</div>
+      <div class="fld"><label>วิทยฐานะ</label>${selOther('s_rank', OPT_RANK, (String(x.position||'').match(/(ชำนาญการพิเศษ|ชำนาญการ|เชี่ยวชาญพิเศษ|เชี่ยวชาญ)/)||[''])[0], '', false)}</div>
+      <div class="fld"><label>หน่วยงาน</label>${selOther('s_org', orgOptions(), x.org||'', 'ชื่อหน่วยงาน')}</div></div>
      <div class="fld"><label>หน้าที่ในงาน (พิมพ์ลงเกียรติบัตร)</label>
-       <input id="s_duty" value="${x.duty||''}" placeholder="คณะกรรมการฝ่ายอำนวยการ"></div>
+       ${selOther('s_duty', OPT_DUTY, x.duty||'', 'ระบุหน้าที่')}</div>
      <label style="font-size:13px"><input type="checkbox" id="s_ok" ${String(x.cert_ok||'Y')!=='N'?'checked':''}> เปิดให้ดาวน์โหลดเกียรติบัตรของคนนี้</label>`,
     async()=>{
-      const o={staff_id:id||'', scope:SCOPE, prefix:$('#s_prefix').value.trim(), name:$('#s_name').value.trim(),
-        position:$('#s_position').value.trim(), org:$('#s_org').value.trim(), duty:$('#s_duty').value.trim(),
-        cert_ok:$('#s_ok').checked?'Y':'N'};
+      const rk2=selVal('s_rank');
+      const o={staff_id:id||'', scope:SCOPE, prefix:selVal('s_prefix'), name:$('#s_name').value.trim(),
+        position:[selVal('s_position'), (rk2&&rk2!=='ไม่มีวิทยฐานะ')?rk2:''].filter(Boolean).join(' '),
+        org:selVal('s_org'), duty:selVal('s_duty'), cert_ok:$('#s_ok').checked?'Y':'N'};
       if(!o.name) throw new Error('กรุณากรอกชื่อ-สกุล');
       await api('saveStaff',{staff:o}); renderCertAdm();
     });
@@ -3901,6 +3926,7 @@ function renderEntries(){
   $('#entSub').textContent=(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE));
   api('listEntries',{group:SCOPE==='ALL'?'':SCOPE, act_id:act}).then(ent=>{
     const S=schoolsOf('ALL');
+    window.__ENT=ent;
     tbl($('#entTbl'),['ที่','โรงเรียน','นักเรียน','ครูผู้ฝึกสอน','ที่มา','สถานะ','จัดการ'],
       ent.map((e,i)=>{ const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
         return `<tr><td class="num">${i+1}</td><td><b>${cleanName(s.school_name||e.school_smis)}</b>
@@ -3921,25 +3947,48 @@ function editEntry(id){
   const S=schoolsOf(SCOPE==='ALL'?'ALL':SCOPE).filter(s=>s.can_register==='Y')
     .filter(s=>!/^ม\./.test(String(act.level))||s.is_expansion==='Y');
   const n=Number(act.team_max||1);
-  const stRows=Array.from({length:n},(_,i)=>`<div class="row" style="margin-bottom:7px" data-st>
-     <input placeholder="คำนำหน้า" style="width:110px;padding:8px;border:1px solid var(--line);border-radius:9px" data-p>
-     <input placeholder="ชื่อ" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:9px" data-f>
-     <input placeholder="สกุล" style="flex:1;padding:8px;border:1px solid var(--line);border-radius:9px" data-l>
-     <input placeholder="ชั้น" style="width:90px;padding:8px;border:1px solid var(--line);border-radius:9px" data-c></div>`).join('');
+  const cls=classesFor(act.level);
+  const inpCss='padding:8px;border:1px solid var(--line);border-radius:9px';
+  const selCss='padding:8px;border:1px solid var(--line);border-radius:9px;background:#fff';
+  /* แก้ไขใบสมัครเดิม — ดึงนักเรียนและครูเดิมมาแสดงไว้ให้ครบ */
+  const cur=(window.__ENT||[]).find(x=>x.entry_id===id)||{};
+  const stOld=cur.students||[], coOld=cur.coaches||[];
+  const esc=v=>String(v||'').replace(/"/g,'&quot;');
+  const stRows=Array.from({length:Math.max(n, stOld.length)},(_,i)=>{ const v=stOld[i]||{};
+    const rank=''; return `<div class="row" style="margin-bottom:7px" data-st>
+     <select style="width:112px;${selCss}" data-p><option value="">คำนำหน้า</option>${optList(OPT_PREFIX_STU, v.prefix)}</select>
+     <input placeholder="ชื่อ" value="${esc(v.first_name)}" style="flex:1;${inpCss}" data-f>
+     <input placeholder="สกุล" value="${esc(v.last_name)}" style="flex:1;${inpCss}" data-l>
+     <select style="width:104px;${selCss}" data-c><option value="">ชั้น</option>${optList(cls, v.class_level)}</select></div>`;}).join('');
+  const nc=Number(act.coaches||1);
+  const coachRows=Array.from({length:Math.max(nc, coOld.length)},(_,i)=>{ const v=coOld[i]||{};
+    let pos=String(v.position||'ครู'), rk='';
+    OPT_RANK.forEach(r=>{ if(r!=='ไม่มีวิทยฐานะ' && pos.indexOf(r)>=0){ rk=r; pos=pos.replace(r,'').trim(); } });
+    const posFull=[pos,(rk&&rk!=='ไม่มีวิทยฐานะ')?rk:''].filter(Boolean).join(' ')||'ครู';
+    return `<div class="row" style="margin-bottom:7px;flex-wrap:nowrap" data-co>
+     <select style="width:104px;${selCss}" data-cp><option value="">คำนำหน้า</option>${optList(OPT_PREFIX_ADULT, v.prefix)}</select>
+     <input placeholder="ชื่อ-สกุล ครูผู้ฝึกสอนคนที่ ${i+1}" value="${esc(v.name)}" style="flex:1;min-width:150px;${inpCss}" data-cn>
+     <select style="width:190px;${selCss}" data-cs>${optList(OPT_COACH_POS.indexOf(posFull)>=0?OPT_COACH_POS:OPT_COACH_POS.concat([posFull]), posFull)}</select></div>`;}).join('');
   openModal('สมัครแข่งขัน — '+act.act_name,
-    `<div class="fld"><label>โรงเรียน</label><select id="f_sch">${S.map(s=>`<option value="${s.smis}">${s.school_name} (${s.tambon})</option>`).join('')}</select></div>
+    `<div class="fld"><label>โรงเรียน</label><select id="f_sch">${S.map(s=>`<option value="${s.smis}" ${String(cur.school_smis)===String(s.smis)?'selected':''}>${s.school_name} (${s.tambon})</option>`).join('')}</select></div>
      <div class="note i" style="margin-bottom:12px"><span>ℹ️</span><div>รายการนี้ต้องมีนักเรียน <b>${act.team_min==act.team_max?act.team_min:act.team_min+"-"+act.team_max}</b> คน · ครูผู้ฝึกสอน ${act.coaches||1} คน
        ${/^ม\./.test(String(act.level))?'· แสดงเฉพาะโรงเรียนขยายโอกาส':''}</div></div>
      <label style="font-size:12.5px;font-weight:600">นักเรียน</label><div id="stList">${stRows}</div>
-     <div class="fld" style="margin-top:12px"><label>ครูผู้ฝึกสอน</label>
-       <input id="f_coach" placeholder="ชื่อ-สกุล ครูผู้ฝึกสอน"></div>`,
+     <label style="font-size:12.5px;font-weight:600;display:block;margin-top:12px">ครูผู้ฝึกสอน</label>
+     <div id="coList">${coachRows}</div>`,
     async()=>{
       const st=[...document.querySelectorAll('#stList [data-st]')].map(r=>({
-        prefix:r.querySelector('[data-p]').value, first_name:r.querySelector('[data-f]').value,
-        last_name:r.querySelector('[data-l]').value, class_level:r.querySelector('[data-c]').value
+        prefix:r.querySelector('[data-p]').value, first_name:r.querySelector('[data-f]').value.trim(),
+        last_name:r.querySelector('[data-l]').value.trim(), class_level:r.querySelector('[data-c]').value
       })).filter(x=>x.first_name);
+      const co=[...document.querySelectorAll('#coList [data-co]')].map(r=>({
+        prefix:r.querySelector('[data-cp]').value, name:r.querySelector('[data-cn]').value.trim(),
+        position:r.querySelector('[data-cs]').value||'ครู'
+      })).filter(x=>x.name);
+      if(!st.length) throw new Error('กรุณากรอกชื่อนักเรียนอย่างน้อย 1 คน');
+      if(st.some(x=>!x.prefix||!x.class_level)) throw new Error('เลือกคำนำหน้าและระดับชั้นของนักเรียนให้ครบ');
       await api('saveEntry',{entry:{entry_id:id||'',act_id:actId,school_smis:$('#f_sch').value},
-        students:st, coaches:$('#f_coach').value?[{prefix:'',name:$('#f_coach').value,position:'ครู'}]:[]});
+        students:st, coaches:co});
       renderEntries();
     });
 }
@@ -4072,8 +4121,7 @@ function drawPromoteDistrict(){
   const w=PRB.window;
   $('#prWinState').innerHTML = prWinPill(w)+' <span class="hint">'+prWinRange(w)+'</span>';
   $('#pw_open').checked = (w.flag==='Y');
-  $('#pw_from').value = w.open_at||'';
-  $('#pw_to').value   = w.close_at||'';
+  dateSelSet('pw_from', w.open_at||''); dateSelSet('pw_to', w.close_at||'');
   $('#pw_note').value = w.open_note||'';
 
   const done={}; (PRB.groups||[]).forEach(g=>done[g.group_code]=g);
@@ -4114,8 +4162,8 @@ async function savePromoteWin(){
   try{
     await api('savePromoteWindow',{
       promote_open: $('#pw_open').checked?'Y':'N',
-      promote_open_at: $('#pw_from').value.trim(),
-      promote_close_at: $('#pw_to').value.trim(),
+      promote_open_at: dateSelVal('pw_from'),
+      promote_close_at: dateSelVal('pw_to'),
       promote_open_note: $('#pw_note').value.trim()});
     alert('บันทึกช่วงเวลารับโอนตัวแทนแล้ว');
     renderPromote();
@@ -4254,6 +4302,102 @@ async function resetPass(id,name){
   }catch(e){ $('#acMsg').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
 }
 
+/* ============================ ชุดตัวเลือกมาตรฐาน (Dropdown) ============================
+   รวมไว้ที่เดียว เพื่อให้ทุกฟอร์มกรอกข้อมูลรูปแบบเดียวกัน แก้ที่นี่ที่เดียวใช้ได้ทั้งระบบ   */
+const OPT_PREFIX_STU   = ['ด.ช.','ด.ญ.','นาย','นางสาว'];
+const OPT_PREFIX_ADULT = ['นาย','นาง','นางสาว','ว่าที่ ร.ต.','ว่าที่ ร.ท.','ดร.','ผศ.ดร.','รศ.ดร.'];
+const OPT_CLASS_ALL    = ['อ.1','อ.2','อ.3','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
+const OPT_POSITION = ['ครู','ครูผู้ช่วย','ครูอัตราจ้าง','พนักงานราชการ','ผู้อำนวยการโรงเรียน',
+  'รองผู้อำนวยการโรงเรียน','ศึกษานิเทศก์','ผู้อำนวยการกลุ่ม','นักวิชาการศึกษา',
+  'เจ้าพนักงานธุรการ','ข้าราชการบำนาญ','อาจารย์'];
+const OPT_COACH_POS = ['ครู','ครู ชำนาญการ','ครู ชำนาญการพิเศษ','ครู เชี่ยวชาญ','ครูผู้ช่วย',
+  'ครูอัตราจ้าง','พนักงานราชการ','ผู้อำนวยการโรงเรียน','รองผู้อำนวยการโรงเรียน','วิทยากรท้องถิ่น'];
+const OPT_RANK = ['ไม่มีวิทยฐานะ','ชำนาญการ','ชำนาญการพิเศษ','เชี่ยวชาญ','เชี่ยวชาญพิเศษ'];
+const OPT_EDU  = ['ต่ำกว่าปริญญาตรี','ปริญญาตรี','ปริญญาโท','ปริญญาเอก'];
+const OPT_JUDGE_EXP = ['ไม่เคย','ระดับกลุ่มโรงเรียน','ระดับเขตพื้นที่การศึกษา','ระดับภาค','ระดับชาติ'];
+const OPT_ORGTYPE = ['สถานศึกษา','สำนักงานเขตพื้นที่การศึกษา','หน่วยงานอื่น','ผู้ทรงคุณวุฒิอิสระ'];
+const OPT_DUTY = ['คณะกรรมการอำนวยการ','คณะกรรมการดำเนินงาน','คณะกรรมการฝ่ายสถานที่',
+  'คณะกรรมการฝ่ายทะเบียนและเอกสาร','คณะกรรมการฝ่ายประมวลผล','คณะกรรมการฝ่ายประชาสัมพันธ์',
+  'คณะกรรมการฝ่ายการเงินและพัสดุ','คณะกรรมการฝ่ายปฏิคม','คณะกรรมการฝ่ายพยาบาล',
+  'คณะกรรมการฝ่ายประเมินผล','คณะกรรมการตัดสินการแข่งขัน'];
+
+/** ระดับชั้นที่สมัครได้ตามระดับของรายการแข่งขัน เช่น "ป.4-ป.6" → ป.4 ป.5 ป.6 */
+function classesFor(level){
+  const L=String(level||'').replace(/\s/g,'');
+  if(/ปฐมวัย|อนุบาล/.test(L)) return ['อ.1','อ.2','อ.3'];
+  const m=L.match(/([ปม])\.(\d)[-–]([ปม])\.(\d)/);
+  if(m){
+    const out=[]; const push=(pfx,a,b)=>{ for(let i=a;i<=b;i++) out.push(pfx+'.'+i); };
+    if(m[1]===m[3]) push(m[1],Number(m[2]),Number(m[4]));
+    else { push(m[1],Number(m[2]),6); push(m[3],1,Number(m[4])); }
+    return out;
+  }
+  const one=L.match(/([ปม])\.(\d)/);
+  if(one) return [one[1]+'.'+one[2]];
+  return OPT_CLASS_ALL;
+}
+function optList(arr, val){
+  return (arr||[]).map(v=>`<option ${String(val||'')===String(v)?'selected':''}>${v}</option>`).join('');
+}
+/** select มาตรฐาน + ตัวเลือก "อื่น ๆ (ระบุเอง)" ที่เปิดช่องพิมพ์ให้เมื่อจำเป็น */
+function selOther(id, arr, val, ph, allowOther){
+  const v=String(val||''); const known=(arr||[]).some(x=>String(x)===v);
+  const other = !!v && !known && allowOther!==false;
+  return `<select id="${id}" onchange="othToggle('${id}')" style="width:100%">
+      <option value="">— เลือก —</option>${optList(arr, known? v : '')}
+      ${allowOther===false?'':`<option value="__other" ${other?'selected':''}>อื่น ๆ (ระบุเอง)</option>`}</select>
+    <input id="${id}_other" placeholder="${ph||'ระบุเอง'}" value="${other? v.replace(/"/g,'&quot;'):''}"
+      style="margin-top:6px;display:${other?'':'none'}">`;
+}
+function othToggle(id){
+  const sel=$('#'+id), inp=$('#'+id+'_other'); if(!sel||!inp) return;
+  const on = sel.value==='__other';
+  inp.style.display = on?'':'none'; if(on) inp.focus();
+}
+/** อ่านค่าจาก select ที่มี "อื่น ๆ" */
+function selVal(id){
+  const sel=$('#'+id); if(!sel) return '';
+  if(sel.value==='__other'){ const i=$('#'+id+'_other'); return i? i.value.trim() : ''; }
+  return sel.value;
+}
+function todayBE(){ const d=new Date();
+  return (d.getFullYear()+543)+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+const TH_MONTH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
+  'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+/** ช่องวันที่แบบเลือก วัน-เดือน-ปี (พ.ศ.) — เก็บค่าเป็น 2569-10-20 เหมือนเดิม */
+function dateSelHTML(id, val){
+  const v=String(val||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const y0=Number((typeof acadYear==='function'? acadYear():0))||(new Date().getFullYear()+543);
+  const years=[]; for(let y=y0-1;y<=y0+3;y++) years.push(y);
+  const css='padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:#fff';
+  const d=v?Number(v[3]):'', m=v?Number(v[2]):'', y=v?Number(v[1]):'';
+  let dd=''; for(let i=1;i<=31;i++) dd+=`<option value="${i}" ${d===i?'selected':''}>${i}</option>`;
+  let mm=''; TH_MONTH.forEach((nm,i)=>{ mm+=`<option value="${i+1}" ${m===i+1?'selected':''}>${nm}</option>`; });
+  let yy=''; years.forEach(yr=>{ yy+=`<option value="${yr}" ${y===yr?'selected':''}>${yr}</option>`; });
+  if(y && years.indexOf(y)<0) yy=`<option value="${y}" selected>${y}</option>`+yy;
+  return `<div class="row" style="gap:6px;flex-wrap:nowrap">
+    <select id="${id}_d" style="${css};width:72px"><option value="">วัน</option>${dd}</select>
+    <select id="${id}_m" style="${css};flex:1;min-width:110px"><option value="">เดือน</option>${mm}</select>
+    <select id="${id}_y" style="${css};width:92px"><option value="">ปี</option>${yy}</select></div>`;
+}
+function dateSelVal(id){
+  const d=$('#'+id+'_d'), m=$('#'+id+'_m'), y=$('#'+id+'_y');
+  if(!d||!m||!y||!d.value||!m.value||!y.value) return '';
+  return y.value+'-'+String(m.value).padStart(2,'0')+'-'+String(d.value).padStart(2,'0');
+}
+function dateSelSet(id, val){
+  const w=$('#'+id+'_wrap'); if(w) w.innerHTML=dateSelHTML(id, val);
+}
+/** ตัวเลือกโรงเรียน/หน่วยงาน — ใช้ทะเบียนโรงเรียนจริงในระบบ */
+function orgOptions(){
+  return (DB.schools||[]).map(x=>x.school_name)
+    .concat(['สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1']);
+}
+/** ตัวเลือกกลุ่มสาระ/หมวดหมู่จากรายการแข่งขันจริง */
+function catOptions(){
+  return [...new Set((DB.activities||[]).map(a=>a.category).filter(Boolean))];
+}
+
 /* ============================ รับสมัคร & คัดเลือกคณะกรรมการตัดสิน ============================ */
 let APW=null, JAB=null;
 
@@ -4284,9 +4428,20 @@ function apFillActs(i, keep){
     `<option value="${a.act_id}">${a.act_code? a.act_code+' · ':''}${a.act_name} · ${a.level}</option>`).join('');
   if(keep) sel.value=keep;
 }
+function apBuildSelects(v){
+  v=v||{};
+  $('#ap_prefix_wrap').innerHTML = selOther('ap_prefix', OPT_PREFIX_ADULT, v.prefix||'', 'คำนำหน้าอื่น ๆ');
+  $('#ap_pos_wrap').innerHTML    = selOther('ap_position', OPT_POSITION, v.position||'', 'ตำแหน่งอื่น ๆ');
+  $('#ap_rank_wrap').innerHTML   = selOther('ap_rank', OPT_RANK, v.rank||'', '', false);
+  $('#ap_org_wrap').innerHTML    = selOther('ap_org', orgOptions(), v.org_name||'', 'ชื่อโรงเรียน/หน่วยงาน');
+  $('#ap_edu_wrap').innerHTML    = selOther('ap_edu', OPT_EDU, v.education||'', '', false);
+  $('#ap_major_wrap').innerHTML  = selOther('ap_major', catOptions(), v.major||'', 'วิชาเอกอื่น ๆ');
+  $('#ap_past_wrap').innerHTML   = selOther('ap_past', OPT_JUDGE_EXP, v.past_judge||'', '', false);
+}
 function renderApply(){
   $('#ap_group').innerHTML='<option value="">— ไม่ระบุ / หน่วยงานอื่น —</option>'+
     (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
+  if(!$('#ap_prefix')) apBuildSelects();
   if(!$('#ap_c1')) $('#apPicks').innerHTML=[1,2,3].map(apPickRow).join('');
   api('judgeApplyConfig',{}).then(r=>{
     APW=r.window;
@@ -4300,20 +4455,24 @@ function renderApply(){
   }).catch(()=>{});
 }
 function apClear(){
-  ['ap_prefix','ap_name','ap_position','ap_org','ap_phone','ap_email','ap_exp','ap_edu','ap_major',
-   'ap_past','ap_expertise','ap_doc'].forEach(k=>{ const e=$('#'+k); if(e) e.value=''; });
+  ['ap_name','ap_phone','ap_email','ap_exp','ap_expertise','ap_doc']
+    .forEach(k=>{ const e=$('#'+k); if(e) e.value=''; });
+  apBuildSelects();
   [1,2,3].forEach(i=>{ $('#ap_c'+i).value=''; apFillActs(i); });
   $('#ap_confirm').checked=false; $('#apMsg').innerHTML=''; $('#apEditHint').textContent='';
   $('#apSubmit').textContent='ส่งใบสมัคร'; $('#apFormCard').dataset.ref='';
 }
 async function submitApply(){
   if(!$('#ap_confirm').checked) return alert('กรุณาติ๊กยืนยันรับรองข้อมูลก่อนส่งใบสมัคร');
-  const body={ prefix:$('#ap_prefix').value.trim(), full_name:$('#ap_name').value.trim(),
-    position:$('#ap_position').value.trim(), org_type:$('#ap_orgtype').value,
-    org_name:$('#ap_org').value.trim(), group_code:$('#ap_group').value,
+  if(!selVal('ap_prefix')) return alert('กรุณาเลือกคำนำหน้า');
+  const rkA=selVal('ap_rank');
+  const body={ prefix:selVal('ap_prefix'), full_name:$('#ap_name').value.trim(),
+    position:[selVal('ap_position'), (rkA&&rkA!=='ไม่มีวิทยฐานะ')?rkA:''].filter(Boolean).join(' '),
+    org_type:$('#ap_orgtype').value,
+    org_name:selVal('ap_org'), group_code:$('#ap_group').value,
     phone:$('#ap_phone').value.trim(), email:$('#ap_email').value.trim(),
-    education:$('#ap_edu').value.trim(), major:$('#ap_major').value.trim(),
-    experience_years:$('#ap_exp').value, past_judge:$('#ap_past').value.trim(),
+    education:selVal('ap_edu'), major:selVal('ap_major'),
+    experience_years:$('#ap_exp').value, past_judge:selVal('ap_past'),
     expertise:$('#ap_expertise').value.trim(), doc_url:$('#ap_doc').value.trim(),
     act1:$('#ap_a1').value, act2:$('#ap_a2').value, act3:$('#ap_a3').value };
   const ref=$('#apFormCard').dataset.ref||'';
@@ -4347,12 +4506,14 @@ async function trackApply(){
 }
 function editApply(json){
   const r=JSON.parse(json), a=r.apply||{};
-  $('#ap_prefix').value=a.prefix||''; $('#ap_name').value=a.full_name||'';
-  $('#ap_position').value=a.position||''; $('#ap_orgtype').value=a.org_type||'สถานศึกษา';
-  $('#ap_org').value=a.org_name||''; $('#ap_group').value=a.group_code||'';
+  let pos=String(a.position||''), rk='';
+  OPT_RANK.forEach(x=>{ if(x!=='ไม่มีวิทยฐานะ' && pos.indexOf(x)>=0){ rk=x; pos=pos.replace(x,'').trim(); } });
+  apBuildSelects({prefix:a.prefix, position:pos, rank:rk, org_name:a.org_name,
+                  education:a.education, major:a.major, past_judge:a.past_judge});
+  $('#ap_name').value=a.full_name||''; $('#ap_orgtype').value=a.org_type||'สถานศึกษา';
+  $('#ap_group').value=a.group_code||'';
   $('#ap_phone').value=a.phone||''; $('#ap_email').value=a.email||'';
-  $('#ap_edu').value=a.education||''; $('#ap_major').value=a.major||'';
-  $('#ap_exp').value=a.experience_years||''; $('#ap_past').value=a.past_judge||'';
+  $('#ap_exp').value=a.experience_years||'';
   $('#ap_expertise').value=a.expertise||''; $('#ap_doc').value=a.doc_url||'';
   [1,2,3].forEach(i=>{
     const id=a['act'+i]||''; const act=(DB.activities||[]).find(x=>x.act_id===id);
@@ -4383,7 +4544,7 @@ async function renderJudgeApp(){
   $('#jaWinState').innerHTML = (w.open? '<span class="pill ok">เปิดรับสมัคร</span>':'<span class="pill b">ปิดรับสมัคร</span>')+
     ' <span class="hint">'+((w.open_at||w.close_at)? (w.open_at||'—')+' → '+(w.close_at||'—') : 'ไม่จำกัดวัน')+'</span>';
   $('#ja_open').checked = w.flag==='Y';
-  $('#ja_from').value=w.open_at||''; $('#ja_to').value=w.close_at||''; $('#ja_note').value=w.open_note||'';
+  dateSelSet('ja_from', w.open_at||''); dateSelSet('ja_to', w.close_at||''); $('#ja_note').value=w.open_note||'';
 
   const cats=JAB.categories||[];
   const fc=$('#ja_fcat'), cur=fc.value;
@@ -4457,7 +4618,7 @@ async function delApplication(id,name){
 async function saveApplyWin(){
   try{
     await api('saveJudgeApplyWindow',{judge_apply_open:$('#ja_open').checked?'Y':'N',
-      judge_apply_open_at:$('#ja_from').value.trim(), judge_apply_close_at:$('#ja_to').value.trim(),
+      judge_apply_open_at:dateSelVal('ja_from'), judge_apply_close_at:dateSelVal('ja_to'),
       judge_apply_note:$('#ja_note').value.trim()});
     alert('บันทึกช่วงเวลารับสมัครแล้ว'); renderJudgeApp();
   }catch(e){ alert(e.message); }
