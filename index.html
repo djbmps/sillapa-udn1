@@ -334,7 +334,20 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="fld"><label>รหัสผ่าน</label><input id="lgPass" type="password" placeholder="รหัสที่ได้รับจากผู้ดูแล"></div>
       <button class="btn" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">เข้าสู่ระบบ</button>
       <div id="lgErr" class="note b" style="display:none;margin-top:12px"></div>
-      <p class="hint" style="margin-top:16px">ดูข้อมูลสาธารณะ ตารางแข่ง และผลการแข่งขัน ได้โดยไม่ต้องเข้าสู่ระบบ
+      <p class="hint" style="margin-top:14px">
+        <a href="#" onclick="toggleForgot();return false" style="color:var(--pri);font-weight:700">ลืมรหัสผ่าน? ขอให้เขตรีเซ็ตให้</a></p>
+
+      <div id="forgotBox" style="display:none;margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#FFFDF9">
+        <b style="font-size:14.5px">ขอให้สำนักงานเขตรีเซ็ตรหัสผ่าน</b>
+        <div class="hint" style="margin:4px 0 10px">กรอกชื่อผู้ใช้ที่ลืมรหัส และช่องทางติดต่อกลับ เขตจะรีเซ็ตให้แล้วแจ้งรหัสใหม่</div>
+        <div class="fld"><label>ชื่อผู้ใช้ *</label><input id="fgUser" placeholder="เช่น admin-g06 หรือ sc0001"></div>
+        <div class="fld"><label>เบอร์โทร / อีเมลที่ติดต่อกลับ *</label><input id="fgContact" placeholder="0812345678"></div>
+        <div class="fld"><label>หมายเหตุ (ถ้ามี)</label><input id="fgReason" placeholder="เช่น ผู้ดูแลคนเดิมย้าย"></div>
+        <button class="btn" style="width:100%;justify-content:center" onclick="sendForgot()">ส่งคำขอไปยังเขต</button>
+        <div id="fgMsg" style="margin-top:10px"></div>
+      </div>
+
+      <p class="hint" style="margin-top:14px">ดูข้อมูลสาธารณะ ตารางแข่ง และผลการแข่งขัน ได้โดยไม่ต้องเข้าสู่ระบบ
         — <a href="#" onclick="closeLogin();return false" style="color:var(--pri);font-weight:600">กลับหน้าเว็บ</a></p>
     </div>
   </div>
@@ -980,6 +993,15 @@ body[data-view="admin"] .utilbar{display:none}
                style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
         <div class="cb" style="padding:0"><div style="overflow:auto"><table id="adTbl"></table></div></div></div>
 
+      <div class="card" id="rqCard" style="margin-top:14px">
+        <div class="ch"><h3>คำขอรีเซ็ตรหัสผ่านจากกลุ่ม/โรงเรียน</h3><span class="sp"></span>
+          <span id="rqBadge"></span>
+          <button class="btn g" onclick="loadResetRequests()">รีเฟรช</button></div>
+        <div class="cb">
+          <div id="rqMsg" style="margin-bottom:10px"></div>
+          <div style="overflow:auto"><table id="rqTbl"></table></div>
+        </div></div>
+
       <div class="card" id="acCard" style="margin-top:14px">
         <div class="ch"><h3>บัญชีกลุ่มโรงเรียน &amp; โรงเรียน — รีเซ็ตรหัสผ่าน</h3><span class="sp"></span>
           <select id="ac_kind" onchange="searchAccounts()"
@@ -989,13 +1011,21 @@ body[data-view="admin"] .utilbar{display:none}
             <option value="school">โรงเรียน</option>
             <option value="selector">กรรมการคัดเลือก</option>
             <option value="district_admin">ผู้ดูแลเขต</option></select>
+          <select id="ac_group" onchange="searchAccounts()"
+                  style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select>
           <input id="ac_q" placeholder="ค้นชื่อโรงเรียน / ชื่อผู้ใช้…" onkeydown="if(event.key==='Enter')searchAccounts()"
-                 style="min-width:220px;padding:8px 12px;border:1px solid var(--line);border-radius:10px">
+                 style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px">
           <button class="btn g" onclick="searchAccounts()">ค้นหา</button></div>
         <div class="cb">
           <div class="note i" style="margin-bottom:10px"><span>🔐</span><div>
             ระบบไม่แสดงรหัสผ่านเดิมเพื่อความปลอดภัย — ถ้าผู้ใช้ลืมรหัส ให้กด <b>รีเซ็ตรหัสผ่าน</b>
             ระบบจะออกรหัสใหม่และแสดงให้เห็นครั้งเดียว กรุณาคัดลอกส่งให้เจ้าตัวทันที</div></div>
+          <div class="row" id="acTools" style="margin-bottom:10px">
+            <label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;cursor:pointer">
+              <input type="checkbox" id="ac_showpass" onchange="searchAccounts()" style="width:18px;height:18px">
+              แสดงรหัสผ่าน</label>
+            <span class="sp"></span>
+            <button class="btn g" onclick="exportAccounts()">ดาวน์โหลดรายชื่อ + รหัสผ่าน (CSV)</button></div>
           <div id="acMsg" style="margin-bottom:10px"></div>
           <div id="acNote" style="margin-bottom:10px"></div>
           <div style="overflow:auto"><table id="acTbl"></table></div>
@@ -1354,6 +1384,7 @@ function demoActName(id){
   const a=(MEM.activities||[]).find(x=>x.act_id===id);
   return a? (a.act_name+' · '+a.level) : '';
 }
+function gname2(c){ const g=(typeof G!=='undefined'?G:[]).find(x=>x.group_code===c); return g?g.group_name:c; }
 function demoPromoteWin(){
   const c=MEM.promote_win||{};
   const flag=String(c.flag||'Y').toUpperCase(), from=c.open_at||'', to=c.close_at||'', note=c.open_note||'';
@@ -1374,7 +1405,8 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
   deleteJudgeApplication:'judges'};
 const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
-  'listSelectors','saveSelector','deleteSelector','listAccounts','resetPassword'];
+  'listSelectors','saveSelector','deleteSelector','listAccounts','resetPassword',
+  'listResetRequests','handleResetRequest'];
 
 function demoApi(action,p){
   /* ให้โหมดตัวอย่างกันสิทธิ์และล็อกขอบเขตแบบเดียวกับ Apps Script จะได้ทดสอบได้ตรงกัน */
@@ -1859,12 +1891,66 @@ function demoApi(action,p){
         return false; });
       const q=String(p.q||'').trim();
       if(q) rows=rows.filter(r=>(r.name+' '+r.username+' '+r.scope).indexOf(q)>=0);
-      return {total:rows.length, items:rows.slice(0,300).map(r=>{
+      const show = (p.show_pass==='1'||p.show_pass===true) && ME.role==='district_admin';
+      if(p.group_code) rows=rows.filter(r=>{
+        if(r.role==='school'){ const sc=S.find(x=>String(x.smis)===String(r.scope))||{};
+          return sc.group_code===p.group_code; }
+        return r.scope===p.group_code; });
+      return {total:rows.length, can_see_pass: ME.role==='district_admin', items:rows.slice(0,300).map(r=>{
         const sc=S.find(x=>String(x.smis)===String(r.scope))||{};
-        return Object.assign({},r,{status:'ใช้งาน',last_login:'',
+        const o=Object.assign({},r,{status:'ใช้งาน',last_login:'',
+          group_code: r.role==='school'? (sc.group_code||'') : (r.scope||''),
           where: r.role==='school' ? (sc.school_name||r.scope)+' · '+gname(sc.group_code)
                : (r.scope==='ALL'?'ระดับเขต':gname(r.scope))});
+        if(show){ const extra=(MEM.admins||[]).find(a=>a.user_id===r.user_id);
+          o.pass_code = extra? extra.pass_code : (r.role==='district_admin'?'admin':'admin'); }
+        return o;
       })}; }
+    case 'requestPasswordReset':{
+      MEM.resetreqs=MEM.resetreqs||[];
+      const un=String(p.username||'').trim(), ct=String(p.contact||'').trim();
+      if(!un) throw new Error('กรอกชื่อผู้ใช้ที่ต้องการให้รีเซ็ต');
+      if(!ct) throw new Error('กรอกเบอร์โทรหรืออีเมลที่ติดต่อกลับได้');
+      const known = un==='admin' || G.some(g=>'admin-'+g.group_code===un)
+        || S.some(x=>(x.login_user||('sc'+String(x.smis).slice(-4)))===un)
+        || (MEM.admins||[]).some(a=>a.username===un);
+      if(!known) throw new Error('ไม่พบชื่อผู้ใช้ “'+un+'” ในระบบ — ตรวจตัวสะกดอีกครั้ง');
+      if(MEM.resetreqs.some(r=>r.username===un&&r.status==='รอดำเนินการ'))
+        throw new Error('ส่งคำขอของชื่อผู้ใช้นี้ไปแล้ว กำลังรอเขตดำเนินการ');
+      const g2=G.find(g=>'admin-'+g.group_code===un);
+      const s2=S.find(x=>(x.login_user||('sc'+String(x.smis).slice(-4)))===un);
+      const row={req_id:'RQ'+String(MEM.resetreqs.length+1).padStart(5,'0'),created_at:nowStr(),
+        username:un, name: g2? ('ผู้ดูแล '+g2.group_name) : (s2? s2.school_name : 'ผู้ดูแลระบบเขต'),
+        role: g2?'group_admin':(s2?'school':'district_admin'),
+        scope: g2? g2.group_code : (s2? String(s2.smis):'ALL'),
+        where: g2? g2.group_name : (s2? s2.school_name+' · '+gname2(s2.group_code) : 'ระดับเขต'),
+        contact:ct, reason:String(p.reason||''), status:'รอดำเนินการ',
+        handled_by:'', handled_at:'', note:''};
+      MEM.resetreqs.push(row); memSave();
+      return {req_id:row.req_id,username:un,name:row.name,where:row.where,status:row.status}; }
+    case 'listResetRequests':{
+      if(!ME||!ME.own) throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+      let rows=(MEM.resetreqs||[]).slice().reverse();
+      if(ME.role==='group_admin') rows=rows.filter(r=>{
+        if(r.role==='school'){ const sc=S.find(x=>String(x.smis)===String(r.scope))||{};
+          return sc.group_code===ME.scope; }
+        return r.scope===ME.scope; });
+      return {pending:rows.filter(r=>r.status==='รอดำเนินการ').length, items:rows}; }
+    case 'handleResetRequest':{
+      if(!ME||!ME.own) throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+      const r=(MEM.resetreqs||[]).find(x=>x.req_id===p.req_id);
+      if(!r) throw new Error('ไม่พบคำขอนี้');
+      if(r.status!=='รอดำเนินการ') throw new Error('คำขอนี้ดำเนินการไปแล้ว');
+      if(p.decision==='reject'){ Object.assign(r,{status:'ปฏิเสธ',handled_by:ME.name,
+        handled_at:nowStr(),note:String(p.note||'')}); memSave();
+        return {req_id:r.req_id,status:'ปฏิเสธ'}; }
+      const pass=Math.random().toString(36).slice(2,10);
+      const extra=(MEM.admins||[]).find(a=>a.username===r.username);
+      if(extra) extra.pass_code=pass;
+      Object.assign(r,{status:'รีเซ็ตแล้ว',handled_by:ME.name,handled_at:nowStr(),note:String(p.note||'')});
+      memSave();
+      return {req_id:r.req_id,status:'รีเซ็ตแล้ว',username:r.username,name:r.name,
+              pass_code:pass,contact:r.contact}; }
     case 'resetPassword':{
       if(!ME||!ME.own) throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
       const pass=String(p.pass_code||'').trim()||Math.random().toString(36).slice(2,10);
@@ -2816,7 +2902,8 @@ function renderPrint(){
 let ADMINS=[], ADEDIT=null;
 function renderAdmins(){
   const ac=$('#acCard'); if(ac) ac.style.display = isOwner()? '' : 'none';
-  if(isOwner()) searchAccounts();
+  const rq=$('#rqCard'); if(rq) rq.style.display = isOwner()? '' : 'none';
+  if(isOwner()){ searchAccounts(); loadResetRequests(); }
   $('#adSub').textContent = (ME&&ME.role==='group_admin')
     ? 'ผู้ดูแลของ '+groupName(ME.scope)
     : 'ผู้ดูแลระดับเขตและระดับกลุ่มทั้งหมด';
@@ -4061,14 +4148,79 @@ async function doPromote(){
   }catch(e){ alert(e.message); }
 }
 
+/* ---------- ลืมรหัสผ่าน: ขอให้เขตรีเซ็ตให้ ---------- */
+function toggleForgot(){
+  const b=$('#forgotBox'); b.style.display = b.style.display==='none'? '' : 'none';
+  if(b.style.display==='') $('#fgUser').focus();
+}
+async function sendForgot(){
+  try{
+    const r=await api('requestPasswordReset',{username:$('#fgUser').value.trim(),
+      contact:$('#fgContact').value.trim(), reason:$('#fgReason').value.trim()});
+    $('#fgMsg').innerHTML=`<div class="note g"><span>✅</span><div>
+      ส่งคำขอแล้ว (เลขที่ ${r.req_id}) · บัญชี <b>${r.username}</b> — ${r.name||''}
+      <div class="hint" style="margin-top:4px">สำนักงานเขตจะรีเซ็ตให้และแจ้งรหัสใหม่กลับไปตามช่องทางที่ให้ไว้</div></div></div>`;
+    $('#fgUser').value=''; $('#fgContact').value=''; $('#fgReason').value='';
+  }catch(e){ $('#fgMsg').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+}
+
+/* ---------- คำขอรีเซ็ตรหัสผ่าน (ฝั่งผู้ดูแล) ---------- */
+async function loadResetRequests(){
+  try{
+    const r=await api('listResetRequests',{});
+    $('#rqBadge').innerHTML = r.pending
+      ? `<span class="pill w">รอดำเนินการ ${r.pending} คำขอ</span>` : '<span class="pill ok">ไม่มีคำขอค้าง</span>';
+    const pill={'รอดำเนินการ':'w','รีเซ็ตแล้ว':'ok','ปฏิเสธ':'b'};
+    tbl($('#rqTbl'),['วันที่','บัญชี','ผู้ขอ / สังกัด','ติดต่อกลับ','หมายเหตุ','สถานะ','จัดการ'],
+      (r.items||[]).map(x=>`<tr><td class="hint">${x.created_at||''}</td>
+        <td><code>${x.username}</code></td><td>${x.name||''}<div class="hint">${x.where||''}</div></td>
+        <td>${x.contact||''}</td><td>${x.reason||''}</td>
+        <td><span class="pill ${pill[x.status]||''}">${x.status}</span>
+          ${x.handled_by? `<div class="hint">${x.handled_by} ${x.handled_at||''}</div>`:''}</td>
+        <td>${x.status==='รอดำเนินการ'
+          ? `<button class="btn sm" onclick="doResetReq('${x.req_id}','reset')">รีเซ็ตให้</button>
+             <button class="btn g sm" onclick="doResetReq('${x.req_id}','reject')">ปฏิเสธ</button>`
+          : '<span class="hint">-</span>'}</td></tr>`).join(''));
+  }catch(e){ $('#rqTbl').innerHTML=''; $('#rqBadge').innerHTML=''; }
+}
+async function doResetReq(id, decision){
+  if(decision==='reject'){
+    const note=prompt('เหตุผลที่ปฏิเสธคำขอนี้ (ถ้ามี)','');
+    if(note===null) return;
+    try{ await api('handleResetRequest',{req_id:id, decision:'reject', note:note}); loadResetRequests(); }
+    catch(e){ alert(e.message); }
+    return;
+  }
+  if(!confirm('ออกรหัสผ่านใหม่ให้บัญชีนี้?')) return;
+  try{
+    const r=await api('handleResetRequest',{req_id:id, decision:'reset'});
+    $('#rqMsg').innerHTML=`<div class="note g"><span>🔑</span><div>
+      รีเซ็ตให้ <b>${r.name||r.username}</b> แล้ว · ชื่อผู้ใช้ <b>${r.username}</b> ·
+      รหัสผ่านใหม่ <b style="font-size:17px;letter-spacing:1px">${r.pass_code}</b>
+      <div class="hint" style="margin-top:4px">แจ้งกลับไปที่ ${r.contact||'ช่องทางที่ผู้ขอให้ไว้'} — ระบบจะไม่แสดงรหัสนี้อีก</div></div></div>`;
+    loadResetRequests(); searchAccounts();
+  }catch(e){ alert(e.message); }
+}
+
 /* ---------- บัญชีผู้ใช้ & รีเซ็ตรหัสผ่าน (ผู้ดูแลหลัก) ---------- */
+let ACC=[];
 async function searchAccounts(){
   try{
-    const r=await api('listAccounts',{q:$('#ac_q').value.trim(), kind:$('#ac_kind').value});
+    const gsel=$('#ac_group');
+    if(gsel && !gsel.options.length)
+      gsel.innerHTML='<option value="">ทุกกลุ่ม</option>'+
+        (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
+    const show=$('#ac_showpass').checked;
+    const r=await api('listAccounts',{q:$('#ac_q').value.trim(), kind:$('#ac_kind').value,
+      group_code:(gsel? gsel.value : ''), show_pass: show?'1':''});
+    ACC=r.items||[];
+    $('#acTools').style.display = (ME&&ME.role==='district_admin')? '' : 'none';
     const roleTxt={district_admin:'ผู้ดูแลเขต',group_admin:'ผู้ดูแลกลุ่ม',school:'โรงเรียน',
                    selector:'กรรมการคัดเลือก',judge:'กรรมการ',head_judge:'ประธานกรรมการ',venue_staff:'เจ้าหน้าที่สนาม'};
-    tbl($('#acTbl'),['ชื่อ','ชื่อผู้ใช้','ประเภท','สังกัด','เข้าระบบล่าสุด','จัดการ'],
-      (r.items||[]).map(x=>`<tr><td>${x.name||''}</td><td><code>${x.username}</code></td>
+    const head=['ชื่อ','ชื่อผู้ใช้'].concat(show?['รหัสผ่าน']:[]).concat(['ประเภท','สังกัด','เข้าระบบล่าสุด','จัดการ']);
+    tbl($('#acTbl'),head,
+      ACC.map(x=>`<tr><td>${x.name||''}</td><td><code>${x.username}</code></td>
+        ${show? `<td><code style="font-size:14px;font-weight:700;letter-spacing:.5px">${x.pass_code||''}</code></td>`:''}
         <td>${roleTxt[x.role]||x.role}</td><td>${x.where||''}</td>
         <td class="hint">${x.last_login||'-'}</td>
         <td><button class="btn g sm" onclick="resetPass('${x.user_id}','${String(x.name||x.username).replace(/'/g,"")}')">รีเซ็ตรหัสผ่าน</button></td></tr>`).join(''));
@@ -4076,6 +4228,19 @@ async function searchAccounts(){
       ? `<div class="note w"><span>ℹ️</span><div>พบ ${r.total} บัญชี แสดง 300 รายการแรก — พิมพ์คำค้นให้แคบลง</div></div>`
       : `<div class="hint">พบ ${r.total} บัญชี</div>`;
   }catch(e){ $('#acNote').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+}
+async function exportAccounts(){
+  if(!ME || ME.role!=='district_admin') return alert('เฉพาะผู้ดูแลเขตเท่านั้น');
+  try{
+    const gsel=$('#ac_group');
+    const r=await api('listAccounts',{q:$('#ac_q').value.trim(), kind:$('#ac_kind').value,
+      group_code:(gsel? gsel.value : ''), show_pass:'1'});
+    const rows=[['ชื่อผู้ใช้','รหัสผ่าน','ชื่อ','ประเภท','สังกัด','เข้าระบบล่าสุด']]
+      .concat((r.items||[]).map(x=>[x.username,x.pass_code||'',x.name||'',x.role,x.where||'',x.last_login||'']));
+    const text='\ufeff'+rows.map(a=>a.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    saveFile('sillapa-accounts-'+stamp()+'.csv', text, 'text/csv');
+    $('#acMsg').innerHTML='<div class="note w"><span>🔒</span><div><b>ไฟล์นี้มีรหัสผ่านทุกบัญชี</b> — เก็บเป็นความลับ อย่าส่งต่อทั้งไฟล์ ให้ตัดเฉพาะแถวของแต่ละกลุ่ม/โรงเรียนส่งแยกกัน</div></div>';
+  }catch(e){ alert(e.message); }
 }
 async function resetPass(id,name){
   if(!confirm('ออกรหัสผ่านใหม่ให้ '+name+' ?\n\nรหัสเดิมจะใช้ไม่ได้ทันที')) return;
