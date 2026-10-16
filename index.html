@@ -598,19 +598,31 @@ body[data-view="admin"] .utilbar{display:none}
       <!-- ===== โหมดกลุ่มโรงเรียน — เป็นคนโอนตัวแทน ===== -->
       <div id="prGroupBox">
         <div id="prWin" style="margin-bottom:13px"></div>
-        <div class="card" style="margin-bottom:13px"><div class="cb row">
-          <div class="fld" style="margin:0"><label>รายการแข่งขัน</label>
-            <select id="prAct" style="min-width:320px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select></div>
-          <div class="fld" style="margin:0"><label>โควตาต่อกลุ่ม</label><input id="prQuota" type="number" value="1" min="1" style="width:90px"></div>
-          <div class="fld" style="margin:0"><label>เกณฑ์ขั้นต่ำ</label>
-            <select id="prMin" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
-              <option>ส่งขึ้นทุกกรณี</option><option>ต้องได้เหรียญทองแดงขึ้นไป</option><option>ต้องได้เหรียญทองเท่านั้น</option></select></div>
-          <span class="sp"></span>
-          <button class="btn" id="prBtn" onclick="doPromote()">โอนตัวแทนขึ้นระดับเขต</button>
-        </div></div>
-        <div class="note w" style="margin-bottom:13px"><span>⚖️</span><div><b>คะแนนเท่ากันที่เส้นโควตา ระบบจะส่งขึ้นทั้งคู่</b> — เป็นไปตามกฎ “เท่ากันได้เท่ากัน” ให้เผื่อสนามและเวลาระดับเขตไว้ด้วย
-          <div class="hint" style="margin-top:6px">ถ้าโอนผิดรายการหรือต้องแก้ไข แจ้งเขตให้รีเซ็ตการโอนของกลุ่ม แล้วโอนใหม่ได้</div></div></div>
-        <div class="card"><div class="ch"><h3>ตัวแทนที่โอนไปแล้ว</h3><span class="sp"></span><span class="hint" id="prMySum"></span></div>
+
+        <div class="note i" style="margin-bottom:13px"><span>🏆</span><div>
+          <b>เกณฑ์ตัวแทนเข้าเขต — ชนะเลิศอันดับ 1 และได้เหรียญทองเท่านั้น</b>
+          <div class="hint" style="margin-top:4px">ติ๊กเลือกได้หลายรายการแล้วกดโอนพร้อมกัน ·
+            คะแนนเท่ากันที่อันดับ 1 ระบบส่งขึ้นทั้งคู่ตามกฎ “เท่ากันได้เท่ากัน” ·
+            รายการที่โอนแล้วจะย้ายลงไปอยู่ด้านล่าง</div></div></div>
+
+        <div class="card" style="margin-bottom:14px">
+          <div class="ch"><h3>รายการที่รอโอน</h3><span class="sp"></span>
+            <label style="display:flex;gap:8px;align-items:center;font-size:13.5px;cursor:pointer">
+              <input type="checkbox" id="prOnlyReady" checked onchange="drawPromoteGroup()" style="width:17px;height:17px">
+              แสดงเฉพาะรายการที่พร้อมโอน</label>
+            <span class="hint" id="prPendSum"></span></div>
+          <div class="cb" style="padding:0;overflow:auto"><table id="prPendTbl"></table></div>
+          <div class="cb" style="border-top:1px solid var(--line)">
+            <div class="row"><label style="display:flex;gap:9px;align-items:center;font-weight:600;cursor:pointer">
+              <input type="checkbox" id="prAll" onchange="prToggleAll()" style="width:19px;height:19px">
+              เลือกทั้งหมดที่พร้อมโอน</label>
+              <span class="sp"></span>
+              <button class="btn" id="prGo" onclick="doPromoteBatch()">โอนตัวแทนที่เลือกขึ้นระดับเขต</button></div>
+            <div id="prMsg" style="margin-top:10px"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="ch"><h3>โอนเข้าเขตแล้ว</h3><span class="sp"></span><span class="hint" id="prDoneSum"></span></div>
           <div class="cb" style="padding:0;overflow:auto"><table id="prTbl"></table></div></div>
       </div>
 
@@ -1410,7 +1422,7 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveStaff:'certadm',deleteStaff:'certadm',saveCertTemplate:'certadm',saveCertConfig:'certadm',
   saveCardTemplate:'cards',savePersonPhoto:'cards',saveNews:'newsmgr',deleteNews:'newsmgr',
   saveDocument:'newsmgr',deleteDocument:'newsmgr',saveSiteSettings:'site',savePermConfig:'perm',
-  printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',
+  printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',promoteBatch:'promote',
   saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
   deleteJudgeApplication:'judges'};
 const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
@@ -1445,8 +1457,9 @@ function demoApi(action,p){
       MEM.site=MEM.site||{};
       const cfg=Object.assign({}, SEED_CONFIG, MEM.site['ALL']||{});
       G.forEach(g=>Object.assign(g, MEM.site[g.group_code]||{}));
+      const cc={}; (MEM.criteria||[]).forEach(c=>{ cc[c.act_id]=(cc[c.act_id]||0)+1; });
       return {config:cfg, groups:G, schools:p.group?S.filter(x=>x.group_code===p.group):S,
-        activities:MEM.activities, criteria:MEM.criteria, venues:[],
+        activities:MEM.activities, criteria:MEM.criteria, crit_count:cc, venues:[],
         news:(MEM.news||[]).filter(n=>!p.group||n.scope==='ALL'||n.scope===p.group),
         documents:(MEM.docs||[]).filter(d=>!p.group||d.scope==='ALL'||d.scope===p.group),
         serverTime:nowStr()}; }
@@ -1829,7 +1842,8 @@ function demoApi(action,p){
       const need=p.min_medal.includes('ทองเท่านั้น')?3:p.min_medal.includes('ทองแดง')?1:0;
       const ord={'ทอง':3,'เงิน':2,'ทองแดง':1,'เข้าร่วม':0};
       let cut=null, picked=[];
-      res.forEach(r=>{ if(ord[r.medal]<need) return;
+      if(p.winner_only){ picked=res.filter(r=>Number(r.rank)===1&&r.medal==='ทอง'); }
+      else res.forEach(r=>{ if(ord[r.medal]<need) return;
         if(picked.length<Number(p.quota)){picked.push(r);cut=r.rank;} else if(r.rank===cut) picked.push(r); });
       let n=0;
       picked.forEach(r=>{ if(MEM.promotions.some(x=>x.entry_id===r.entry_id)) return;
@@ -1843,6 +1857,48 @@ function demoApi(action,p){
           rank:r.rank,medal:r.medal,total:r.total,status:'โอนแล้ว',transferred_at:nowStr(),district_entry_id:nid});
         n++; });
       memSave(); return {promoted:n,quota:p.quota}; }
+    case 'promotableList':{
+      if(!ME||['group_admin','district_admin'].indexOf(ME.role)<0) throw new Error('ไม่มีสิทธิ์ใช้คำสั่งนี้');
+      const g=ME.role==='group_admin'? ME.scope : (p.group||'');
+      if(!g||g==='ALL') throw new Error('เลือกกลุ่มโรงเรียนก่อน');
+      const doneMap={};
+      (MEM.promotions||[]).filter(r=>r.from_group===g).forEach(r=>{ (doneMap[r.act_id]=doneMap[r.act_id]||[]).push(r); });
+      const byAct={};
+      (MEM.results||[]).filter(r=>r.status==='ประกาศแล้ว').forEach(r=>{
+        const e=MEM.entries.find(x=>x.entry_id===r.entry_id);
+        if(!e||e.group_code!==g) return;
+        (byAct[r.act_id]=byAct[r.act_id]||[]).push({r,e});
+      });
+      const nameOf=smis=>{const x=S.find(y=>String(y.smis)===String(smis)); return x?x.school_name:smis;};
+      const pending=[], finished=[];
+      Object.keys(byAct).forEach(id=>{
+        const a=MEM.activities.find(x=>x.act_id===id)||{};
+        const winners=byAct[id].filter(x=>Number(x.r.rank)===1&&x.r.medal==='ทอง')
+          .map(x=>({entry_id:x.r.entry_id,school:nameOf(x.e.school_smis),total:x.r.total,medal:x.r.medal,rank:x.r.rank}));
+        const top=byAct[id].find(x=>Number(x.r.rank)===1);
+        const row={act_id:id,act_code:a.act_code||'',act_name:a.act_name||id,level:a.level||'',
+          category:a.category||'',winners,teams:byAct[id].length,
+          top_medal:top?top.r.medal:'',top_total:top?top.r.total:'',top_school:top?nameOf(top.e.school_smis):''};
+        if(doneMap[id]){ row.status='โอนแล้ว'; row.transferred_at=(doneMap[id][0]||{}).transferred_at||'';
+          row.sent=doneMap[id].map(r=>{const e2=MEM.entries.find(x=>x.entry_id===r.entry_id)||{};
+            return {school:nameOf(e2.school_smis),medal:r.medal,total:r.total};});
+          finished.push(row);
+        } else { row.status=winners.length?'พร้อมโอน':'ยังไม่มีผู้ชนะเลิศเหรียญทอง'; pending.push(row); }
+      });
+      const sf=(x,y)=>String(x.act_code)<String(y.act_code)?-1:1;
+      pending.sort(sf); finished.sort(sf);
+      return {window:demoPromoteWin(), group:g, pending, done:finished,
+              total_acts:(MEM.activities||[]).length}; }
+    case 'promoteBatch':{
+      const ids=p.act_ids||[];
+      if(!ids.length) throw new Error('ยังไม่ได้เลือกรายการที่จะโอน');
+      let ok=0, teams=0; const failed=[];
+      ids.forEach(id=>{ try{
+        const r=demoApi('promoteToDistrict',{act_id:id,group:p.group,quota:1,
+          min_medal:'ต้องได้เหรียญทองเท่านั้น',winner_only:1});
+        if(r.promoted){ ok++; teams+=r.promoted; } else failed.push({act_id:id,error:'ไม่มีทีมที่เข้าเกณฑ์ (ชนะเลิศเหรียญทอง)'});
+      }catch(e){ failed.push({act_id:id,error:e.message}); } });
+      return {ok,teams,failed}; }
     case 'promotionBoard':{
       const w=demoPromoteWin();
       const scope = (ME&&ME.role==='group_admin') ? ME.scope : (p.group==='ALL'?'':(p.group||''));
@@ -2143,6 +2199,7 @@ function demoApi(action,p){
       MEM.promote_win={flag:p.promote_open||'Y',open_at:p.promote_open_at||'',
                        close_at:p.promote_close_at||'',open_note:p.promote_open_note||''};
       memSave(); return demoPromoteWin(); }
+    case 'allCriteria': return MEM.criteria||[];
     case 'publicResults':{
       const rows=MEM.results.map(r=>{ const e=MEM.entries.find(x=>x.entry_id===r.entry_id)||{};
         const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
@@ -2186,19 +2243,63 @@ function demoCompute(actId){
 function nowStr(){ const d=new Date(); return d.toISOString().slice(0,19).replace('T',' '); }
 
 /* ============================ boot ============================ */
-async function boot(){
+/** เก็บข้อมูลตั้งต้นไว้ในเครื่อง เพื่อให้เปิดหน้าครั้งต่อไปขึ้นทันที ไม่ต้องรอเซิร์ฟเวอร์ */
+const SNAP_KEY='sillapa.snap.v1';
+function snapSave(db, scope){
+  try{ LS.setItem(SNAP_KEY, JSON.stringify({t:Date.now(), scope:scope, db:db})); }catch(e){}
+}
+function snapLoad(scope){
   try{
-    DB = await api('bootstrap', {group: SCOPE==='ALL'?'':SCOPE});
+    const o=JSON.parse(LS.getItem(SNAP_KEY)||'null');
+    if(!o || o.scope!==scope) return null;
+    if(Date.now()-o.t > 7*24*3600*1000) return null;   /* เก่าเกิน 7 วัน ไม่ใช้ */
+    return o.db;
+  }catch(e){ return null; }
+}
+/** โหลดเกณฑ์การให้คะแนนเมื่อต้องใช้เท่านั้น (745 ข้อ ทำให้หน้าแรกช้า) */
+async function ensureCrit(){
+  if(DB.criteria && DB.criteria.length!==undefined) return DB.criteria;
+  try{ DB.criteria = await api('allCriteria',{}); }catch(e){ DB.criteria=[]; }
+  return DB.criteria;
+}
+function critCount(actId){
+  if(DB.criteria) return DB.criteria.filter(c=>c.act_id===actId).length;
+  return Number((DB.crit_count||{})[actId]||0);
+}
+
+async function boot(){
+  const sc = SCOPE==='ALL'?'':SCOPE;
+  /* 1) มีข้อมูลเก่าในเครื่อง → วาดหน้าให้เห็นทันที */
+  const snap = (!DEMO()) ? snapLoad(sc) : null;
+  if(snap && !window.__BOOTED){
+    DB = snap; window.__BOOTED=1;
+    try{ buildScopeSel(); applyScope(); renderAll(); syncUrl(); go(PAGE); }catch(e){}
+    setTimeout(()=>{ refreshBoot(sc); }, 50);            /* 2) อัปเดตเบื้องหลัง */
+    return;
+  }
+  try{
+    DB = await api('bootstrap', {group: sc});
+    if(!DEMO()) snapSave(DB, sc);
   }catch(e){ alert('เชื่อมต่อฐานข้อมูลไม่สำเร็จ: '+e.message+'\nระบบจะทำงานในโหมดตัวอย่างแทน');
     API=''; DB = await api('bootstrap',{}); }
+  window.__BOOTED=1;
   /* ยังไม่เข้าสู่ระบบ = เห็นเฉพาะหน้าเว็บสาธารณะเสมอ */
   if(!ME){ VIEW='public'; LS.setItem(K.view,'public');
     if(isAdminPage(PAGE) || !PUBLIC_PAGES.some(x=>x[0]===PAGE)) PAGE='home'; }
   if(PAGE==='cert' && !isOpen('cert_open') && !ME) PAGE='home';
   const lk0=lockedScope();
   if(lk0 && SCOPE!==lk0){ SCOPE=lk0; LS.setItem(K.scope,SCOPE);
-    DB = await api('bootstrap',{group:SCOPE}); }
+    DB = await api('bootstrap',{group:SCOPE}); if(!DEMO()) snapSave(DB, SCOPE); }
   buildScopeSel(); applyScope(); renderAll(); syncUrl(); go(PAGE);
+}
+/** ดึงข้อมูลใหม่เงียบ ๆ แล้ววาดซ้ำถ้ามีอะไรเปลี่ยน */
+async function refreshBoot(sc){
+  try{
+    const fresh = await api('bootstrap',{group:sc});
+    const same = JSON.stringify(fresh)===JSON.stringify(DB);
+    DB = fresh; snapSave(DB, sc);
+    if(!same){ buildScopeSel(); applyScope(); renderAll(); }
+  }catch(e){}
 }
 function schoolsOf(scope){ return scope==='ALL'?DB.schools:DB.schools.filter(s=>s.group_code===scope); }
 /** รายการแข่งขันเป็นชุดกลางของเขต — เขต กลุ่ม และโรงเรียน เห็นชุดเดียวกันเสมอ */
@@ -3521,7 +3622,8 @@ function drawActs(){
 }
 
 /** ดูเกณฑ์แบบอ่านอย่างเดียว — ทุกคนเปิดได้ ไม่ต้องล็อกอิน */
-function viewCrit(actId){
+async function viewCrit(actId){
+  await ensureCrit();
   const a=(DB.activities||[]).find(x=>x.act_id===actId)||{};
   const its=(DB.criteria||[]).filter(c=>c.act_id===actId).sort((x,y)=>x.order-y.order);
   const tot=its.reduce((s,c)=>s+Number(c.max_score||0),0);
@@ -3598,7 +3700,7 @@ function renderDash(){
     ].map(s=>`<div class="stat"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
     tbl($('#dashTbl'),['รายการแข่งขัน','ระดับชั้น','ทีมที่สมัคร','เกณฑ์','สถานะ'],
       A.map(a=>{ const n=ent.filter(e=>e.act_id===a.act_id).length;
-        const nc=(DB.criteria||[]).filter(c=>c.act_id===a.act_id).length;
+        const nc=critCount(a.act_id);
         return `<tr><td><b>${a.act_name}</b></td><td>${a.level}</td><td class="num">${n}</td>
           <td>${nc?'<span class="pill ok">'+nc+' หัวข้อ</span>':'<span class="pill b">ยังไม่มีเกณฑ์</span>'}</td>
           <td>${pubActs.has(a.act_id)?'<span class="pill ok">ประกาศผลแล้ว 🔒</span>':'<span class="pill w">ยังไม่ประกาศ</span>'}</td></tr>`;
@@ -3608,6 +3710,7 @@ function renderDash(){
 
 /* ---------- จัดการรายการ & เกณฑ์ ---------- */
 function renderActEdit(){
+  if(!DB.criteria) ensureCrit().then(()=>{ if(PAGE==='actedit') renderActEdit(); });
   const A=actsOf();
   const cats={}; A.forEach(a=>cats[a.category]=(cats[a.category]||0)+1);
   const lvls={}; A.forEach(a=>lvls[a.level]=(lvls[a.level]||0)+1);
@@ -3670,6 +3773,8 @@ async function doRename(btn){
   }catch(e){ alert(e.message); }
 }
 function critStat(actId){
+  if(!DB.criteria) { const n0=critCount(actId);
+    return n0? `<span class="pill ok">${n0} หัวข้อ</span>` : '<span class="pill w">ยังไม่มีเกณฑ์</span>'; }
   const nc=(DB.criteria||[]).filter(c=>c.act_id===actId);
   const sum=nc.reduce((s,c)=>s+Number(c.max_score||0),0);
   return {n:nc.length, sum, state: !nc.length?'none' : (sum===100?'ok':'bad')};
@@ -3778,9 +3883,10 @@ function delAct(id){
     DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE}); renderActEdit(); fillActSelects();
   }).catch(e=>alert(e.message));
 }
-function editCrit(actId){
+async function editCrit(actId){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   if(ME.role!=='district_admin') return viewCrit(actId);
+  await ensureCrit();
   const act=(DB.activities||[]).find(a=>a.act_id===actId)||{};
   const items=(DB.criteria||[]).filter(c=>c.act_id===actId).sort((a,b)=>a.order-b.order);
   const list=items.length?items:[{item_name:'',max_score:''}];
@@ -3889,8 +3995,9 @@ function critSum(){
     warn.innerHTML = n? '<span>⚠️</span><div>มี '+n+' หัวข้อที่ยังไม่ได้ใส่ชื่อ — จะไม่ถูกบันทึก ใส่ชื่อหรือกดลบทิ้งก่อน</div>':'';
   }
 }
-function copyCrit(){
+async function copyCrit(){
   const src=$('#copyFrom').value; if(!src) return;
+  await ensureCrit();
   const its=(DB.criteria||[]).filter(c=>c.act_id===src).sort((a,b)=>a.order-b.order);
   if(!its.length) return alert('รายการนั้นยังไม่มีเกณฑ์');
   document.getElementById('critList').innerHTML=its.map(critRow).join(''); critSum();
@@ -4004,6 +4111,7 @@ function renderScore(){
     $('#scJudge').innerHTML=Array.from({length:nj},(_,i)=>`<option value="J${i+1}">กรรมการคนที่ ${i+1}</option>`).join('');
     $('#scJudge').dataset.n=nj;
   }
+  if(!DB.criteria){ ensureCrit().then(()=>renderScore()); return; }
   const crit=(DB.criteria||[]).filter(c=>c.act_id===actId).sort((a,b)=>a.order-b.order);
   if(!crit.length){ $('#scTbl').innerHTML='<tbody><tr><td style="padding:26px;text-align:center;color:var(--ink-3)">รายการนี้ยังไม่ได้ตั้งเกณฑ์การให้คะแนน — ไปที่ “จัดการรายการ &amp; เกณฑ์”</td></tr></tbody>'; return; }
   api('listEntries',{group:SCOPE==='ALL'?'':SCOPE, act_id:actId}).then(ent=>{
@@ -4077,10 +4185,11 @@ async function renderPromote(){
     ? 'ทีมที่ติดโควตาของกลุ่มจะถูกส่งขึ้นเป็นผู้สมัครระดับเขต พร้อมป้ายบอกกลุ่มต้นทางและอันดับ'
     : 'เขตเห็นข้อมูลที่กลุ่มโอนเข้ามา เปิด-ปิดช่วงเวลารับโอน และรีเซ็ตให้กลุ่มโอนใหม่ได้';
   if(!ME) return;
+  if(grp){ await loadPromotable(); return; }
   try{
-    PRB = await api('promotionBoard', grp?{}:{group: SCOPE==='ALL'?'':SCOPE});
+    PRB = await api('promotionBoard', {group: SCOPE==='ALL'?'':SCOPE});
   }catch(e){ PRB=null; return; }
-  grp ? drawPromoteGroup() : drawPromoteDistrict();
+  drawPromoteDistrict();
 }
 
 function prWinPill(w){
@@ -4094,26 +4203,77 @@ function prWinRange(w){
   return 'ไม่จำกัดวัน';
 }
 
-/* ---------- โหมดกลุ่ม ---------- */
+/* ---------- โหมดกลุ่ม: ติ๊กเลือกแล้วโอนพร้อมกัน ---------- */
+let PRL=null;
+async function loadPromotable(){
+  try{ PRL = await api('promotableList',{}); }catch(e){ PRL=null; }
+  drawPromoteGroup();
+}
 function drawPromoteGroup(){
-  const w=PRB.window;
+  const w=(PRL&&PRL.window)||(PRB&&PRB.window)||{open:true,note:''};
   $('#prWin').innerHTML = w.open
     ? `<div class="note g"><span>✅</span><div><b>เขตเปิดระบบรับโอนตัวแทนแล้ว</b> · ช่วงเวลา ${prWinRange(w)}</div></div>`
     : `<div class="note w"><span>⏸️</span><div><b>ยังโอนตัวแทนไม่ได้</b> — ${w.note||'เขตยังไม่เปิดระบบรับโอน'}</div></div>`;
-  const b=$('#prBtn'); if(b){ b.disabled=!w.open; b.style.opacity=w.open?'':'.5'; b.style.cursor=w.open?'':'not-allowed'; }
+  const btn=$('#prGo'); if(btn){ btn.disabled=!w.open; btn.style.opacity=w.open?'':'.5'; btn.style.cursor=w.open?'':'not-allowed'; }
+  if(!PRL){ tbl($('#prPendTbl'),['เลือก','รายการแข่งขัน','ระดับชั้น','ผู้ชนะเลิศ','เหรียญ/คะแนน'],''); return; }
 
-  const items=PRB.items||[];
-  $('#prMySum').textContent = items.length
-    ? `โอนแล้ว ${items.length} รายการ · ${PRB.total_teams} ทีม` : '';
-  const rows=[];
-  items.forEach(it=>it.teams.forEach(t=>{
-    rows.push(`<tr><td><b>${it.act_name}</b> <span class="hint">${it.level||''}</span></td>
-      <td>${cleanName(t.school)}</td><td class="num">${t.rank||''}</td>
-      <td>${t.medal? t.medal+' · '+t.total : '-'}</td>
-      <td class="hint">${t.transferred_at||''}</td>
-      <td><span class="pill ${t.status==='สละสิทธิ์'?'b':'ok'}">${t.status==='สละสิทธิ์'?'สละสิทธิ์':'โอนเข้าเขตแล้ว'}</span></td></tr>`);
-  }));
-  tbl($('#prTbl'),['รายการแข่งขัน','โรงเรียน','อันดับในกลุ่ม','เหรียญ/คะแนนรอบกลุ่ม','โอนเมื่อ','สถานะ'],rows.join(''));
+  const onlyReady=$('#prOnlyReady')? $('#prOnlyReady').checked : true;
+  let pend=(PRL.pending||[]);
+  const ready=pend.filter(x=>x.winners.length);
+  if(onlyReady) pend=ready;
+
+  $('#prPendSum').textContent = `พร้อมโอน ${ready.length} รายการ · รอประกาศผล/ยังไม่มีผู้ชนะเลิศ ${(PRL.pending||[]).length-ready.length} รายการ`;
+  tbl($('#prPendTbl'),['เลือก','รายการแข่งขัน','ระดับชั้น','ผู้ชนะเลิศ (อันดับ 1 เหรียญทอง)','เหรียญ/คะแนน'],
+    pend.map(x=>{
+      const ok=x.winners.length>0;
+      return `<tr style="${ok?'':'opacity:.55'}">
+        <td style="text-align:center">${ok
+          ? `<input type="checkbox" class="prChk" value="${x.act_id}" onchange="prCount()" style="width:19px;height:19px">`
+          : '—'}</td>
+        <td><b>${x.act_code? x.act_code+' · ':''}${x.act_name}</b>
+          <div class="hint">${x.category||''} · สมัคร ${x.teams} ทีม</div></td>
+        <td>${x.level||''}</td>
+        <td>${ok? x.winners.map(wn=>cleanName(wn.school)).join('<br>')
+                : `<span class="pill w">${x.top_medal? 'ผู้ชนะได้เหรียญ'+x.top_medal+' ยังไม่ถึงเกณฑ์' : 'ยังไม่ประกาศผล'}</span>`}</td>
+        <td>${ok? x.winners.map(wn=>`<span class="pill ok">ทอง</span> ${wn.total}`).join('<br>')
+                : (x.top_total? x.top_medal+' '+x.top_total : '-')}</td></tr>`;
+    }).join(''));
+
+  const done=(PRL.done||[]);
+  $('#prDoneSum').textContent = done.length? `${done.length} รายการ · ${done.reduce((n,x)=>n+(x.sent||[]).length,0)} ทีม` : '';
+  tbl($('#prTbl'),['รายการแข่งขัน','ระดับชั้น','ตัวแทนที่ส่งขึ้นเขต','เหรียญ/คะแนน','โอนเมื่อ'],
+    done.map(x=>`<tr><td><b>${x.act_code? x.act_code+' · ':''}${x.act_name}</b></td><td>${x.level||''}</td>
+      <td>${(x.sent||[]).map(t=>cleanName(t.school)).join('<br>')}</td>
+      <td>${(x.sent||[]).map(t=>`<span class="pill ok">${t.medal}</span> ${t.total}`).join('<br>')}</td>
+      <td class="hint">${x.transferred_at||''}</td></tr>`).join(''));
+  prCount();
+}
+function prToggleAll(){
+  const on=$('#prAll').checked;
+  $$('.prChk').forEach(c=>{ c.checked=on; });
+  prCount();
+}
+function prCount(){
+  const n=$$('.prChk').filter(c=>c.checked).length;
+  const b=$('#prGo'); if(b) b.textContent = n? `โอนตัวแทนที่เลือก ${n} รายการขึ้นระดับเขต` : 'โอนตัวแทนที่เลือกขึ้นระดับเขต';
+}
+async function doPromoteBatch(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  if(ME.role!=='group_admin') return alert('การโอนตัวแทนเป็นงานของผู้ดูแลกลุ่มโรงเรียน');
+  const ids=$$('.prChk').filter(c=>c.checked).map(c=>c.value);
+  if(!ids.length) return alert('ยังไม่ได้ติ๊กเลือกรายการที่จะโอน');
+  if(!confirm('โอนตัวแทน '+ids.length+' รายการขึ้นระดับเขต?\n\nระบบจะส่งเฉพาะผู้ชนะเลิศอันดับ 1 ที่ได้เหรียญทอง')) return;
+  const b=$('#prGo'); b.disabled=true; b.textContent='กำลังโอน…';
+  try{
+    const r=await api('promoteBatch',{act_ids:ids});
+    $('#prMsg').innerHTML=`<div class="note g"><span>✅</span><div>
+      โอนสำเร็จ <b>${r.ok}</b> รายการ · รวม <b>${r.teams}</b> ทีม
+      ${(r.failed&&r.failed.length)? '<div class="hint" style="margin-top:6px">ไม่สำเร็จ '+r.failed.length+' รายการ: '+r.failed.map(f=>f.act_id+' ('+f.error+')').join(', ')+'</div>':''}
+      <div class="hint" style="margin-top:4px">รายการที่โอนแล้วย้ายลงไปอยู่ในตาราง “โอนเข้าเขตแล้ว” ด้านล่าง</div></div></div>`;
+    $('#prAll').checked=false;
+    await loadPromotable();
+  }catch(e){ $('#prMsg').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+  finally{ b.disabled=false; prCount(); }
 }
 
 /* ---------- โหมดเขต ---------- */
@@ -4305,7 +4465,7 @@ async function resetPass(id,name){
 /* ============================ ชุดตัวเลือกมาตรฐาน (Dropdown) ============================
    รวมไว้ที่เดียว เพื่อให้ทุกฟอร์มกรอกข้อมูลรูปแบบเดียวกัน แก้ที่นี่ที่เดียวใช้ได้ทั้งระบบ   */
 const OPT_PREFIX_STU   = ['ด.ช.','ด.ญ.','นาย','นางสาว'];
-const OPT_PREFIX_ADULT = ['นาย','นาง','นางสาว','ว่าที่ ร.ต.','ว่าที่ ร.ท.','ดร.','ผศ.ดร.','รศ.ดร.'];
+const OPT_PREFIX_ADULT = ['นาย','นาง','นางสาว','ว่าที่ ร.ต.','ว่าที่ ร.ต.หญิง','ว่าที่ ร.ท.','ดร.'];
 const OPT_CLASS_ALL    = ['อ.1','อ.2','อ.3','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
 const OPT_POSITION = ['ครู','ครูผู้ช่วย','ครูอัตราจ้าง','พนักงานราชการ','ผู้อำนวยการโรงเรียน',
   'รองผู้อำนวยการโรงเรียน','ศึกษานิเทศก์','ผู้อำนวยการกลุ่ม','นักวิชาการศึกษา',
