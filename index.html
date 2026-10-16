@@ -345,10 +345,11 @@ body[data-view="admin"] .utilbar{display:none}
   <div class="utilbar"><div class="in">
     <span class="lbl" id="utilTitle">งานศิลปหัตถกรรมนักเรียน · ปีการศึกษา</span>
     <span style="flex:1"></span>
-    <span class="lbl">เลือกเว็บ</span>
+    <span class="lbl" id="pubScopeLbl">เลือกเว็บ</span>
     <select id="scopeSelPub" onchange="setScope(this.value)"></select>
     <span class="who" id="pubWho"></span>
     <button class="btn" id="pubAuth" onclick="gotoAdmin()">เข้าสู่ระบบ</button>
+    <button class="btn g" id="pubLogout" style="display:none" onclick="logoutNow()">ออกจากระบบ</button>
   </div></div>
   <div class="banner" id="banner"><div class="shade"></div>
     <div class="bin"><span class="kw" id="bKw">งานศิลปหัตถกรรมนักเรียน</span>
@@ -422,7 +423,11 @@ body[data-view="admin"] .utilbar{display:none}
       <span class="sp"></span>
       <span class="tag" id="modeTag"></span>
       <select id="scopeSel" onchange="setScope(this.value)" style="padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px"></select>
+      <span id="scopeChip" style="display:none;padding:6px 12px;border-radius:9px;background:var(--brand,#E2620E);
+            color:#fff;font-size:13px;font-weight:700;white-space:nowrap"></span>
       <span id="whoami" class="hint" style="max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <button class="btn g" id="admLogout" style="display:none;padding:5px 12px;font-size:12.5px"
+              onclick="logoutNow()">ออกจากระบบ</button>
     </div>
 
     <div class="note i" id="ownerNote" style="display:none;margin-bottom:12px"><span>🔗</span><div>
@@ -431,7 +436,7 @@ body[data-view="admin"] .utilbar{display:none}
       · หน้าที่ของกลุ่มและโรงเรียนคือ <b>รับสมัคร · จัดตาราง · ให้คะแนน · ประกาศผล</b></div></div>
     <div class="strip" id="gStrip" style="display:none">🏁 <b>ขณะนี้อยู่ในเว็บของกลุ่มโรงเรียน (รอบคัดเลือก)</b>
       — ทีมที่ได้รับคัดเลือกจะเป็นตัวแทนเข้าแข่งขันระดับเขตพื้นที่
-      <span class="bk" onclick="setScope('ALL')">← ไปเว็บระดับเขต</span></div>
+      <span class="bk" id="gBack" onclick="setScope('ALL')">← ไปเว็บระดับเขต</span></div>
 
     <div class="livebar noprint">
       <span class="dt"></span>
@@ -975,6 +980,27 @@ body[data-view="admin"] .utilbar{display:none}
                style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
         <div class="cb" style="padding:0"><div style="overflow:auto"><table id="adTbl"></table></div></div></div>
 
+      <div class="card" id="acCard" style="margin-top:14px">
+        <div class="ch"><h3>บัญชีกลุ่มโรงเรียน &amp; โรงเรียน — รีเซ็ตรหัสผ่าน</h3><span class="sp"></span>
+          <select id="ac_kind" onchange="searchAccounts()"
+                  style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
+            <option value="">ทุกประเภท</option>
+            <option value="group_admin">ผู้ดูแลกลุ่มโรงเรียน</option>
+            <option value="school">โรงเรียน</option>
+            <option value="selector">กรรมการคัดเลือก</option>
+            <option value="district_admin">ผู้ดูแลเขต</option></select>
+          <input id="ac_q" placeholder="ค้นชื่อโรงเรียน / ชื่อผู้ใช้…" onkeydown="if(event.key==='Enter')searchAccounts()"
+                 style="min-width:220px;padding:8px 12px;border:1px solid var(--line);border-radius:10px">
+          <button class="btn g" onclick="searchAccounts()">ค้นหา</button></div>
+        <div class="cb">
+          <div class="note i" style="margin-bottom:10px"><span>🔐</span><div>
+            ระบบไม่แสดงรหัสผ่านเดิมเพื่อความปลอดภัย — ถ้าผู้ใช้ลืมรหัส ให้กด <b>รีเซ็ตรหัสผ่าน</b>
+            ระบบจะออกรหัสใหม่และแสดงให้เห็นครั้งเดียว กรุณาคัดลอกส่งให้เจ้าตัวทันที</div></div>
+          <div id="acMsg" style="margin-bottom:10px"></div>
+          <div id="acNote" style="margin-bottom:10px"></div>
+          <div style="overflow:auto"><table id="acTbl"></table></div>
+        </div></div>
+
       <div class="card" id="adForm" style="display:none;margin-top:14px">
         <div class="ch"><h3 id="adFormTitle">เพิ่มผู้ดูแล</h3></div>
         <div class="cb">
@@ -1348,10 +1374,16 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
   deleteJudgeApplication:'judges'};
 const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
-  'listSelectors','saveSelector','deleteSelector'];
+  'listSelectors','saveSelector','deleteSelector','listAccounts','resetPassword'];
 
 function demoApi(action,p){
-  /* ให้โหมดตัวอย่างกันสิทธิ์แบบเดียวกับ Apps Script จะได้ทดสอบได้ตรงกัน */
+  /* ให้โหมดตัวอย่างกันสิทธิ์และล็อกขอบเขตแบบเดียวกับ Apps Script จะได้ทดสอบได้ตรงกัน */
+  if(ME && ME.role==='group_admin'){
+    p.group=ME.scope; if(p.scope!==undefined) p.scope=ME.scope;
+  } else if(ME && ME.role==='school'){
+    const sc=(DB.schools||[]).find(x=>String(x.smis)===String(ME.scope));
+    if(sc){ p.group=sc.group_code; if(p.scope!==undefined) p.scope=sc.group_code; }
+  }
   if(ME && (ME.role==='district_admin' || ME.role==='group_admin')){
     if(DEMO_OWNER.indexOf(action)>=0 && !ME.own)
       throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
@@ -1807,6 +1839,51 @@ function demoApi(action,p){
       MEM.results=MEM.results.filter(x=>ids.indexOf(x.entry_id)<0);
       MEM.promotions=MEM.promotions.filter(r=>!(r.from_group===g&&(!act||r.act_id===act)));
       memSave(); return {teams:hit.length,entries:ids.length}; }
+    case 'listAccounts':{
+      if(!ME||!ME.own) throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+      MEM.admins=MEM.admins||[];
+      const gname=c=>{const g=G.find(x=>x.group_code===c); return g?g.group_name:c;};
+      let rows=[{user_id:'U0001',username:'admin',name:'ผู้ดูแลระบบเขต',role:'district_admin',scope:'ALL'}]
+        .concat(G.map(g=>({user_id:'U-'+g.group_code,username:'admin-'+g.group_code,
+          name:'ผู้ดูแล '+g.group_name,role:'group_admin',scope:g.group_code})))
+        .concat(S.filter(x=>x.can_register!=='N').map(x=>({user_id:'U-'+x.smis,
+          username:x.login_user||('sc'+String(x.smis).slice(-4)),name:x.school_name,
+          role:'school',scope:String(x.smis)})))
+        .concat(MEM.admins.map(a=>({user_id:a.user_id,username:a.username,name:a.name,
+          role:a.role,scope:a.scope})));
+      if(p.kind) rows=rows.filter(r=>r.role===p.kind);
+      if(ME.role==='group_admin') rows=rows.filter(r=>{
+        if(r.role==='group_admin') return r.scope===ME.scope;
+        if(r.role==='school'){ const sc=S.find(x=>String(x.smis)===String(r.scope))||{};
+          return sc.group_code===ME.scope; }
+        return false; });
+      const q=String(p.q||'').trim();
+      if(q) rows=rows.filter(r=>(r.name+' '+r.username+' '+r.scope).indexOf(q)>=0);
+      return {total:rows.length, items:rows.slice(0,300).map(r=>{
+        const sc=S.find(x=>String(x.smis)===String(r.scope))||{};
+        return Object.assign({},r,{status:'ใช้งาน',last_login:'',
+          where: r.role==='school' ? (sc.school_name||r.scope)+' · '+gname(sc.group_code)
+               : (r.scope==='ALL'?'ระดับเขต':gname(r.scope))});
+      })}; }
+    case 'resetPassword':{
+      if(!ME||!ME.own) throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+      const pass=String(p.pass_code||'').trim()||Math.random().toString(36).slice(2,10);
+      MEM.admins=MEM.admins||[];
+      const t=MEM.admins.find(a=>a.user_id===p.user_id);
+      if(t) t.pass_code=pass;
+      memSave();
+      let who={username:p.user_id,name:'',role:''};
+      if(t) who={username:t.username,name:t.name,role:t.role};
+      else if(p.user_id==='U0001') who={username:'admin',name:'ผู้ดูแลระบบเขต',role:'district_admin'};
+      else if(String(p.user_id).startsWith('U-g')){
+        const g=G.find(x=>'U-'+x.group_code===p.user_id)||{};
+        who={username:'admin-'+g.group_code,name:'ผู้ดูแล '+g.group_name,role:'group_admin'};
+      } else {
+        const sc=S.find(x=>'U-'+x.smis===p.user_id)||{};
+        if(sc.smis) who={username:sc.login_user||('sc'+String(sc.smis).slice(-4)),
+                         name:sc.school_name,role:'school'};
+      }
+      return Object.assign({user_id:p.user_id, pass_code:pass}, who); }
     case 'judgeApplyConfig':{
       const cats=[...new Set((MEM.activities||[]).map(a=>a.category).filter(Boolean))];
       const out={window:demoJaWin(), categories:cats};
@@ -2023,6 +2100,9 @@ async function boot(){
   if(!ME){ VIEW='public'; LS.setItem(K.view,'public');
     if(isAdminPage(PAGE) || !PUBLIC_PAGES.some(x=>x[0]===PAGE)) PAGE='home'; }
   if(PAGE==='cert' && !isOpen('cert_open') && !ME) PAGE='home';
+  const lk0=lockedScope();
+  if(lk0 && SCOPE!==lk0){ SCOPE=lk0; LS.setItem(K.scope,SCOPE);
+    DB = await api('bootstrap',{group:SCOPE}); }
   buildScopeSel(); applyScope(); renderAll(); syncUrl(); go(PAGE);
 }
 function schoolsOf(scope){ return scope==='ALL'?DB.schools:DB.schools.filter(s=>s.group_code===scope); }
@@ -2030,13 +2110,34 @@ function schoolsOf(scope){ return scope==='ALL'?DB.schools:DB.schools.filter(s=>
 function actsOf(){ return DB.activities||[]; }
 function groupName(code){ const g=(DB.groups||[]).find(x=>x.group_code===code); return g?g.group_name:code; }
 
-function buildScopeSel(){
-  const s=$('#scopeSel');
-  s.innerHTML='<option value="ALL">ระดับเขต — สพป.อุดรธานี เขต 1</option>'+
-    DB.groups.map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
-  s.value=SCOPE;
+/** ผู้ดูแลกลุ่มและโรงเรียนถูกล็อกไว้ที่กลุ่มของตนเอง สลับไปเขตหรือกลุ่มอื่นไม่ได้ */
+function lockedScope(){
+  if(!ME) return '';
+  if(ME.role==='group_admin') return String(ME.scope||'');
+  if(ME.role==='school'){
+    const sc=(DB.schools||[]).find(x=>String(x.smis)===String(ME.scope));
+    return sc? String(sc.group_code||'') : '';
+  }
+  return '';
 }
-function setScope(v){ SCOPE=v; LS.setItem(K.scope,v); applyScope(); renderAll(); syncUrl(); }
+function buildScopeSel(){
+  const s=$('#scopeSel'), lock=lockedScope();
+  if(lock){
+    s.innerHTML=`<option value="${lock}">${groupName(lock)}</option>`;
+    s.value=lock; s.disabled=true; s.style.opacity='.75'; s.style.cursor='not-allowed';
+    s.title='บัญชีของท่านใช้งานได้เฉพาะเว็บกลุ่มโรงเรียนของตนเอง';
+  } else {
+    s.disabled=false; s.style.opacity=''; s.style.cursor='';
+    s.innerHTML='<option value="ALL">ระดับเขต — สพป.อุดรธานี เขต 1</option>'+
+      DB.groups.map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
+    s.value=SCOPE;
+  }
+}
+function setScope(v){
+  const lock=lockedScope();
+  if(lock && v!==lock){ buildScopeSel(); return; }   /* กันสลับข้ามกลุ่ม */
+  SCOPE=v; LS.setItem(K.scope,v); applyScope(); renderAll(); syncUrl();
+}
 
 /* ---------- ชื่องาน ครั้งที่ ปีการศึกษา — อ่านจากชีต Config เสมอ ไม่ฝังเลขไว้ในโค้ด ---------- */
 function cfgv(k,d){ const v=((typeof DB!=='undefined'&&DB&&DB.config)||SEED_CONFIG||{})[k]; return (v===undefined||v==='')?d:v; }
@@ -2050,6 +2151,7 @@ function applyScope(){
   const g = SCOPE!=='ALL';
   document.body.dataset.scope = g?'group':'district';
   $('#gStrip').style.display = g?'flex':'none';
+  const gb=$('#gBack'); if(gb) gb.style.display = lockedScope()? 'none' : '';
   document.title = eventName()+' · '+districtName();
   $('#utilTitle').textContent = shortName()+' · ปีการศึกษา '+acadYear();
   $('#loginKw').textContent   = shortName();
@@ -2086,6 +2188,12 @@ function applyScope(){
   renderBanner(); renderPubNav();
   $('#modeTag').className='tag '+(DEMO()?'demo':'live');
   $('#modeTag').textContent = DEMO()?'โหมดตัวอย่าง (ยังไม่เชื่อม Google Sheets)':'เชื่อม Google Sheets แล้ว';
+  const lockA=lockedScope(), chip=$('#scopeChip'), sl=$('#scopeSel');
+  if(chip && sl){
+    if(lockA){ sl.style.display='none'; chip.style.display=''; chip.textContent='🏁 '+groupName(lockA); }
+    else { sl.style.display=''; chip.style.display='none'; }
+  }
+  const alo=$('#admLogout'); if(alo) alo.style.display = ME? '' : 'none';
   $('#whoami').textContent = ME? (ME.name+' · '+roleTh(ME.role)) : '';
   $('#authBtn').innerHTML = ME? '<i>🚪</i>ออกจากระบบ' : '<i>🔑</i>เข้าสู่ระบบ';
 }
@@ -2186,15 +2294,23 @@ function pubPages(){
 function renderPubNav(){
   $('#pubNav').innerHTML =
     pubPages().map(x=>`<button class="pl ${PAGE===x[0]?'on':''}" onclick="go('${x[0]}')">${x[1]}</button>`).join('');
-  const sel=$('#scopeSelPub');
+  const sel=$('#scopeSelPub'), lbl=$('#pubScopeLbl'), lock=lockedScope();
   if(sel){
-    sel.innerHTML='<option value="ALL">ระดับเขต — '+((DB.config||{}).district_name||'สพป.อุดรธานี เขต 1')+'</option>'+
-      (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
-    sel.value=SCOPE;
+    if(lock){                      /* บัญชีของกลุ่ม/โรงเรียน — ไม่ให้สลับไปกลุ่มอื่น */
+      sel.style.display='none'; if(lbl) lbl.style.display='none';
+    } else {
+      sel.style.display=''; if(lbl) lbl.style.display='';
+      sel.innerHTML='<option value="ALL">ระดับเขต — '+((DB.config||{}).district_name||'สพป.อุดรธานี เขต 1')+'</option>'+
+        (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
+      sel.value=SCOPE;
+    }
   }
-  const w=$('#pubWho'), a=$('#pubAuth');
-  if(w) w.textContent = ME? (ME.name+' · '+roleTh(ME.role)) : '';
+  const w=$('#pubWho'), a=$('#pubAuth'), lo=$('#pubLogout');
+  if(w) w.innerHTML = ME
+    ? (lock? '🏁 <b>'+groupName(lock)+'</b> · ' : '')+ME.name+' · '+roleTh(ME.role)
+    : '';
   if(a) a.textContent = ME? '⚙️ ระบบหลังบ้าน' : 'เข้าสู่ระบบ';
+  if(lo) lo.style.display = ME? '' : 'none';
 }
 
 /* ---------- ข่าวประชาสัมพันธ์ ---------- */
@@ -2699,6 +2815,8 @@ function renderPrint(){
 /* ============================ จัดการผู้ดูแล ============================ */
 let ADMINS=[], ADEDIT=null;
 function renderAdmins(){
+  const ac=$('#acCard'); if(ac) ac.style.display = isOwner()? '' : 'none';
+  if(isOwner()) searchAccounts();
   $('#adSub').textContent = (ME&&ME.role==='group_admin')
     ? 'ผู้ดูแลของ '+groupName(ME.scope)
     : 'ผู้ดูแลระดับเขตและระดับกลุ่มทั้งหมด';
@@ -3943,6 +4061,34 @@ async function doPromote(){
   }catch(e){ alert(e.message); }
 }
 
+/* ---------- บัญชีผู้ใช้ & รีเซ็ตรหัสผ่าน (ผู้ดูแลหลัก) ---------- */
+async function searchAccounts(){
+  try{
+    const r=await api('listAccounts',{q:$('#ac_q').value.trim(), kind:$('#ac_kind').value});
+    const roleTxt={district_admin:'ผู้ดูแลเขต',group_admin:'ผู้ดูแลกลุ่ม',school:'โรงเรียน',
+                   selector:'กรรมการคัดเลือก',judge:'กรรมการ',head_judge:'ประธานกรรมการ',venue_staff:'เจ้าหน้าที่สนาม'};
+    tbl($('#acTbl'),['ชื่อ','ชื่อผู้ใช้','ประเภท','สังกัด','เข้าระบบล่าสุด','จัดการ'],
+      (r.items||[]).map(x=>`<tr><td>${x.name||''}</td><td><code>${x.username}</code></td>
+        <td>${roleTxt[x.role]||x.role}</td><td>${x.where||''}</td>
+        <td class="hint">${x.last_login||'-'}</td>
+        <td><button class="btn g sm" onclick="resetPass('${x.user_id}','${String(x.name||x.username).replace(/'/g,"")}')">รีเซ็ตรหัสผ่าน</button></td></tr>`).join(''));
+    $('#acNote').innerHTML = r.total>300
+      ? `<div class="note w"><span>ℹ️</span><div>พบ ${r.total} บัญชี แสดง 300 รายการแรก — พิมพ์คำค้นให้แคบลง</div></div>`
+      : `<div class="hint">พบ ${r.total} บัญชี</div>`;
+  }catch(e){ $('#acNote').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+}
+async function resetPass(id,name){
+  if(!confirm('ออกรหัสผ่านใหม่ให้ '+name+' ?\n\nรหัสเดิมจะใช้ไม่ได้ทันที')) return;
+  try{
+    const r=await api('resetPassword',{user_id:id});
+    $('#acMsg').innerHTML=`<div class="note g"><span>🔑</span><div>
+      รีเซ็ตรหัสผ่านของ <b>${r.name||r.username}</b> แล้ว ·
+      ชื่อผู้ใช้ <b>${r.username}</b> · รหัสผ่านใหม่ <b style="font-size:17px;letter-spacing:1px">${r.pass_code}</b>
+      <div class="hint" style="margin-top:4px">คัดลอกส่งให้เจ้าตัวทันที — ระบบจะไม่แสดงรหัสนี้อีก</div></div></div>`;
+    searchAccounts();
+  }catch(e){ $('#acMsg').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+}
+
 /* ============================ รับสมัคร & คัดเลือกคณะกรรมการตัดสิน ============================ */
 let APW=null, JAB=null;
 
@@ -4306,8 +4452,15 @@ function exportCsv(what){
 }
 
 /* ---------- auth ---------- */
-function toggleAuth(){ if(ME){ ME=null; TOKEN=''; LS.removeItem(K.me); LS.removeItem(K.token);
-    PAGE='home'; setView('public'); } else openLogin(); }
+function toggleAuth(){ if(ME) logoutNow(); else openLogin(); }
+/** ออกจากระบบ — ล้างบัญชีและกลับไปหน้าเว็บสาธารณะระดับเขต */
+function logoutNow(){
+  if(!ME) return openLogin();
+  ME=null; TOKEN=''; LS.removeItem(K.me); LS.removeItem(K.token);
+  SCOPE='ALL'; LS.setItem(K.scope,'ALL');
+  PAGE='home'; setView('public');
+  buildScopeSel(); boot();
+}
 function openLogin(){ $('#app').style.display='none'; $('#loginView').style.display='block';
   $('#loginCtx').innerHTML = SCOPE==='ALL'
     ? '🏛️ กำลังเข้าสู่ระบบ<b> ระดับเขตพื้นที่</b><br>สพป.อุดรธานี เขต 1'
@@ -4319,7 +4472,7 @@ async function doLogin(){
   try{
     const r=await api('login',{username:$('#lgUser').value.trim(), password:$('#lgPass').value.trim()});
     TOKEN=r.token; ME=r.user; LS.setItem(K.token,TOKEN); LS.setItem(K.me,JSON.stringify(ME));
-    if(ME.role==='group_admin'&&ME.scope) SCOPE=ME.scope;
+    const lk=lockedScope(); if(lk) SCOPE=lk;
     LS.setItem(K.scope,SCOPE);
     closeLogin(); VIEW='admin'; LS.setItem(K.view,'admin');
     applyScope(); renderAll(); go(ME.role==='selector'?'judgeapp':'dash');
