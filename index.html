@@ -679,9 +679,11 @@ body[data-view="admin"] .utilbar{display:none}
               <select id="ap_orgtype" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%">
                 <option>สถานศึกษา</option><option>สำนักงานเขตพื้นที่การศึกษา</option>
                 <option>หน่วยงานอื่น</option><option>ผู้ทรงคุณวุฒิอิสระ</option></select></div>
-            <div class="fld" style="margin:0;flex:1;min-width:260px"><label>โรงเรียน / หน่วยงานที่สังกัด *</label><div id="ap_org_wrap"></div></div>
-            <div class="fld" style="margin:0;min-width:200px"><label>กลุ่มโรงเรียน (ถ้ามี)</label>
-              <select id="ap_group" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%"></select></div>
+            <div class="fld" style="margin:0;width:230px"><label>กลุ่มโรงเรียน *</label>
+              <select id="ap_group" onchange="apGroupChange()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%"></select></div>
+            <div class="fld" style="margin:0;flex:1;min-width:260px"><label>โรงเรียน / หน่วยงานที่สังกัด *</label>
+              <div id="ap_org_wrap"></div>
+              <div class="hint" id="ap_org_hint" style="margin-top:5px"></div></div>
           </div>
           <div class="row" style="margin-top:10px">
             <div class="fld" style="margin:0;width:170px"><label>เบอร์โทรศัพท์ *</label><input id="ap_phone" placeholder="0812345678"></div>
@@ -4844,19 +4846,42 @@ function apFillActs(i, keep){
     `<option value="${a.act_id}">${a.act_code? a.act_code+' · ':''}${a.act_name} · ${a.level}</option>`).join('');
   if(keep) sel.value=keep;
 }
+/** ตัวเลือกโรงเรียนในใบสมัคร — กรองตามกลุ่มโรงเรียนที่เลือกไว้ */
+const AP_NONE='ไม่มี / ไม่ได้สังกัดโรงเรียน';
+const AP_AREA='สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1';
+function apOrgOptions(g){
+  if(!g) return [];
+  if(g==='none') return [AP_NONE, AP_AREA];
+  return (DB.schools||[]).filter(x=>String(x.group_code)===String(g))
+    .map(x=>x.school_name).concat([AP_AREA, AP_NONE]);
+}
+/** เลือกกลุ่มใหม่ → สร้างรายชื่อโรงเรียนในกลุ่มนั้นให้เลือก */
+function apGroupChange(keep){
+  const g=$('#ap_group').value;
+  const list=apOrgOptions(g);
+  $('#ap_org_wrap').innerHTML = selOther('ap_org', list, keep||'', 'ชื่อโรงเรียน/หน่วยงาน');
+  const hint=$('#ap_org_hint');
+  if(hint) hint.textContent = !g ? 'เลือกกลุ่มโรงเรียนก่อน แล้วรายชื่อโรงเรียนในกลุ่มจะขึ้นมาให้เลือก'
+    : (g==='none' ? 'ผู้สมัครจากหน่วยงานอื่น เลือก “ไม่มี” หรือพิมพ์ชื่อหน่วยงานเองได้ที่ “อื่น ๆ (ระบุเอง)”'
+                  : list.length-2 + ' โรงเรียนในกลุ่มนี้ · ถ้าไม่มีในรายการ เลือก “อื่น ๆ (ระบุเอง)”');
+}
+
 function apBuildSelects(v){
   v=v||{};
   $('#ap_prefix_wrap').innerHTML = selOther('ap_prefix', OPT_PREFIX_ADULT, v.prefix||'', 'คำนำหน้าอื่น ๆ');
   $('#ap_pos_wrap').innerHTML    = selOther('ap_position', OPT_POSITION, v.position||'', 'ตำแหน่งอื่น ๆ');
   $('#ap_rank_wrap').innerHTML   = selOther('ap_rank', OPT_RANK, v.rank||'', '', false);
-  $('#ap_org_wrap').innerHTML    = selOther('ap_org', orgOptions(), v.org_name||'', 'ชื่อโรงเรียน/หน่วยงาน');
+  if($('#ap_group')) apGroupChange(v.org_name||'');
   $('#ap_edu_wrap').innerHTML    = selOther('ap_edu', OPT_EDU, v.education||'', '', false);
   $('#ap_major_wrap').innerHTML  = selOther('ap_major', catOptions(), v.major||'', 'วิชาเอกอื่น ๆ');
   $('#ap_past_wrap').innerHTML   = selOther('ap_past', OPT_JUDGE_EXP, v.past_judge||'', '', false);
 }
 function renderApply(){
-  $('#ap_group').innerHTML='<option value="">— ไม่ระบุ / หน่วยงานอื่น —</option>'+
-    (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
+  const gKeep=$('#ap_group')? $('#ap_group').value : '';
+  $('#ap_group').innerHTML='<option value="">— เลือกกลุ่มโรงเรียน —</option>'+
+    (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('')+
+    '<option value="none">ไม่มี / ไม่ได้สังกัดกลุ่มโรงเรียน</option>';
+  if(gKeep) $('#ap_group').value=gKeep;
   if(!$('#ap_prefix')) apBuildSelects();
   if(!$('#ap_c1')) $('#apPicks').innerHTML=[1,2,3].map(apPickRow).join('');
   api('judgeApplyConfig',{}).then(r=>{
@@ -4873,6 +4898,7 @@ function renderApply(){
 function apClear(){
   ['ap_name','ap_phone','ap_email','ap_exp','ap_expertise','ap_doc']
     .forEach(k=>{ const e=$('#'+k); if(e) e.value=''; });
+  if($('#ap_group')) $('#ap_group').value='';
   apBuildSelects();
   [1,2,3].forEach(i=>{ $('#ap_c'+i).value=''; apFillActs(i); });
   $('#ap_confirm').checked=false; $('#apMsg').innerHTML=''; $('#apEditHint').textContent='';
@@ -4881,11 +4907,13 @@ function apClear(){
 async function submitApply(){
   if(!$('#ap_confirm').checked) return alert('กรุณาติ๊กยืนยันรับรองข้อมูลก่อนส่งใบสมัคร');
   if(!selVal('ap_prefix')) return alert('กรุณาเลือกคำนำหน้า');
+  if(!$('#ap_group').value) return alert('กรุณาเลือกกลุ่มโรงเรียน (ถ้าไม่ได้สังกัดกลุ่มใด ให้เลือก “ไม่มี / ไม่ได้สังกัดกลุ่มโรงเรียน”)');
+  if(!selVal('ap_org')) return alert('กรุณาเลือกโรงเรียน/หน่วยงานที่สังกัด');
   const rkA=selVal('ap_rank');
   const body={ prefix:selVal('ap_prefix'), full_name:$('#ap_name').value.trim(),
     position:[selVal('ap_position'), (rkA&&rkA!=='ไม่มีวิทยฐานะ')?rkA:''].filter(Boolean).join(' '),
     org_type:$('#ap_orgtype').value,
-    org_name:selVal('ap_org'), group_code:$('#ap_group').value,
+    org_name:selVal('ap_org'), group_code:($('#ap_group').value==='none'?'':$('#ap_group').value),
     phone:$('#ap_phone').value.trim(), email:$('#ap_email').value.trim(),
     education:selVal('ap_edu'), major:selVal('ap_major'),
     experience_years:$('#ap_exp').value, past_judge:selVal('ap_past'),
@@ -4924,10 +4952,10 @@ function editApply(json){
   const r=JSON.parse(json), a=r.apply||{};
   let pos=String(a.position||''), rk='';
   OPT_RANK.forEach(x=>{ if(x!=='ไม่มีวิทยฐานะ' && pos.indexOf(x)>=0){ rk=x; pos=pos.replace(x,'').trim(); } });
+  $('#ap_group').value = a.group_code || (a.org_name? 'none' : '');
   apBuildSelects({prefix:a.prefix, position:pos, rank:rk, org_name:a.org_name,
                   education:a.education, major:a.major, past_judge:a.past_judge});
   $('#ap_name').value=a.full_name||''; $('#ap_orgtype').value=a.org_type||'สถานศึกษา';
-  $('#ap_group').value=a.group_code||'';
   $('#ap_phone').value=a.phone||''; $('#ap_email').value=a.email||'';
   $('#ap_exp').value=a.experience_years||'';
   $('#ap_expertise').value=a.expertise||''; $('#ap_doc').value=a.doc_url||'';
