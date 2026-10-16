@@ -1648,6 +1648,7 @@ function demoApi(action,p){
         'group_deadline','cert_number_format'].forEach(k=>{ if(p[k]!==undefined&&p[k]!=='') keep[k]=p[k]; });
       MEM.site.ALL=Object.assign(MEM.site.ALL||{},keep); memSave();
       return Object.assign({},SEED_CONFIG,MEM.site.ALL); }
+    case 'rev': return {rev:String((MEM.activities||[]).length)+'-'+String((MEM.criteria||[]).length)};
     case 'inspectBackup':{
       const d=p.data||{}; if(!d.backup_version) throw new Error('ไฟล์นี้ไม่ใช่ไฟล์สำรองของระบบ');
       const g=(ME&&ME.role==='group_admin')? ME.scope : (p.scope||'');
@@ -2359,7 +2360,9 @@ async function boot(){
   if(snap && !window.__BOOTED){
     DB = snap; window.__BOOTED=1;
     try{ buildScopeSel(); applyScope(); renderAll(); syncUrl(); go(PAGE); }catch(e){}
+    REV = String(DB.rev||'');
     setTimeout(()=>{ refreshBoot(sc); }, 50);            /* 2) อัปเดตเบื้องหลัง */
+    startRevWatch();
     return;
   }
   try{
@@ -2375,14 +2378,66 @@ async function boot(){
   const lk0=lockedScope();
   if(lk0 && SCOPE!==lk0){ SCOPE=lk0; LS.setItem(K.scope,SCOPE);
     DB = await api('bootstrap',{group:SCOPE}); if(!DEMO()) snapSave(DB, SCOPE); }
+  REV = String(DB.rev||REV);
   buildScopeSel(); applyScope(); renderAll(); syncUrl(); go(PAGE);
+  startRevWatch();
 }
+/** โหลดข้อมูลตั้งต้นใหม่ (ใช้หลังแก้รายการแข่งขัน/เกณฑ์/ทะเบียน) แล้วจำเวอร์ชันล่าสุดไว้ */
+async function reloadBoot(){
+  const sc = SCOPE==='ALL'?'':SCOPE;
+  DB = await api('bootstrap',{group:sc});
+  REV = String(DB.rev||REV);
+  if(!DEMO()) snapSave(DB, sc);
+  return DB;
+}
+
+/* ---------- รายการแข่งขันและเกณฑ์เป็นชุดกลาง — เปลี่ยนที่เดียว เห็นพร้อมกันทุกที่ ----------
+   เขตแก้รายการเมื่อไร เว็บที่เปิดค้างอยู่ของทุกกลุ่ม/ทุกโรงเรียนจะโหลดรายการใหม่ให้เอง
+   โดยเช็คเลขเวอร์ชันข้อมูลเบา ๆ (ตอนสลับกลับมาที่แท็บ และทุก 3 นาที)                      */
+let REV='', REV_LAST=0, REV_BUSY=false;
+async function checkRev(force){
+  if(DEMO() || !API) return;
+  const now=Date.now();
+  if(REV_BUSY) return;
+  if(!force && now-REV_LAST < 45000) return;
+  REV_LAST=now; REV_BUSY=true;
+  try{
+    const r=await api('rev',{});
+    const rv=String((r&&r.rev)||'');
+    if(!REV){ REV=rv; }
+    else if(rv && rv!==REV){
+      REV=rv;
+      DB.criteria=null;                     /* เกณฑ์เปลี่ยน → โหลดใหม่เมื่อเปิดหน้าที่ต้องใช้ */
+      await refreshBoot(SCOPE==='ALL'?'':SCOPE);
+      revToast();
+    }
+  }catch(e){}
+  finally{ REV_BUSY=false; }
+}
+function revToast(){
+  let t=$('#revToast');
+  if(!t){ t=document.createElement('div'); t.id='revToast';
+    t.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:9999;'+
+      'background:var(--ink,#1f2937);color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;'+
+      'box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transition:opacity .25s';
+    document.body.appendChild(t); }
+  t.textContent='🔄 รายการแข่งขันมีการอัปเดตจากสำนักงานเขต — ปรับให้เป็นรายการล่าสุดแล้ว';
+  t.style.opacity='1';
+  clearTimeout(window.__revT); window.__revT=setTimeout(()=>{ t.style.opacity='0'; }, 5000);
+}
+function startRevWatch(){
+  if(window.__REVW) return; window.__REVW=1;
+  setInterval(()=>{ if(document.visibilityState==='visible') checkRev(); }, 180000);
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkRev(); });
+  window.addEventListener('focus',()=>checkRev());
+}
+
 /** ดึงข้อมูลใหม่เงียบ ๆ แล้ววาดซ้ำถ้ามีอะไรเปลี่ยน */
 async function refreshBoot(sc){
   try{
     const fresh = await api('bootstrap',{group:sc});
     const same = JSON.stringify(fresh)===JSON.stringify(DB);
-    DB = fresh; snapSave(DB, sc);
+    DB = fresh; REV = String(DB.rev||REV); snapSave(DB, sc);
     if(!same){ buildScopeSel(); applyScope(); renderAll(); }
   }catch(e){}
 }
@@ -2672,7 +2727,7 @@ async function saveSite(){
   if(SCOPE==='ALL'){ o.event_name=$('#st_event_name').value.trim();
     o.open_at=dateSelVal('st_open_at'); o.close_at=dateSelVal('st_close_at'); }
   try{ await api('saveSiteSettings',o);
-    DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE});
+    await reloadBoot();
     renderBanner(); alert('บันทึกแล้ว — หน้าเว็บสาธารณะเปลี่ยนทันที');
   }catch(e){ alert(e.message); }
 }
@@ -2725,12 +2780,12 @@ function editNews(id){
         body:$('#n_body').value, pin:$('#n_pin').checked?'Y':''};
       if(!o.title) throw new Error('กรุณากรอกหัวข้อข่าว');
       await api('saveNews',{news:o});
-      DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE}); renderNewsMgr();
+      await reloadBoot(); renderNewsMgr();
     });
 }
 async function delNews(id){
   if(!confirm('ลบข่าวนี้?')) return;
-  try{ await api('deleteNews',{id}); DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE}); renderNewsMgr(); }
+  try{ await api('deleteNews',{id}); await reloadBoot(); renderNewsMgr(); }
   catch(e){ alert(e.message); }
 }
 function editDoc(id){
@@ -2755,12 +2810,12 @@ function editDoc(id){
         title:$('#d_title').value.trim(), url:$('#d_url').value.trim(), note:$('#d_note').value.trim()};
       if(!o.title||!o.url) throw new Error('ต้องมีทั้งชื่อเอกสารและลิงก์');
       await api('saveDocument',{document:o});
-      DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE}); renderNewsMgr();
+      await reloadBoot(); renderNewsMgr();
     });
 }
 async function delDoc(id){
   if(!confirm('ลบเอกสารนี้?')) return;
-  try{ await api('deleteDocument',{id}); DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE}); renderNewsMgr(); }
+  try{ await api('deleteDocument',{id}); await reloadBoot(); renderNewsMgr(); }
   catch(e){ alert(e.message); }
 }
 
@@ -3416,7 +3471,7 @@ async function saveSeason(){
       event_name:$('#ss_event').value.trim()||('งานศิลปหัตถกรรมนักเรียน ครั้งที่ '+ed+' ปีการศึกษา '+yr),
       open_at:dateSelVal('ss_open'), close_at:dateSelVal('ss_close'),
       group_deadline:dateSelVal('ss_deadline'), cert_number_format:$('#ss_certno').value.trim()});
-    DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE});
+    await reloadBoot();
     applyScope(); renderAll();
     alert('บันทึกแล้ว — ครั้งที่ '+ed+' ปีการศึกษา '+yr);
   }catch(e){ alert(e.message); }
@@ -3524,7 +3579,7 @@ async function doReset(){
       staff:'คณะกรรมการดำเนินงาน',venues:'สนามแข่งขัน',audit_log:'ประวัติการใช้งาน'};
     const c=r.cleared||{};
     const lines=Object.keys(c).filter(k=>typeof c[k]==='number').map(k=>(L[k]||k)+' '+c[k]+' แถว');
-    DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE});
+    await reloadBoot();
     $('#ss_confirm').value=''; $('#ss_ack').checked=false; BACKUP_DONE=false;
     applyScope(); renderSeason(); renderAll(); go('season');
     $('#ssResult').innerHTML='<div class="note g"><span>✅</span><div><b>ล้างข้อมูลเรียบร้อย</b><br>'+
@@ -3701,7 +3756,7 @@ async function saveCertCfg(){
     await api('saveCertConfig',{scope:SCOPE, cert_open:$('#ca_open').checked?'Y':'N',
       cert_open_note:$('#ca_note').value.trim(), cert_event_date:$('#ca_date').value.trim(),
       cert_min_medal:$('#ca_min').value});
-    DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE});
+    await reloadBoot();
     applyScope();   /* เมนู “เกียรติบัตร” บนหน้าเว็บสาธารณะจะโผล่/หายทันที */
     alert($('#ca_open').checked? 'เปิดให้ดาวน์โหลดเกียรติบัตรแล้ว — หน้าเว็บสาธารณะใช้งานได้ทันที'
                                : 'ปิดการดาวน์โหลดแล้ว');
@@ -4021,7 +4076,7 @@ async function doRename(btn){
   if(!confirm(msg)) return;
   try{
     const r=await api('renameCategory',{from,to});
-    DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE});
+    await reloadBoot();
     inp.dataset.old=to;
     renderActEdit(); fillActSelects();
     if(PAGE==='acts') renderActs();
@@ -4118,7 +4173,7 @@ function editAct(id){
       if(Number(o.team_min)>Number(o.team_max)) throw new Error('จำนวนนักเรียนต่ำสุดต้องไม่มากกว่าสูงสุด');
       if(/^ม\./.test(o.level) && !o.condition) o.condition='เฉพาะโรงเรียนขยายโอกาส';
       await api('saveActivity',{activity:o});
-      DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE}); renderActEdit(); fillActSelects();
+      await reloadBoot(); renderActEdit(); fillActSelects();
     });
   const cs=$('#f_category');
   if(cs) cs.onchange=()=>{ $('#catNew').style.display = cs.value==='__new'?'block':'none'; };
@@ -4129,7 +4184,7 @@ async function dupAct(id){
   if(!lvl) return;
   const code=prompt('รหัสกิจกรรมของรายการใหม่ (เว้นว่างได้):','');
   try{ await api('duplicateActivity',{act_id:id, level:lvl, act_code:code||''});
-    DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE});
+    await reloadBoot();
     closeModal(); renderActEdit(); fillActSelects();
     alert('ทำสำเนาแล้ว — คัดลอกเกณฑ์การให้คะแนนมาให้ด้วย');
   }catch(e){ alert(e.message); }
@@ -4138,7 +4193,7 @@ async function dupAct(id){
 function delAct(id){
   if(!confirm('ลบรายการนี้? (ลบไม่ได้ถ้ามีผู้สมัครแล้ว)')) return;
   api('deleteActivity',{act_id:id}).then(async()=>{
-    DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE}); renderActEdit(); fillActSelects();
+    await reloadBoot(); renderActEdit(); fillActSelects();
   }).catch(e=>alert(e.message));
 }
 async function editCrit(actId){
@@ -4197,7 +4252,7 @@ async function editCrit(actId){
       } else {
         await api('saveCriteria',{act_id:actId, items:its});
       }
-      DB=await api('bootstrap',{group:SCOPE==='ALL'?'':SCOPE}); renderActEdit();
+      await reloadBoot(); renderActEdit();
     });
   critSum();
   document.getElementById('critList').addEventListener('input',critSum);
