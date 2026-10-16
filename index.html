@@ -411,6 +411,7 @@ body[data-view="admin"] .utilbar{display:none}
     </div>
     <div class="ng" id="navOwner"><span>เฉพาะผู้ดูแลหลัก</span>
       <button class="nv" data-p="admins" data-role="district_admin,group_admin" data-owner="1"><i>👥</i>จัดการผู้ดูแล</button>
+      <button class="nv" data-p="backup" data-role="district_admin,group_admin" data-owner="1"><i>💾</i>สำรอง &amp; กู้คืนข้อมูล</button>
       <button class="nv" data-p="season" data-role="district_admin,group_admin" data-owner="1"><i>🗄️</i>ปีการศึกษา &amp; สำรอง/ล้างข้อมูล</button>
     </div>
     <div class="ng" id="navDistrict"><span>เฉพาะระดับเขต</span>
@@ -1092,6 +1093,53 @@ body[data-view="admin"] .utilbar{display:none}
         </div></div>
     </section>
 
+    <!-- ---------- สำรอง & กู้คืนข้อมูลของกลุ่ม ---------- -->
+    <section class="page" id="p-backup">
+      <div class="hd"><div><h2>สำรอง &amp; กู้คืนข้อมูล</h2><p id="bkSub"></p></div></div>
+
+      <div class="note i" style="margin-bottom:13px"><span>💾</span><div>
+        <b>สำรองข้อมูลไว้เองได้ทุกเมื่อ — ควรทำก่อนแข่งทุกครั้ง และก่อนแก้ข้อมูลจำนวนมาก</b>
+        <div class="hint" style="margin-top:4px">ไฟล์ <b>.json</b> ใช้กู้คืนกลับเข้าระบบได้ ·
+          ไฟล์ <b>.xlsx</b> ไว้เปิดดู พิมพ์ หรือส่งต่อ · เก็บไฟล์ไว้ในเครื่องหรือ Google Drive ของกลุ่ม</div></div></div>
+
+      <div class="card" style="margin-bottom:14px"><div class="ch"><h3>① ดาวน์โหลดไฟล์สำรอง</h3>
+        <span class="sp"></span><span class="hint" id="bkScope"></span></div>
+        <div class="cb">
+          <div class="row">
+            <button class="btn" onclick="downloadBackup()">⬇️ ไฟล์สำรองสำหรับกู้คืน (.json)</button>
+            <button class="btn g" onclick="downloadBackupXlsx()">⬇️ ไฟล์อ่านง่าย (.xlsx)</button>
+            <button class="btn g" onclick="exportEntriesCsv()">⬇️ รายชื่อผู้สมัคร (.csv)</button>
+            <button class="btn g" onclick="exportResultsCsv()">⬇️ ผลการแข่งขัน (.csv)</button>
+          </div>
+          <div class="hint" style="margin-top:9px" id="bkNote"></div>
+        </div></div>
+
+      <div class="card"><div class="ch"><h3>② กู้คืนข้อมูลจากไฟล์สำรอง</h3>
+        <span class="sp"></span><span class="hint">ใช้ไฟล์ .json ที่ดาวน์โหลดจากข้อ ①</span></div>
+        <div class="cb">
+          <div class="note b" style="margin-bottom:12px"><span>⚠️</span><div>
+            <b>การกู้คืนจะเขียนทับข้อมูลการแข่งขันของกลุ่มตัวเองทั้งหมด</b> —
+            ผู้สมัคร รายชื่อนักเรียน ครูผู้ฝึกสอน คะแนน ผลการแข่งขัน สนาม ตารางแข่งขัน และทำเนียบกรรมการของกลุ่ม
+            <div class="hint" style="margin-top:4px">ไม่แตะทะเบียนโรงเรียน รายการแข่งขัน เกณฑ์การให้คะแนน บัญชีผู้ใช้ และข้อมูลของกลุ่มอื่น ·
+              รายการที่เคยโอนขึ้นเขตจะถูกถอนออก ให้โอนใหม่อีกครั้งหลังกู้คืนเสร็จ</div></div></div>
+          <div class="row">
+            <input type="file" id="bkFile" accept=".json,application/json" onchange="pickRestore()"
+                   style="max-width:430px;padding:8px;border:1px solid var(--line);border-radius:10px">
+            <span class="sp"></span>
+            <button class="btn g" onclick="clearRestore()">ล้างไฟล์ที่เลือก</button>
+          </div>
+          <div id="bkInfo" style="margin-top:12px"></div>
+          <div id="bkGo" style="display:none;margin-top:12px">
+            <div class="row">
+              <input id="bkConfirm" placeholder="พิมพ์คำว่า  กู้คืนข้อมูล  เพื่อยืนยัน"
+                     style="min-width:260px;padding:9px 13px;border:1px solid var(--line);border-radius:10px">
+              <button class="btn d" onclick="doRestore()">♻️ กู้คืนข้อมูลทับของเดิม</button>
+            </div>
+          </div>
+          <div id="bkMsg" style="margin-top:12px"></div>
+        </div></div>
+    </section>
+
     <!-- ---------- ปีการศึกษา · สำรองข้อมูล · ล้างผลการแข่งขัน ---------- -->
     <section class="page" id="p-season">
       <div class="hd"><div><h2>ปีการศึกษา · สำรองข้อมูล · ล้างผลการแข่งขัน</h2><p id="ssSub"></p></div></div>
@@ -1425,7 +1473,7 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',promoteBatch:'promote',
   saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
   deleteJudgeApplication:'judges'};
-const DEMO_OWNER=['saveSeason','exportBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
+const DEMO_OWNER=['saveSeason','exportBackup','inspectBackup','restoreBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
   'listSelectors','saveSelector','deleteSelector','listAccounts','resetPassword',
   'listResetRequests','handleResetRequest'];
 
@@ -1437,6 +1485,8 @@ function demoApi(action,p){
     const sc=(DB.schools||[]).find(x=>String(x.smis)===String(ME.scope));
     if(sc){ p.group=sc.group_code; if(p.scope!==undefined) p.scope=sc.group_code; }
   }
+  if(DEMO_OWNER.indexOf(action)>=0 && ME && ME.role!=='district_admin' && ME.role!=='group_admin')
+    throw new Error('เฉพาะผู้ดูแลเขตหรือผู้ดูแลกลุ่มเท่านั้นที่ทำรายการนี้ได้');
   if(ME && (ME.role==='district_admin' || ME.role==='group_admin')){
     if(DEMO_OWNER.indexOf(action)>=0 && !ME.own)
       throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
@@ -1596,6 +1646,39 @@ function demoApi(action,p){
         'group_deadline','cert_number_format'].forEach(k=>{ if(p[k]!==undefined&&p[k]!=='') keep[k]=p[k]; });
       MEM.site.ALL=Object.assign(MEM.site.ALL||{},keep); memSave();
       return Object.assign({},SEED_CONFIG,MEM.site.ALL); }
+    case 'inspectBackup':{
+      const d=p.data||{}; if(!d.backup_version) throw new Error('ไฟล์นี้ไม่ใช่ไฟล์สำรองของระบบ');
+      const g=(ME&&ME.role==='group_admin')? ME.scope : (p.scope||'');
+      const cnt={}; ['entries','entry_students','entry_coaches','scores','results','venues','schedule','judges']
+        .forEach(k=>cnt[k]=(d[k]||[]).length);
+      return {created_at:d.created_at||'',created_by:d.created_by||'',scope:String(d.scope||''),
+              target:g, match:String(d.scope||'')===String(g), counts:cnt}; }
+    case 'restoreBackup':{
+      const d=p.data||{}; if(!d.backup_version) throw new Error('ไฟล์นี้ไม่ใช่ไฟล์สำรองของระบบ');
+      if(String(p.confirm||'').trim()!=='กู้คืนข้อมูล') throw new Error('ยังไม่ได้ยืนยัน — ต้องพิมพ์คำว่า “กู้คืนข้อมูล” ให้ตรงก่อน');
+      const g=(ME&&ME.role==='group_admin')? ME.scope : (p.scope||'');
+      if(!g||g==='ALL') throw new Error('การกู้คืนทำได้ทีละกลุ่มโรงเรียน — เลือกกลุ่มก่อน');
+      if(String(d.scope||'')!==String(g)) throw new Error('ไฟล์สำรองนี้เป็นของ '+(d.scope||'ไม่ระบุ')+' ไม่ตรงกับกลุ่ม '+g+' จึงกู้คืนไม่ได้');
+      const oldIds={}; MEM.entries.filter(e=>e.group_code===g).forEach(e=>oldIds[e.entry_id]=1);
+      (d.entries||[]).filter(e=>e.group_code===g).forEach(e=>oldIds[e.entry_id]=1);
+      const keep=r=>!oldIds[r.entry_id];
+      MEM.scores=MEM.scores.filter(keep); MEM.results=MEM.results.filter(keep);
+      MEM.students=MEM.students.filter(keep); MEM.coaches=MEM.coaches.filter(keep);
+      MEM.promotions=(MEM.promotions||[]).filter(r=>r.from_group!==g);
+      MEM.entries=MEM.entries.filter(e=>e.group_code!==g && !oldIds[e.entry_id] && !(e.group_code==='DISTRICT'&&e.from_group===g));
+      const newIds={}; (d.entries||[]).filter(e=>e.group_code===g).forEach(e=>newIds[e.entry_id]=1);
+      const mine=r=>newIds[r.entry_id];
+      const added={};
+      const push=(arr,rows)=>{ (rows||[]).forEach(r=>arr.push(JSON.parse(JSON.stringify(r)))); return (rows||[]).length; };
+      added.entries=push(MEM.entries,(d.entries||[]).filter(e=>e.group_code===g));
+      added.entry_students=push(MEM.students,(d.entry_students||[]).filter(mine));
+      added.entry_coaches=push(MEM.coaches,(d.entry_coaches||[]).filter(mine));
+      added.scores=push(MEM.scores,(d.scores||[]).filter(mine));
+      added.results=push(MEM.results,(d.results||[]).filter(mine));
+      added.venues=0; added.schedule=0;
+      added.judges=push(MEM.judges=(MEM.judges||[]),(d.judges||[]).filter(j=>j.group_code===g));
+      memSave();
+      return {scope:g, backup_at:d.created_at||'', removed:{}, added:added}; }
     case 'exportBackup':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       const gg=(ME.role==='group_admin')?ME.scope:((p.scope&&p.scope!=='ALL')?p.scope:'');
       const ent=MEM.entries.filter(e=>!gg||e.group_code===gg);
@@ -2422,12 +2505,12 @@ const PUBLIC_PAGES=[['home','หน้าแรก'],['news','ข่าวปร
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','entries','score','publish','promote','certadm','cards',
-  'judges','judgeapp','perm','season','newsmgr','site','print','groups','admins'];
+  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins'];
 /** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
 const PAGE_PERM={actedit:'actedit',entries:'entries',score:'score',publish:'publish',
   promote:'promote',judges:'judges',judgeapp:'judges',certadm:'certadm',cards:'cards',
   newsmgr:'newsmgr',site:'site',print:'print',perm:'perm'};
-const OWNER_PAGES=['admins','season'];
+const OWNER_PAGES=['admins','season','backup'];
 function isAdminPage(p){ return ADMIN_PAGES.indexOf(p)>=0; }
 
 /** สวิตช์เปิด-ปิดระบบ: ค่าของกลุ่มทับค่าของเขต ถ้ากลุ่มเว้นว่างให้ใช้ค่าของเขต */
@@ -3122,6 +3205,179 @@ async function delAdmin(id,name){
   try{ await api('deleteAdmin',{user_id:id}); renderAdmins(); }catch(e){ alert(e.message); }
 }
 
+/* ============================ สำรอง & กู้คืนข้อมูลของกลุ่ม ============================ */
+const BK_TABLES=[['entries','ผู้สมัครแข่งขัน'],['entry_students','รายชื่อนักเรียน'],['entry_coaches','ครูผู้ฝึกสอน'],
+  ['scores','คะแนนรายข้อ'],['results','ผลการแข่งขัน'],['venues','สนามแข่งขัน'],
+  ['schedule','ตารางแข่งขัน'],['judges','ทำเนียบกรรมการ']];
+
+function renderBackup(){
+  const own = SCOPE==='ALL' ? 'ระดับเขต (ทุกกลุ่ม)' : groupName(SCOPE);
+  const sub=$('#bkSub'); if(sub) sub.textContent='ข้อมูลที่สำรอง/กู้คืนคือข้อมูลของ '+own+' เท่านั้น';
+  const sc=$('#bkScope'); if(sc) sc.textContent='ขอบเขต: '+own;
+  const go=$('#bkGo'); if(go && !window.__BK) go.style.display='none';
+}
+
+/* ---------- ไฟล์ Excel (.xlsx) — สร้างเองในเบราว์เซอร์ ไม่ต้องใช้ไลบรารีภายนอก ---------- */
+const _CRC_T=(()=>{ const t=new Uint32Array(256);
+  for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = (c&1)? (0xEDB88320^(c>>>1)) : (c>>>1); t[n]=c>>>0; }
+  return t; })();
+function _crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c=_CRC_T[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function _zipStore(files){
+  const enc=new TextEncoder(), u16=n=>[n&255,(n>>8)&255], u32=n=>[n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255];
+  const parts=[], cent=[]; let off=0;
+  files.forEach(f=>{
+    const name=enc.encode(f.name), data=(typeof f.data==='string')? enc.encode(f.data) : f.data, crc=_crc32(data);
+    const lh=[].concat([0x50,0x4b,3,4],u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),
+      u32(data.length),u32(data.length),u16(name.length),u16(0));
+    parts.push(new Uint8Array(lh),name,data);
+    cent.push({name,crc,len:data.length,off});
+    off += lh.length + name.length + data.length;
+  });
+  const cd=[]; let cdLen=0;
+  cent.forEach(c=>{
+    const h=[].concat([0x50,0x4b,1,2],u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(c.crc),u32(c.len),u32(c.len),
+      u16(c.name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(c.off));
+    cd.push(new Uint8Array(h), c.name); cdLen += h.length + c.name.length;
+  });
+  const end=new Uint8Array([].concat([0x50,0x4b,5,6],u16(0),u16(0),u16(cent.length),u16(cent.length),u32(cdLen),u32(off),u16(0)));
+  return new Blob(parts.concat(cd,[end]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function _xe(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,''); }
+function _colRef(i){ let s=''; i++; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); } return s; }
+function _sheetXml(rows){
+  const body=rows.map((r,ri)=>'<row r="'+(ri+1)+'">'+r.map((v,ci)=>{
+    const ref=_colRef(ci)+(ri+1);
+    if(v!==null && v!=='' && v!==undefined && typeof v!=='boolean' && !isNaN(v) && String(v).trim()!=='' && /^-?\d+(\.\d+)?$/.test(String(v)))
+      return '<c r="'+ref+'"><v>'+String(v)+'</v></c>';
+    return '<c r="'+ref+'" t="inlineStr"><is><t xml:space="preserve">'+_xe(v)+'</t></is></c>';
+  }).join('')+'</row>').join('');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+body+'</sheetData></worksheet>';
+}
+function xlsxBlob(sheets){
+  const names=[], files=[];
+  sheets.forEach((sh,i)=>{
+    let nm=String(sh.name||('ชีต'+(i+1))).replace(/[\[\]\*\?\/\\:]/g,' ').slice(0,31) || ('ชีต'+(i+1));
+    while(names.indexOf(nm)>=0) nm=nm.slice(0,28)+'_'+(i+1);
+    names.push(nm);
+    files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml', data:_sheetXml(sh.rows||[])});
+  });
+  files.unshift({name:'xl/_rels/workbook.xml.rels', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    names.map((n,i)=>'<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+
+    '</Relationships>'});
+  files.unshift({name:'xl/workbook.xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+
+    names.map((n,i)=>'<sheet name="'+_xe(n)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets></workbook>'});
+  files.unshift({name:'_rels/.rels', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'});
+  files.unshift({name:'[Content_Types].xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+    '<Default Extension="xml" ContentType="application/xml"/>'+
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+    names.map((n,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('')+
+    '</Types>'});
+  return _zipStore(files);
+}
+function saveBlob(name, blob){
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download=name; a.style.display='none';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ a.remove(); URL.revokeObjectURL(url); }, 1500);
+}
+/** ตารางเป็นแถว ๆ พร้อมหัวคอลัมน์ไทย */
+function _rowsOf(list, cols){
+  const out=[cols.map(c=>c[1])];
+  (list||[]).forEach(r=>out.push(cols.map(c=>{ const v=r[c[0]]; return v===undefined||v===null?'':v; })));
+  return out;
+}
+async function downloadBackupXlsx(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const note=$('#bkNote'); if(note) note.textContent='กำลังรวบรวมข้อมูล…';
+  try{
+    const b=await api('exportBackup',{scope:SCOPE});
+    const actName={}; (b.activities||[]).forEach(a=>actName[a.act_id]=(a.act_code? a.act_code+' · ':'')+a.act_name);
+    const schName={}; (b.schools||[]).forEach(x=>schName[String(x.smis)]=x.school_name);
+    const entAct={}, entSch={};
+    (b.entries||[]).forEach(e=>{ entAct[e.entry_id]=actName[e.act_id]||e.act_id; entSch[e.entry_id]=schName[String(e.school_smis)]||e.school_smis; });
+    const add=(list,extra)=> (list||[]).map(r=>Object.assign({}, r, extra?extra(r):{}));
+
+    const sheets=[
+      {name:'ผู้สมัครแข่งขัน', rows:_rowsOf(add(b.entries,e=>({_act:actName[e.act_id]||e.act_id,_sch:schName[String(e.school_smis)]||''})),
+        [['entry_id','รหัสผู้สมัคร'],['_act','รายการแข่งขัน'],['_sch','โรงเรียน'],['school_smis','SMIS'],
+         ['group_code','กลุ่ม'],['status','สถานะ'],['created_at','บันทึกเมื่อ']])},
+      {name:'รายชื่อนักเรียน', rows:_rowsOf(add(b.entry_students,r=>({_act:entAct[r.entry_id]||'',_sch:entSch[r.entry_id]||''})),
+        [['entry_id','รหัสผู้สมัคร'],['_act','รายการแข่งขัน'],['_sch','โรงเรียน'],
+         ['prefix','คำนำหน้า'],['first_name','ชื่อ'],['last_name','นามสกุล'],['class_level','ระดับชั้น']])},
+      {name:'ครูผู้ฝึกสอน', rows:_rowsOf(add(b.entry_coaches,r=>({_act:entAct[r.entry_id]||'',_sch:entSch[r.entry_id]||''})),
+        [['entry_id','รหัสผู้สมัคร'],['_act','รายการแข่งขัน'],['_sch','โรงเรียน'],
+         ['prefix','คำนำหน้า'],['first_name','ชื่อ'],['last_name','นามสกุล'],['position','ตำแหน่ง'],['phone','โทรศัพท์']])},
+      {name:'ผลการแข่งขัน', rows:_rowsOf(add(b.results,r=>({_act:entAct[r.entry_id]||actName[r.act_id]||'',_sch:entSch[r.entry_id]||''})),
+        [['_act','รายการแข่งขัน'],['_sch','โรงเรียน'],['total','คะแนนรวม'],['medal','เหรียญ'],['rank','อันดับ'],
+         ['status','สถานะ'],['published_at','ประกาศเมื่อ']])},
+      {name:'คะแนนรายข้อ', rows:_rowsOf(add(b.scores,r=>({_act:entAct[r.entry_id]||'',_sch:entSch[r.entry_id]||''})),
+        [['_act','รายการแข่งขัน'],['_sch','โรงเรียน'],['crit_id','รหัสเกณฑ์'],['judge_id','กรรมการ'],['score','คะแนน']])},
+      {name:'ตัวแทนที่โอนขึ้นเขต', rows:_rowsOf(add(b.promotions,r=>({_act:actName[r.act_id]||r.act_id})),
+        [['_act','รายการแข่งขัน'],['from_group','จากกลุ่ม'],['medal','เหรียญ'],['total','คะแนน'],['rank','อันดับ'],['transferred_at','โอนเมื่อ']])},
+      {name:'ทำเนียบกรรมการ', rows:_rowsOf(b.judges,
+        [['judge_id','รหัส'],['prefix','คำนำหน้า'],['name','ชื่อ-สกุล'],['position','ตำแหน่ง'],
+         ['org','หน่วยงาน'],['expertise','ความเชี่ยวชาญ'],['phone','โทรศัพท์'],['status','สถานะ']])},
+      {name:'สรุปจำนวน', rows:[['รายการ','จำนวน']].concat(Object.keys(b.counts||{}).map(k=>[k,Number(b.counts[k]||0)]))}
+    ];
+    saveBlob('sillapa-สำรอง-'+(SCOPE==='ALL'?'เขต':SCOPE)+'-'+stamp()+'.xlsx', xlsxBlob(sheets));
+    if(note) note.innerHTML='ดาวน์โหลดไฟล์ Excel แล้ว — '+sheets.length+' ชีต';
+  }catch(e){ if(note) note.textContent=''; alert(e.message); }
+}
+
+/* ---------- กู้คืนจากไฟล์สำรอง ---------- */
+function clearRestore(){
+  window.__BK=null; const f=$('#bkFile'); if(f) f.value='';
+  $('#bkInfo').innerHTML=''; $('#bkGo').style.display='none'; $('#bkMsg').innerHTML='';
+  const c=$('#bkConfirm'); if(c) c.value='';
+}
+async function pickRestore(){
+  const f=$('#bkFile').files[0]; if(!f) return;
+  $('#bkMsg').innerHTML=''; $('#bkInfo').innerHTML='<span class="hint">กำลังอ่านไฟล์…</span>';
+  try{
+    const txt=await f.text();
+    let obj; try{ obj=JSON.parse(txt); }catch(e){ throw new Error('ไฟล์นี้ไม่ใช่ไฟล์สำรอง .json ของระบบ'); }
+    const info=await api('inspectBackup',{data:obj, scope:SCOPE});
+    window.__BK=obj;
+    const rows=BK_TABLES.map(t=>`<tr><td>${t[1]}</td><td style="text-align:right"><b>${Number((info.counts||{})[t[0]]||0).toLocaleString()}</b></td></tr>`).join('');
+    const okMatch=info.match;
+    $('#bkInfo').innerHTML=
+      `<div class="note ${okMatch?'g':'b'}"><span>${okMatch?'✅':'⚠️'}</span><div>
+        <b>ไฟล์สำรองของ ${info.scope==='ALL'?'ระดับเขต':groupName(info.scope)||info.scope}</b> ·
+        สำรองเมื่อ ${info.created_at||'-'} โดย ${info.created_by||'-'}
+        ${okMatch?'':'<div class="hint" style="margin-top:4px">ไฟล์นี้ไม่ใช่ของกลุ่มที่กำลังเปิดอยู่ จึงกู้คืนไม่ได้</div>'}</div></div>
+      <div class="cb" style="padding:0;margin-top:10px;overflow:auto"><table><thead><tr><th>ข้อมูลที่จะเขียนกลับ</th><th style="text-align:right">จำนวนแถว</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    $('#bkGo').style.display = okMatch? '' : 'none';
+  }catch(e){ window.__BK=null; $('#bkInfo').innerHTML=`<div class="note b"><span>⚠️</span><div>${e.message}</div></div>`; $('#bkGo').style.display='none'; }
+}
+async function doRestore(){
+  if(!window.__BK) return alert('ยังไม่ได้เลือกไฟล์สำรอง');
+  const c=$('#bkConfirm').value.trim();
+  if(c!=='กู้คืนข้อมูล') return alert('พิมพ์คำว่า  กู้คืนข้อมูล  ให้ตรงก่อนนะคะ');
+  if(!confirm('กู้คืนข้อมูลทับของเดิม?\n\nข้อมูลการแข่งขันปัจจุบันของกลุ่มจะถูกแทนที่ด้วยข้อมูลในไฟล์สำรอง')) return;
+  $('#bkMsg').innerHTML='<span class="hint">กำลังกู้คืน… อาจใช้เวลาสักครู่</span>';
+  try{
+    const r=await api('restoreBackup',{data:window.__BK, confirm:'กู้คืนข้อมูล', scope:SCOPE});
+    const add=r.added||{};
+    $('#bkMsg').innerHTML=`<div class="note g"><span>✅</span><div><b>กู้คืนข้อมูลเรียบร้อย</b> ·
+      จากไฟล์สำรองเมื่อ ${r.backup_at||'-'}
+      <div class="hint" style="margin-top:5px">${BK_TABLES.map(t=>t[1]+' '+Number(add[t[0]]||0)).join(' · ')}</div>
+      <div class="hint" style="margin-top:4px">ถ้าเคยโอนตัวแทนขึ้นเขตไว้ กรุณาโอนใหม่ที่เมนู “ตัวแทนเข้าเขต”</div></div></div>`;
+    window.__BK=null; const f=$('#bkFile'); if(f) f.value='';
+    $('#bkInfo').innerHTML=''; $('#bkGo').style.display='none'; $('#bkConfirm').value='';
+    DB = await api('bootstrap',{group: SCOPE==='ALL'?'':SCOPE});
+    if(!DEMO()) snapSave(DB, SCOPE==='ALL'?'':SCOPE);
+    renderAll();
+  }catch(e){ $('#bkMsg').innerHTML=`<div class="note b"><span>⚠️</span><div>${e.message}</div></div>`; }
+}
+
 /* ============================ ปีการศึกษา · สำรองข้อมูล · ล้างข้อมูล ============================ */
 let BACKUP_DONE=false;
 function renderSeason(){
@@ -3512,7 +3768,7 @@ function go(p){
     site:'หน้าเว็บ & แบนเนอร์',newsmgr:'ประชาสัมพันธ์',cert:'เกียรติบัตร',certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',
     judges:'ทำเนียบกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกกรรมการ',apply:'สมัครกรรมการตัดสิน',
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
-    season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',admins:'จัดการผู้ดูแล'}[p]||p;
+    season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
   closeMenu(); closeSide();
@@ -3534,7 +3790,7 @@ function renderPage(p){
     promote:renderPromote, print:renderPrint, setup:renderSetup, results:renderResults, medals:renderMedals,
     sched:renderSched, news:renderNews, docs:renderDocs, site:renderSite,
     newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
-    judges:renderJudges, perm:renderPerm, season:renderSeason, admins:renderAdmins,
+    judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
     apply:renderApply, judgeapp:renderJudgeApp}[p]||(()=>{}))();
 }
 
