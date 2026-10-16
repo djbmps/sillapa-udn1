@@ -4873,7 +4873,9 @@ function apBuildSelects(v){
   $('#ap_rank_wrap').innerHTML   = selOther('ap_rank', OPT_RANK, v.rank||'', '', false);
   if($('#ap_group')) apGroupChange(v.org_name||'');
   $('#ap_edu_wrap').innerHTML    = selOther('ap_edu', OPT_EDU, v.education||'', '', false);
-  $('#ap_major_wrap').innerHTML  = selOther('ap_major', catOptions(), v.major||'', 'วิชาเอกอื่น ๆ');
+  /* วิชาเอกให้ผู้สมัครพิมพ์เอง — ไม่จำกัดตามกลุ่มสาระ */
+  $('#ap_major_wrap').innerHTML  = `<input id="ap_major" placeholder="เช่น ภาษาไทย · คณิตศาสตร์ · ดนตรีศึกษา"
+    value="${String(v.major||'').replace(/"/g,'&quot;')}">`;
   $('#ap_past_wrap').innerHTML   = selOther('ap_past', OPT_JUDGE_EXP, v.past_judge||'', '', false);
 }
 function renderApply(){
