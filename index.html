@@ -230,6 +230,9 @@ body[data-view="public"] .top{display:none}
 body[data-view="public"] .hero{display:none}
 body[data-view="public"] .main{max-width:1180px;margin:0 auto;padding-top:18px}
 body[data-view="admin"] #pubHead{display:none}
+/* เปิดหน้าเข้าสู่ระบบ = เห็นเฉพาะหน้าเข้าสู่ระบบ ไม่ให้แถบหัวเว็บและส่วนท้ายโผล่ต่อท้าย */
+body.login-on #pubHead, body.login-on .pfoot, body.login-on .shell{display:none!important}
+body.login-on{overflow:hidden}
 #pubHead{position:relative;z-index:30}
 .banner{position:relative;min-height:190px;display:flex;align-items:flex-end;
   background:linear-gradient(115deg,#141210 0%,#4A2812 45%,#D2620C 100%);
@@ -6593,6 +6596,7 @@ function lgHero(v){
       +' — รับสมัคร จัดตาราง ให้คะแนน ประกาศผล และโอนตัวแทนเข้าระดับเขต';
 }
 function openLogin(){ $('#app').style.display='none'; $('#loginView').style.display='block';
+  document.body.classList.add('login-on');
   lgReset();                                   /* ล้างข้อความผิดพลาดของครั้งก่อน ไม่ให้ค้างหน้าจอ */
   const sel=$('#lgScope');
   if(sel){
@@ -6606,7 +6610,8 @@ function openLogin(){ $('#app').style.display='none'; $('#loginView').style.disp
     : '🏁 กำลังเข้าสู่ระบบ<b>เว็บกลุ่ม '+groupName(SCOPE)+'</b><br>ภายใต้ สพป.อุดรธานี เขต 1 · <code>'+SCOPE+'</code>';
   if(DEMO()) $('#loginCtx').innerHTML+='<br><br><b>โหมดตัวอย่าง</b> — ลองด้วย <code>admin</code>/<code>admin</code> หรือ <code>admin-g01</code>/<code>admin</code>';
 }
-function closeLogin(){ $('#loginView').style.display='none'; $('#app').style.display='grid'; lgReset(); }
+function closeLogin(){ $('#loginView').style.display='none'; $('#app').style.display='grid';
+  document.body.classList.remove('login-on'); lgReset(); }
 /** ล้างฟอร์มเข้าสู่ระบบให้สะอาดทุกครั้งที่เปิด — กันไม่ให้ข้อความ
     “ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง” ของครั้งก่อนค้างอยู่จนเข้าใจผิดว่าเข้าระบบไม่ได้ */
 function lgReset(){
