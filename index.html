@@ -2571,7 +2571,8 @@ function roleTh(r){ const t={district_admin:'ผู้ดูแลเขต',gro
 /* ============================ หน้าเว็บสาธารณะ / หลังบ้าน ============================ */
 const PUBLIC_PAGES=[['home','หน้าแรก'],['news','ข่าวประชาสัมพันธ์'],['acts','รายการแข่งขัน'],['apply','สมัครกรรมการตัดสิน'],
   ['sched','ตารางแข่งขัน'],['results','ผลการแข่งขัน'],['medals','ตารางเหรียญ'],
-  ['schools','ทะเบียนโรงเรียน'],['cert','เกียรติบัตร'],['docs','เอกสารดาวน์โหลด']];
+  ['cert','เกียรติบัตร'],['docs','เอกสารดาวน์โหลด']];
+/* ทะเบียนโรงเรียนไม่อยู่ในเมนูสาธารณะ — เปิดดูได้เฉพาะฝั่งหลังบ้านของเขตและกลุ่ม */
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','entries','score','publish','promote','certadm','cards',
@@ -3830,6 +3831,7 @@ function go(p){
   }
   if(isAdminPage(p) && VIEW!=='admin'){ VIEW='admin'; LS.setItem(K.view,'admin');
     document.body.dataset.view='admin'; }
+  if(p==='schools' && VIEW==='public') p='home';   /* ทะเบียนโรงเรียนเป็นหน้าหลังบ้าน */
   PAGE=p; $$('.page').forEach(x=>x.classList.remove('on'));
   const el=$('#p-'+p); if(el) el.classList.add('on');
   $$('.nv').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
