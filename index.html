@@ -2713,17 +2713,23 @@ function renderNews(){
     window.__NEWS=rows;
   });
 }
+/** วันที่ที่อ่านกลับมาจาก Google Sheets อาจเป็นรูปแบบเต็ม (2569-10-19T07:00:00.000Z)
+ *  ตัดให้เหลือ ปปปป-ดด-วว เสมอ ทั้งตอนแสดงผลและตอนเปิดแก้ไข                              */
+function dstr(v){
+  const t=String(v==null?'':v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return t? t[0] : String(v==null?'':v);
+}
 function newsCard(n,i){
   return `<div class="newscard" onclick="openNews(${i})">
     <div class="th" style="${n.image?`background-image:url('${n.image}')`:''}">${n.image?'':'📰'}</div>
     <div><h4>${n.pin==='Y'?'<span class="pill i">ปักหมุด</span> ':''}${n.title}</h4>
-      <div class="mt">${n.date||''} · ${n.scope==='ALL'?'ประกาศจากเขต':'ข่าวของ '+groupName(n.scope)}</div>
+      <div class="mt">${dstr(n.date)} · ${n.scope==='ALL'?'ประกาศจากเขต':'ข่าวของ '+groupName(n.scope)}</div>
       <p>${(n.body||'').slice(0,180)}</p></div></div>`;
 }
 function openNews(i){
   const n=(window.__NEWS||[])[i]; if(!n) return;
   openModal(n.title,
-    `<div class="hint" style="margin-bottom:10px">${n.date||''} · ${n.scope==='ALL'?'ประกาศจากสำนักงานเขต':'ข่าวของ '+groupName(n.scope)}</div>`+
+    `<div class="hint" style="margin-bottom:10px">${dstr(n.date)} · ${n.scope==='ALL'?'ประกาศจากสำนักงานเขต':'ข่าวของ '+groupName(n.scope)}</div>`+
     (n.image?`<img src="${n.image}" style="width:100%;border-radius:10px;margin-bottom:12px">`:'')+
     `<div style="white-space:pre-wrap;font-size:14px;line-height:1.75">${n.body||'(ไม่มีรายละเอียดเพิ่มเติม)'}</div>`,
     ()=>false);
@@ -2795,7 +2801,7 @@ function renderNewsMgr(){
   api('listNews',{scope:SCOPE==='ALL'?'':SCOPE}).then(rows=>{
     window.__NEWS=rows;
     tbl($('#nmTbl'),['วันที่','หัวข้อ','ขอบเขต','ปักหมุด','จัดการ'],
-      rows.map((n,i)=>`<tr><td style="width:110px;color:var(--ink-3)">${n.date||''}</td>
+      rows.map((n,i)=>`<tr><td style="width:110px;color:var(--ink-3)">${dstr(n.date)}</td>
         <td><b>${n.title}</b></td>
         <td>${n.scope==='ALL'?'<span class="pill i">ทั้งเขต</span>':'<span class="pill w">'+groupName(n.scope)+'</span>'}</td>
         <td>${n.pin==='Y'?'📌':''}</td>
@@ -4897,7 +4903,7 @@ const TH_MONTH=['มกราคม','กุมภาพันธ์','มีน
   'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 /** ช่องวันที่แบบเลือก วัน-เดือน-ปี (พ.ศ.) — เก็บค่าเป็น 2569-10-20 เหมือนเดิม */
 function dateSelHTML(id, val){
-  const v=String(val||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const v=String(dstr(val)||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
   const y0=Number((typeof acadYear==='function'? acadYear():0))||(new Date().getFullYear()+543);
   const years=[]; for(let y=y0-1;y<=y0+3;y++) years.push(y);
   const css='padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:#fff';
@@ -5317,7 +5323,7 @@ async function buildDoc(){
       </tbody></table>`;
   } else if(kind==='schedule'){
     body=`<table><thead><tr><th>สนาม</th><th>วันที่</th><th>เวลา</th><th>รายการแข่งขัน</th><th>ระดับชั้น</th><th>ทีม</th></tr></thead><tbody>
-      ${(pack.schedule||[]).map(s=>`<tr><td>${s.venue_id||''}</td><td>${s.date||''}</td><td>${s.start_time||''}</td>
+      ${(pack.schedule||[]).map(s=>`<tr><td>${s.venue_id||''}</td><td>${dstr(s.date)}</td><td>${s.start_time||''}</td>
         <td>${(pack.activities.find(a=>a.act_id===s.act_id)||{}).act_name||''}</td><td></td><td></td></tr>`).join('')
         || `<tr><td colspan="6" style="text-align:center">ยังไม่มีตารางแข่งขัน</td></tr>`}
       </tbody></table>`;
