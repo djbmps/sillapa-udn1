@@ -67,6 +67,42 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .pill.b{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 1px rgba(179,38,30,.18)}
 .pill.i{background:var(--pri-soft);color:var(--pri);box-shadow:inset 0 0 0 1px rgba(226,98,14,.18)}
 .pill.n{background:var(--c3s);color:var(--c3);box-shadow:inset 0 0 0 1px rgba(29,78,216,.16)}
+.blink{animation:blk 1.15s ease-in-out infinite}@keyframes blk{50%{opacity:.25}}
+.actrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;
+  border-top:1px solid var(--line-2);padding:11px 16px;cursor:pointer;font:inherit;color:inherit}
+.actrow:hover{background:var(--line-2)}
+.actrow .ar{font-size:18px;color:var(--ink-3)}
+.catbox{border:1px solid var(--line);border-radius:var(--r);background:#fff;box-shadow:var(--sh);margin-bottom:12px;overflow:hidden}
+.catsum{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;font-weight:700;font-size:15px;list-style:none}
+.catsum::-webkit-details-marker{display:none}
+.catsum:hover{background:var(--line-2)}
+.catsum .ic{width:34px;height:26px;border-radius:8px;background:var(--pri-soft);color:var(--pri);
+  display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex:none;letter-spacing:.5px}
+.rescols{padding:10px 14px 14px;display:grid;grid-template-columns:1fr;gap:6px}
+@media(min-width:980px){.rescols{grid-template-columns:1fr 1fr;gap:6px 18px}}
+.rlink{display:flex;gap:10px;align-items:center;padding:9px 11px;cursor:pointer;width:100%;
+  font:inherit;color:inherit;text-align:left;background:#fff;border:1px solid var(--line);border-radius:10px;
+  transition:border-color .15s, box-shadow .15s, transform .15s}
+.rlink:hover{border-color:var(--pri);box-shadow:0 2px 10px rgba(226,98,14,.12);transform:translateY(-1px)}
+.rlink.on{border-color:#F3C6A8;background:linear-gradient(90deg,#FFF6EE,#fff 60%)}
+.rlink .code{flex:none;min-width:40px;height:26px;border-radius:7px;background:var(--line-2);color:var(--ink-2);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.rlink.on .code{background:var(--pri-soft);color:var(--pri)}
+.rlink .nm{font-size:14px;font-weight:600;line-height:1.35}
+.rlink .lv{font-size:11.5px;color:var(--ink-3)}
+.rlink .pub{flex:none;font-size:11px;font-weight:700;color:#C62828;background:#FDECEA;border-radius:999px;
+  padding:3px 9px;animation:blk 1.15s ease-in-out infinite;white-space:nowrap}
+.rlink .wait{flex:none;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.catsum .bar{flex:none;width:92px;height:6px;border-radius:999px;background:var(--line-2);overflow:hidden}
+.catsum .bar i{display:block;height:100%;background:var(--ok);border-radius:999px}
+.docsheet{background:#fff}
+.docsheet h4{text-align:center;font-size:15px;margin:0 0 2px;color:#1546A0}
+.docsheet .dhead{text-align:center;font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px}
+.docsheet table{width:100%;border-collapse:collapse;font-size:13px}
+.docsheet th,.docsheet td{border:1px solid #B9B2AB;padding:6px 8px}
+.docsheet th{background:#F1ECE7;text-align:center;font-weight:700}
+.docsheet td.c{text-align:center}
+.docsheet .note{display:block;font-size:12px;color:var(--ink-2);margin-top:10px;line-height:1.7;background:none;padding:0}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th{text-align:left;font-weight:600;color:var(--ink-2);font-size:12.5px;padding:9px 11px;border-bottom:1px solid var(--line);background:#FBF8F5;position:sticky;top:0}
 td{padding:9px 11px;border-bottom:1px solid var(--line-2);vertical-align:middle}
@@ -121,6 +157,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .modal{position:fixed;inset:0;background:rgba(21,18,16,.55);display:none;place-items:center;z-index:300;padding:20px}
 .modal.on{display:grid}
 .modal .box{background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal .box.wide{max-width:1040px}
 .modal .box h3{padding:16px 20px;border-bottom:1px solid var(--line-2)}
 .modal .box .bd{padding:18px 20px}
 .modal .box .ft{padding:14px 20px;border-top:1px solid var(--line-2);display:flex;gap:9px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
@@ -496,13 +533,15 @@ body[data-view="admin"] .utilbar{display:none}
     <!-- ---------- ผลการแข่งขัน (สาธารณะ) ---------- -->
     <section class="page" id="p-results">
       <div class="hd"><div><h2>ผลการแข่งขัน</h2><p id="resSub"></p></div></div>
-      <div class="card"><div class="ch"><h3>ผลที่ประกาศแล้ว</h3><span class="sp"></span>
-        <input id="resQ" placeholder="ค้นหารายการ / โรงเรียน" oninput="drawResults()"
-               style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;min-width:220px">
-        <select id="resMedal" onchange="drawResults()" style="padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff">
-          <option value="">ทุกเหรียญ</option><option>ทอง</option><option>เงิน</option><option>ทองแดง</option><option>เข้าร่วม</option></select>
-        <span class="hint" id="resCount"></span></div>
-        <div class="cb" style="padding:0;overflow:auto"><table id="resTbl"></table></div></div>
+      <div class="row" style="margin-bottom:12px;flex-wrap:wrap">
+        <input id="resQ" placeholder="ค้นหารายการแข่งขัน / กลุ่มสาระ" oninput="drawResults()"
+               style="flex:1;min-width:240px;padding:9px 12px;border:1px solid var(--line);border-radius:10px">
+        <label style="display:flex;gap:8px;align-items:center;font-size:13.5px;font-weight:600;cursor:pointer">
+          <input type="checkbox" id="resOnlyPub" onchange="drawResults()" style="width:18px;height:18px">
+          เฉพาะรายการที่ประกาศผลแล้ว</label>
+        <span class="hint" id="resCount"></span>
+      </div>
+      <div id="resList"></div>
     </section>
 
     <!-- ---------- ตารางเหรียญ (สาธารณะ) ---------- -->
@@ -4403,7 +4442,8 @@ function drawActEdit(){
 let mSaveFn=()=>{};
 function openModal(title,html,fn){ $('#mTitle').textContent=title; $('#mBody').innerHTML=html;
   mSaveFn=fn; $('#mOk').style.display=''; $('#modal').classList.add('on'); }
-function closeModal(){ $('#modal').classList.remove('on'); }
+function closeModal(){ $('#modal').classList.remove('on');
+  const bx=document.querySelector('#modal .box'); if(bx) bx.classList.remove('wide'); }
 function mSave(){ Promise.resolve(mSaveFn()).then(ok=>{ if(ok!==false) closeModal(); })
   .catch(e=>alert(e.message)); }
 
@@ -5631,21 +5671,108 @@ function medalRow(m,i){
 
 function renderResults(){
   $('#resSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':'รอบคัดเลือก · '+groupName(SCOPE));
-  api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{ window.__PUB=r; drawResults(); }).catch(()=>{});
+  $('#resList').innerHTML='<div class="hint" style="padding:20px">กำลังโหลดผลการแข่งขัน…</div>';
+  api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{ window.__PUB=r; drawResults(); })
+    .catch(e=>{ $('#resList').innerHTML='<div class="note w"><span>⚠️</span><div>'+e.message+'</div></div>'; });
 }
+/** รายการที่ประกาศผลแล้ว → map act_id → จำนวนทีม */
+function publishedActs(){
+  const m={}; ((window.__PUB||{}).results||[]).forEach(x=>{ m[String(x.act_id)]=(m[String(x.act_id)]||0)+1; });
+  return m;
+}
+/** หน้าผลการแข่งขัน — จัดกลุ่มตามกลุ่มสาระ แล้วแสดงรายการแข่งขันในแต่ละกลุ่มสาระ
+    รายการที่ประกาศผลแล้วจะมีป้าย “ประกาศ” กระพริบ คลิกเพื่อดูอันดับคะแนนของทีม */
 function drawResults(){
-  const r=window.__PUB||{results:[]};
-  const q=($('#resQ')&&$('#resQ').value.trim())||'', md=($('#resMedal')&&$('#resMedal').value)||'';
-  let rows=(r.results||[]).filter(x=>(!md||x.medal===md) &&
-    (!q || String(x.act_name||'').indexOf(q)>=0 || String(x.school||'').indexOf(q)>=0));
-  rows.sort((a,b)=> String(a.act_name||'').localeCompare(String(b.act_name||''),'th') || Number(a.rank)-Number(b.rank));
-  $('#resCount').textContent = rows.length+' รายการ';
-  tbl($('#resTbl'),['รายการแข่งขัน','ระดับชั้น','โรงเรียน','คะแนน','เหรียญ','อันดับ'],
-    rows.map(x=>`<tr><td><b>${x.act_name||''}</b></td><td>${x.level||''}</td>
-      <td>${cleanName(x.school||'')}${x.from_group?' <span class="hint">· จาก '+groupName(x.from_group)+'</span>':''}</td>
-      <td class="num">${x.total||''}</td>
-      <td><span class="pill ${x.medal==='ทอง'?'ok':x.medal==='เงิน'?'i':'w'}">${x.medal||''}</span></td>
-      <td class="num">${x.rank||''}</td></tr>`).join(''));
+  const box=$('#resList'); if(!box) return;
+  const q=(($('#resQ')&&$('#resQ').value)||'').trim();
+  const onlyPub=$('#resOnlyPub')&&$('#resOnlyPub').checked;
+  const pub=publishedActs();
+  const acts=(actsOf()||[]).filter(a=>String(a.status||'เปิด')!=='ปิด');
+  const cats={};
+  acts.forEach(a=>{
+    const c=a.category||'อื่น ๆ';
+    if(onlyPub && !pub[String(a.act_id)]) return;
+    if(q && String(a.act_name||'').indexOf(q)<0 && String(c).indexOf(q)<0) return;
+    (cats[c]=cats[c]||[]).push(a);
+  });
+  const names=Object.keys(cats).sort((a,b)=>a.localeCompare(b,'th'));
+  const nAct=names.reduce((n,c)=>n+cats[c].length,0);
+  const nPub=names.reduce((n,c)=>n+cats[c].filter(a=>pub[String(a.act_id)]).length,0);
+  $('#resCount').textContent = nAct? (nAct+' รายการ · ประกาศผลแล้ว '+nPub) : '';
+  if(!names.length){ box.innerHTML='<div class="note i"><span>🔎</span><div>ไม่พบรายการที่ค้นหา</div></div>'; return; }
+  box.innerHTML = names.map((c,i)=>{
+    const list=cats[c].slice().sort((a,b)=>String(a.act_code||'').localeCompare(String(b.act_code||''),'th',{numeric:true}));
+    const done=list.filter(a=>pub[String(a.act_id)]).length;
+    const no=String(i+1).padStart(3,'0');
+    return `<details class="catbox" ${(names.length<=3||done)?'open':''}>
+      <summary class="catsum"><span class="ic">${no}</span>
+        <span style="min-width:0">${c}</span><span class="sp"></span>
+        <span class="bar" title="ประกาศผลแล้ว ${done} จาก ${list.length}"><i style="width:${Math.round(done/list.length*100)}%"></i></span>
+        <span class="hint">${done}/${list.length} รายการ</span>
+      </summary>
+      <div class="rescols">
+        ${list.map(a=>{ const n=pub[String(a.act_id)];
+          return `<button class="rlink ${n?'on':''}" onclick="openActResult('${a.act_id}')">
+            <span class="code">${a.act_code||'–'}</span>
+            <span style="min-width:0;flex:1">
+              <span class="nm" style="display:block">${a.act_name}</span>
+              <span class="lv" style="display:block">ระดับชั้น ${a.level||'-'}${n? ' · '+n+' ทีม':''}</span></span>
+            ${n? '<span class="pub">● ประกาศผล</span>' : '<span class="wait">รอประกาศ</span>'}
+          </button>`; }).join('')}
+      </div>
+    </details>`;
+  }).join('');
+}
+/** แปลงอันดับเป็นคำแบบประกาศผลราชการ */
+function rankWord(n){
+  const r=Number(n)||0;
+  return r===1? 'ชนะเลิศ' : r===2? 'รองชนะเลิศอันดับที่ ๑' : r===3? 'รองชนะเลิศอันดับที่ ๒' : String(n||'');
+}
+/** คลิกรายการแข่งขัน → ผลการแข่งขันแบบเอกสารประกาศผล (เรียงตามคะแนน) */
+function openActResult(actId){
+  const a=(actsOf()||[]).find(x=>String(x.act_id)===String(actId))||{};
+  const c=DB.config||{};
+  const rows=(((window.__PUB||{}).results)||[]).filter(x=>String(x.act_id)===String(actId))
+    .sort((x,y)=>Number(x.rank)-Number(y.rank) || Number(y.total)-Number(x.total));
+  const where = SCOPE==='ALL' ? districtName() : groupName(SCOPE);
+  const when  = eventDateLine().replace(/^\s*·\s*/,'') || '';
+  const head=`<div class="docsheet" id="docResult">
+    <h4>ผลการแข่งขัน · ${a.category||''}</h4>
+    <h4 style="font-size:17px;margin-bottom:8px">${a.act_name||''} ${a.level||''}</h4>
+    <div class="dhead">${eventName()}<br>${SCOPE==='ALL'?'ระดับเขตพื้นที่การศึกษา':'รอบคัดเลือกระดับกลุ่มโรงเรียน'} · ${where}
+      ${when? '<br>'+when : ''}
+      ${a.act_code? '<br>รหัสกิจกรรม : '+a.act_code : ''}</div>`;
+  const body = rows.length
+    ? `<div style="overflow:auto"><table>
+        <thead><tr><th style="width:44px">ที่</th><th style="min-width:230px">โรงเรียน</th><th style="width:130px">สังกัด</th>
+          <th style="width:64px">คะแนน</th><th style="width:62px">ระดับ</th>
+          <th style="width:140px">อันดับ</th><th style="width:96px">หมายเหตุ</th></tr></thead><tbody>
+        ${rows.map((r,i)=>`<tr><td class="c">${i+1}</td>
+          <td>โรงเรียน${cleanName(r.school||'')}</td>
+          <td class="c">${districtName()}</td>
+          <td class="c"><b>${r.total||''}</b></td>
+          <td class="c">${r.medal||''}</td>
+          <td class="c">${rankWord(r.rank)}</td>
+          <td class="c hint">${r.from_group? 'ตัวแทน'+groupName(r.from_group):''}</td></tr>`).join('')}
+        </tbody></table></div>
+       <span class="note">ช่วงคะแนน และระดับเหรียญ<br>
+         ร้อยละ ${c.medal_gold||80} – 100 รางวัลเกียรติบัตรระดับเหรียญทอง<br>
+         ร้อยละ ${c.medal_silver||70} – ต่ำกว่า ร้อยละ ${c.medal_gold||80} รางวัลเกียรติบัตรระดับเหรียญเงิน<br>
+         ร้อยละ ${c.medal_bronze||60} – ต่ำกว่า ร้อยละ ${c.medal_silver||70} รางวัลเกียรติบัตรระดับเหรียญทองแดง<br>
+         ต่ำกว่าร้อยละ ${c.medal_bronze||60} ได้รับเกียรติบัตรเข้าร่วมการแข่งขัน</span></div>`
+    : `<div class="note i" style="margin-top:8px"><span>⏳</span><div>รายการนี้ยังไม่ประกาศผลการแข่งขัน</div></div></div>`;
+  openModal('ผลการแข่งขัน', head+body, ()=>false);
+  const bx=document.querySelector('#modal .box'); if(bx) bx.classList.add('wide');
+  const ok=$('#mOk'); if(ok){ ok.style.display=''; ok.textContent='🖨️ พิมพ์หน้านี้'; ok.onclick=()=>printPanel('docResult'); }
+}
+/** พิมพ์เฉพาะกล่องผลการแข่งขัน */
+function printPanel(id){
+  const el=document.getElementById(id); if(!el) return;
+  const w=window.open('','_blank','width=900,height=700'); if(!w) return alert('เบราว์เซอร์บล็อกหน้าต่างพิมพ์');
+  const css=[...document.querySelectorAll('style')].map(x=>x.textContent).join('\n');
+  w.document.write('<!doctype html><meta charset="utf-8"><title>ผลการแข่งขัน</title><style>'+css+
+    'body{background:#fff;padding:24px;font-family:"IBM Plex Sans Thai",sans-serif}</style>'+el.outerHTML);
+  w.document.close(); setTimeout(()=>{ w.focus(); w.print(); }, 400);
 }
 function renderMedals(){
   $('#medSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':'รอบคัดเลือก · '+groupName(SCOPE));
