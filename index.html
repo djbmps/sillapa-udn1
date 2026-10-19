@@ -60,6 +60,13 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .navx{position:absolute;right:19px;top:17px;color:#8A7C70;font-size:12px;display:none;line-height:1}
 .navfind.has .navx{display:block}
 .nv.hide{display:none!important}
+/* ช่องรหัสผ่าน — ปุ่มเปิด-ปิดตาเพื่อดูรหัสที่พิมพ์ */
+.pwwrap{position:relative}
+.pwwrap input{width:100%;padding-right:44px}
+.pweye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;
+  display:grid;place-items:center;border-radius:9px;font-size:16px;line-height:1;opacity:.65;
+  background:transparent;border:0;cursor:pointer}
+.pweye:hover{opacity:1;background:rgba(0,0,0,.05)}
 /* ระบบขอเปลี่ยนตัว */
 .steps{margin:0;padding-left:20px;line-height:1.85;font-size:14px}
 .steps li{margin-bottom:8px}
@@ -415,9 +422,16 @@ body[data-view="admin"] .utilbar{display:none}
         <select id="lgScope" onchange="lgScopeChange()"></select>
         <div class="hint" style="margin-top:5px">ผู้ดูแลกลุ่มและโรงเรียนเลือกกลุ่มของตนเอง · ระบบจะพาเข้าเว็บกลุ่มนั้นให้อัตโนมัติ</div></div>
       <div class="fld"><label>ชื่อผู้ใช้</label><input id="lgUser" autocomplete="username"
-           placeholder="เช่น admin-g01 หรือ sc0001" oninput="lgTyping()"></div>
-      <div class="fld"><label>รหัสผ่าน</label><input id="lgPass" type="password" autocomplete="current-password"
-           placeholder="รหัสที่ได้รับจากผู้ดูแล" oninput="lgTyping()"></div>
+           placeholder="เช่น admin-g01 หรือ sc0001" oninput="lgTyping()"
+           onkeydown="if(event.key==='Enter'){const p=document.getElementById('lgPass'); p&&p.focus();}"></div>
+      <div class="fld"><label>รหัสผ่าน</label>
+        <div class="pwwrap">
+          <input id="lgPass" type="password" autocomplete="current-password"
+                 placeholder="รหัสที่ได้รับจากผู้ดูแล" oninput="lgTyping()"
+                 onkeydown="if(event.key==='Enter')doLogin()">
+          <button type="button" class="pweye" id="lgEye" onclick="lgTogglePass()"
+                  title="แสดงรหัสผ่าน" aria-label="แสดงรหัสผ่าน">👁️</button>
+        </div></div>
       <button class="btn" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">เข้าสู่ระบบ</button>
       <div id="lgErr" class="note b" style="display:none;margin-top:12px"></div>
       <p class="hint" style="margin-top:14px">
@@ -6577,8 +6591,18 @@ function closeLogin(){ $('#loginView').style.display='none'; $('#app').style.dis
 function lgReset(){
   const e=$('#lgErr'); if(e){ e.style.display='none'; e.innerHTML=''; }
   const u=$('#lgUser'), w=$('#lgPass');
-  if(u) u.value=''; if(w) w.value='';
+  if(u) u.value=''; if(w){ w.value=''; w.type='password'; }
+  const b=$('#lgEye'); if(b){ b.textContent='👁️'; b.title='แสดงรหัสผ่าน'; }
   setTimeout(()=>{ if(u) u.focus(); }, 60);
+}
+/** เปิด-ปิดตา เพื่อดูรหัสผ่านที่พิมพ์ไว้ — กันพิมพ์ผิดโดยไม่รู้ตัว */
+function lgTogglePass(){
+  const i=$('#lgPass'), b=$('#lgEye'); if(!i||!b) return;
+  const show = (i.type==='password');
+  i.type = show? 'text' : 'password';
+  b.textContent = show? '🙈' : '👁️';
+  b.title = b.ariaLabel = show? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน';
+  i.focus();
 }
 /** พิมพ์ใหม่เมื่อไร ให้ข้อความผิดพลาดหายไปทันที */
 function lgTyping(){ const e=$('#lgErr'); if(e && e.style.display!=='none'){ e.style.display='none'; e.innerHTML=''; } }
