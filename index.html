@@ -3306,13 +3306,14 @@ function drawAdmins(){
   (ADMINS||[]).forEach(a=>{                       /* ผู้ดูแลที่ยังไม่อยู่ในผลค้นหา ให้แสดงด้วย */
     if(!rows.some(x=>String(x.username)===String(a.username)))
       rows.push({user_id:a.user_id, username:a.username, name:a.name, role:a.role, status:a.status,
+        group_code: a.role==='group_admin'? String(a.scope||'') : '',
         where: a.role==='district_admin'? ((DB.config||{}).district_name||'สพป.อุดรธานี เขต 1') : groupName(a.scope)});
   });
   if(lv==='other') rows=rows.filter(x=>adOrder(x.role)===3);
   else if(lv) rows=rows.filter(x=>String(x.role)===lv);
   if(q) rows=rows.filter(x=>[x.name,x.username,x.where].join(' ').indexOf(q)>=0);
-  rows.sort((a,b)=> adOrder(a.role)-adOrder(b.role)
-    || String(a.where||'').localeCompare(String(b.where||''),'th')
+  rows.sort((a,b)=> adOrder(a.role)-adOrder(b.role)          /* เขต → กลุ่ม → โรงเรียน */
+    || String(a.group_code||'').localeCompare(String(b.group_code||''))   /* เรียงกลุ่มตามรหัส g01…g20 */
     || String(a.username).localeCompare(String(b.username)));
   const head=['ชื่อ-สกุล','ชื่อผู้ใช้'].concat(show?['รหัสผ่าน']:[])
     .concat(['ระดับ','สังกัด','ประเภท / สิทธิ์','สถานะ','จัดการ']);
