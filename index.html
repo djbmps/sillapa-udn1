@@ -2707,7 +2707,7 @@ function siteCfg(){
 }
 function renderBanner(){
   const c=siteCfg(), b=$('#banner');
-  b.style.backgroundImage = c.banner_url? `url('${c.banner_url}')` : '';
+  b.style.backgroundImage = c.banner_url? `url('${imgSrc(c.banner_url)}')` : '';
   $('#bKw').textContent = SCOPE==='ALL'? shortName() : 'รอบคัดเลือกระดับกลุ่มโรงเรียน';
   $('#bH1').textContent = c.banner_title || (SCOPE==='ALL'? shortName() : groupName(SCOPE));
   $('#bP').textContent  = c.banner_subtitle || '';
@@ -2776,7 +2776,7 @@ function dstr(v){
 }
 function newsCard(n,i){
   return `<div class="newscard" onclick="openNews(${i})">
-    <div class="th" style="${n.image?`background-image:url('${n.image}')`:''}">${n.image?'':'📰'}</div>
+    <div class="th" style="${n.image?`background-image:url('${imgSrc(n.image)}')`:''}">${n.image?'':'📰'}</div>
     <div><h4>${n.pin==='Y'?'<span class="pill i">ปักหมุด</span> ':''}${n.title}</h4>
       <div class="mt">${dstr(n.date)} · ${n.scope==='ALL'?'ประกาศจากเขต':'ข่าวของ '+groupName(n.scope)}</div>
       <p>${(n.body||'').slice(0,180)}</p></div></div>`;
@@ -2785,7 +2785,7 @@ function openNews(i){
   const n=(window.__NEWS||[])[i]; if(!n) return;
   openModal(n.title,
     `<div class="hint" style="margin-bottom:10px">${dstr(n.date)} · ${n.scope==='ALL'?'ประกาศจากสำนักงานเขต':'ข่าวของ '+groupName(n.scope)}</div>`+
-    (n.image?`<img src="${n.image}" style="width:100%;border-radius:10px;margin-bottom:12px">`:'')+
+    (n.image?`<img src="${imgSrc(n.image)}" style="width:100%;border-radius:10px;margin-bottom:12px">`:'')+
     `<div style="white-space:pre-wrap;font-size:14px;line-height:1.75">${n.body||'(ไม่มีรายละเอียดเพิ่มเติม)'}</div>`,
     ()=>false);
   $('#mOk').style.display='none';
@@ -2886,7 +2886,14 @@ function editNews(id){
            ${(DB.groups||[]).map(g=>`<option value="${g.group_code}" ${n.scope===g.group_code?'selected':''}>เฉพาะ ${g.group_name}</option>`).join('')}
          </select>${canScope?'':'<div class="hint">ผู้ดูแลกลุ่มโพสต์ได้เฉพาะเว็บกลุ่มตนเอง</div>'}</div>
      </div>
-     <div class="fld"><label>ลิงก์รูปประกอบ (ไม่บังคับ)</label><input id="n_image" value="${n.image||''}" placeholder="https://…"></div>
+     <div class="fld"><label>รูปประกอบข่าว (ไม่บังคับ)</label>
+       <div class="row" style="gap:8px">
+         <button type="button" class="btn g sm" id="n_up" onclick="newsPickImage()">📷 อัปโหลดรูปจากเครื่อง</button>
+         <span class="hint" id="n_imgmsg">ย่อขนาดให้อัตโนมัติ แล้วเก็บไว้ใน Google Drive ของเขต</span>
+       </div>
+       <input id="n_image" value="${(n.image||'').replace(/"/g,'&quot;')}" placeholder="หรือวางลิงก์รูปที่นี่"
+              oninput="newsImgPreview()" style="margin-top:7px">
+       <div id="n_imgprev" style="margin-top:8px"></div></div>
      <div class="fld"><label>รายละเอียด</label>
        <textarea id="n_body" rows="7" style="resize:vertical">${n.body||''}</textarea></div>
      <label style="font-size:13px"><input type="checkbox" id="n_pin" ${n.pin==='Y'?'checked':''}> ปักหมุดไว้บนสุด</label>`,
@@ -2895,13 +2902,45 @@ function editNews(id){
         scope:$('#n_scope').value, image:$('#n_image').value.trim(),
         body:$('#n_body').value, pin:$('#n_pin').checked?'Y':''};
       if(!o.title) throw new Error('กรุณากรอกหัวข้อข่าว');
-      await api('saveNews',{news:o});
-      await reloadBoot(); renderNewsMgr();
+      const saved=await api('saveNews',{news:o});
+      newsLocalSave(Object.assign({},o,saved||{}));
+      renderNewsMgr();
     });
+  newsImgPreview();
+}
+/** อัปโหลดรูปข่าวจากเครื่อง — ย่อเหลือกว้าง 1,400 px เพื่อให้บันทึกเร็ว */
+function newsPickImage(){
+  const btn=$('#n_up'), msg=$('#n_imgmsg');
+  pickImage(1400, async(url,info)=>{
+    if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังอัปโหลด…'; }
+    if(msg) msg.textContent='กำลังอัปโหลดรูป '+info.kb+' KB …';
+    try{
+      const r=await uploadImage(url,'news');
+      $('#n_image').value=r.url; newsImgPreview();
+      if(msg) msg.textContent='อัปโหลดแล้ว · '+info.w+'×'+info.h+' px · '+info.kb+' KB';
+    }catch(e){ if(msg) msg.textContent=''; alert('อัปโหลดไม่สำเร็จ: '+e.message); }
+    if(btn){ btn.disabled=false; btn.textContent='📷 เปลี่ยนรูป'; }
+  }, 600_000);
+}
+function newsImgPreview(){
+  const v=($('#n_image')||{}).value||'', box=$('#n_imgprev'); if(!box) return;
+  box.innerHTML = v? `<img src="${imgSrc(v)}" style="max-width:220px;border-radius:9px;border:1px solid var(--line)"
+      onerror="this.outerHTML='<span class=&quot;hint&quot;>⚠️ ลิงก์นี้แสดงเป็นรูปไม่ได้ — ลองใช้ปุ่มอัปโหลดรูปจากเครื่อง</span>'">` : '';
+}
+/** อัปเดตข่าวในข้อมูลที่ถืออยู่ แทนการโหลดข้อมูลทั้งระบบใหม่ (เร็วกว่ามาก) */
+function newsLocalSave(saved, removeId){
+  const arr=DB.news||(DB.news=[]);
+  if(removeId){ DB.news=arr.filter(x=>String(x.id)!==String(removeId)); }
+  else if(saved && saved.id){
+    const i=arr.findIndex(x=>String(x.id)===String(saved.id));
+    if(i>=0) arr[i]=Object.assign({},arr[i],saved); else arr.unshift(saved);
+    DB.news=arr.slice().sort((a,b)=> (b.pin==='Y')-(a.pin==='Y') || String(b.date||'').localeCompare(String(a.date||'')));
+  }
+  try{ if(!DEMO()) snapSave(DB, SCOPE==='ALL'?'':SCOPE); }catch(e){}
 }
 async function delNews(id){
   if(!confirm('ลบข่าวนี้?')) return;
-  try{ await api('deleteNews',{id}); await reloadBoot(); renderNewsMgr(); }
+  try{ await api('deleteNews',{id}); newsLocalSave(null,id); renderNewsMgr(); }
   catch(e){ alert(e.message); }
 }
 function editDoc(id){
@@ -2925,26 +2964,42 @@ function editDoc(id){
       const o={id:id||'', category:$('#d_cat').value, scope:$('#d_scope').value,
         title:$('#d_title').value.trim(), url:$('#d_url').value.trim(), note:$('#d_note').value.trim()};
       if(!o.title||!o.url) throw new Error('ต้องมีทั้งชื่อเอกสารและลิงก์');
-      await api('saveDocument',{document:o});
-      await reloadBoot(); renderNewsMgr();
+      const saved=await api('saveDocument',{document:o});
+      const arr=DB.documents||(DB.documents=[]);
+      const sv=Object.assign({},o,saved||{});
+      const i=arr.findIndex(x=>String(x.id)===String(sv.id));
+      if(i>=0) arr[i]=Object.assign({},arr[i],sv); else arr.unshift(sv);
+      try{ if(!DEMO()) snapSave(DB, SCOPE==='ALL'?'':SCOPE); }catch(e){}
+      renderNewsMgr();
     });
 }
 async function delDoc(id){
   if(!confirm('ลบเอกสารนี้?')) return;
-  try{ await api('deleteDocument',{id}); await reloadBoot(); renderNewsMgr(); }
+  try{ await api('deleteDocument',{id});
+    DB.documents=(DB.documents||[]).filter(x=>String(x.id)!==String(id));
+    try{ if(!DEMO()) snapSave(DB, SCOPE==='ALL'?'':SCOPE); }catch(e){}
+    renderNewsMgr(); }
   catch(e){ alert(e.message); }
 }
 
 
 /* ============================ อัปโหลดรูปภาพ ============================ */
+/** แปลงลิงก์รูปให้แสดงผลได้จริง
+    ลิงก์แชร์ของ Google Drive (…/file/d/ID/view หรือ uc?export=view&id=ID)
+    ใช้ใน <img> ไม่ได้ ต้องเปลี่ยนเป็นลิงก์รูปโดยตรงของ Google */
+function imgSrc(u){
+  const s=String(u||'').trim(); if(!s) return '';
+  const m=s.match(/(?:drive\.google\.com\/(?:file\/d\/|uc\?(?:[^"']*?&)?id=|open\?id=|thumbnail\?(?:[^"']*?&)?id=))([A-Za-z0-9_-]{15,})/);
+  return m ? 'https://lh3.googleusercontent.com/d/'+m[1]+'=w1600' : s;
+}
 /** เปิดหน้าต่างเลือกไฟล์ → ย่อรูป → คืน dataURL */
-function pickImage(maxW, cb){
+function pickImage(maxW, cb, maxBytes){
   const inp=document.createElement('input');
   inp.type='file'; inp.accept='image/png,image/jpeg,image/webp';
-  inp.onchange=()=>{ if(inp.files&&inp.files[0]) shrinkImage(inp.files[0],maxW,cb); };
+  inp.onchange=()=>{ if(inp.files&&inp.files[0]) shrinkImage(inp.files[0],maxW,cb,maxBytes); };
   inp.click();
 }
-function shrinkImage(file,maxW,cb){
+function shrinkImage(file,maxW,cb,maxBytes){
   if(!/^image\//.test(file.type)) return alert('กรุณาเลือกไฟล์รูปภาพ (JPG / PNG / WebP)');
   const fr=new FileReader();
   fr.onload=()=>{
@@ -2954,8 +3009,9 @@ function shrinkImage(file,maxW,cb){
       const w=Math.round(img.width*sc), h=Math.round(img.height*sc);
       const c=document.createElement('canvas'); c.width=w; c.height=h;
       const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,w,h); g.drawImage(img,0,0,w,h);
-      let q=0.88, url=c.toDataURL('image/jpeg',q);
-      while(url.length>1_400_000 && q>0.4){ q-=0.1; url=c.toDataURL('image/jpeg',q); }
+      const cap=Number(maxBytes||900_000);
+      let q=0.85, url=c.toDataURL('image/jpeg',q);
+      while(url.length>cap && q>0.35){ q-=0.1; url=c.toDataURL('image/jpeg',q); }
       cb(url,{name:file.name, w:w, h:h, kb:Math.round(url.length*0.75/1024)});
     };
     img.onerror=()=>alert('เปิดไฟล์รูปไม่สำเร็จ');
@@ -2999,7 +3055,7 @@ function bindUploader(dropId, inputId, thumbId, barId, maxW, onDone){
 function showThumb(thumbId,url,info,demo){
   const el=$('#'+thumbId); if(!el) return;
   el.style.display='flex';
-  el.innerHTML=`<img src="${url}" alt="">
+  el.innerHTML=`<img src="${imgSrc(url)}" alt="">
     <div style="flex:1;font-size:12.5px"><b>อัปโหลดแล้ว</b>
       <div class="hint">${info? info.w+'×'+info.h+' px · '+info.kb+' KB':''}${demo?' · โหมดตัวอย่าง (เก็บในเครื่อง)':' · เก็บใน Google Drive'}</div></div>
     <button class="btn g sm" onclick="clearImg('${thumbId}')">ลบรูป</button>`;
@@ -3019,11 +3075,11 @@ function cardHTML(it,t,cfg){
   const bg=t&&t.bg_url;
   const num=(String(t.show_number||'Y')==='Y')
     ? `<div class="no">เลขที่บัตร ${String(it.no||0).padStart(4,'0')}</div>` : '';
-  return `<div class="idc ${bg?'':'noimg'}" ${bg?`style="background-image:url('${bg}')"`:''}>
+  return `<div class="idc ${bg?'':'noimg'}" ${bg?`style="background-image:url('${imgSrc(bg)}')"`:''}>
     ${bg?'':`<div class="hd2">${(cfg&&cfg.event_name)||eventName()}
       <small>${(cfg&&cfg.district_name)||''}</small></div>`}
     <div class="ph" style="top:${t.y_photo||14}%;width:${t.photo_w||42}%;aspect-ratio:3/4">
-      ${it.photo_url? `<img src="${it.photo_url}" alt="">`
+      ${it.photo_url? `<img src="${imgSrc(it.photo_url)}" alt="">`
         : '<div class="none">ยังไม่มี<br>รูปถ่าย</div>'}</div>
     <div class="l nm" style="top:${t.y_name||58}%">${it.name||''}</div>
     <div class="l dt" style="top:${t.y_detail||66}%">${it.detail||''}${it.level?' · '+it.level:''}</div>
@@ -3101,7 +3157,7 @@ function renderCardList(){
     $('#cd_school').style.display=(CURCARD==='student'||CURCARD==='coach')?'':'none';
     $('#cdList').innerHTML = r.items.length? r.items.map((x,i)=>`<div class="cardrow">
         <input type="checkbox" ${CARDSEL[x.kind+'|'+x.id]?'checked':''} onchange="cdSel('${x.kind}','${x.id}',this.checked)">
-        ${x.photo_url? `<img class="pv" src="${x.photo_url}">` : '<div class="pv none">👤</div>'}
+        ${x.photo_url? `<img class="pv" src="${imgSrc(x.photo_url)}">` : '<div class="pv none">👤</div>'}
         <div style="flex:1;min-width:0"><b>${x.name}</b>
           <div class="hint" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.detail||''}${x.org? ' · '+cleanTxt(x.org):''}</div></div>
         <button class="btn g sm" onclick="uploadPhoto(${i})">${x.photo_url?'เปลี่ยนรูป':'📷 อัปโหลดรูป'}</button>
@@ -3788,7 +3844,7 @@ function certNo(it,cfg){
 }
 function certHTML(it,tpl,cfg){
   const bg=tpl&&tpl.bg_url;
-  return `<div class="cert ${bg?'':'noimg'}" ${bg?`style="background-image:url('${bg}')"`:''}>
+  return `<div class="cert ${bg?'':'noimg'}" ${bg?`style="background-image:url('${imgSrc(bg)}')"`:''}>
     <div class="ln sm" style="top:30%">${fillCert(tpl.line_intro,it,cfg)}</div>
     <div class="ln nm" style="top:${tpl.y_name||42}%">${it.name||''}</div>
     <div class="ln dt" style="top:${tpl.y_detail||52}%">${fillCert(tpl.line_detail,it,cfg)}</div>
