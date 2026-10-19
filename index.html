@@ -509,7 +509,9 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="card"><div class="ch"><h3>สรุปเหรียญรางวัลรายโรงเรียน</h3><span class="sp"></span>
         <button class="btn g sm" id="medSortBtn" onclick="toggleMedalSort()">เรียงลำดับ</button>
         <span class="hint" id="medCount"></span></div>
-        <div class="cb" style="padding:0;overflow:auto"><table id="medTbl"></table></div></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="medTbl"></table></div>
+        <div class="cb" style="padding:10px 16px;border-top:1px solid var(--line)">
+          <span class="hint" id="medSortNote"></span></div></div>
     </section>
 
     <!-- ---------- ตารางแข่งขัน (สาธารณะ) ---------- -->
@@ -1362,7 +1364,7 @@ body[data-view="admin"] .utilbar{display:none}
     ศึกษานิเทศก์ สพป.อุดรธานี เขต 1</div>
   <span style="flex:1"></span>
   <div style="text-align:right"><a href="mailto:djbmps@gmail.com">djbmps@gmail.com</a><br>
-    Copyright © 2026 สพป.อุดรธานี เขต 1 · สงวนลิขสิทธิ์</div>
+    Copyright © 2026 กลุ่มนิเทศ ติดตามและประเมินผลการจัดการศึกษา สพป.อุดรธานี เขต 1 · สงวนลิขสิทธิ์</div>
 </div></footer>
 
 <!-- ================= จอฉาย ================= -->
@@ -2416,6 +2418,7 @@ async function boot(){
   const snap = (!DEMO()) ? snapLoad(sc) : null;
   if(snap && !window.__BOOTED){
     DB = snap; window.__BOOTED=1;
+    guestPage_();                                        /* ยังไม่เข้าสู่ระบบ → อยู่หน้าสาธารณะเท่านั้น */
     try{ buildScopeSel(); applyScope(); renderAll(); syncUrl(); go(PAGE); }catch(e){}
     REV = String(DB.rev||'');
     setTimeout(()=>{ refreshBoot(sc); }, 50);            /* 2) อัปเดตเบื้องหลัง */
@@ -2429,8 +2432,7 @@ async function boot(){
     API=''; DB = await api('bootstrap',{}); }
   window.__BOOTED=1;
   /* ยังไม่เข้าสู่ระบบ = เห็นเฉพาะหน้าเว็บสาธารณะเสมอ */
-  if(!ME){ VIEW='public'; LS.setItem(K.view,'public');
-    if(isAdminPage(PAGE) || !PUBLIC_PAGES.some(x=>x[0]===PAGE)) PAGE='home'; }
+  guestPage_();
   if(PAGE==='cert' && !isOpen('cert_open') && !ME) PAGE='home';
   const lk0=lockedScope();
   if(lk0 && SCOPE!==lk0){ SCOPE=lk0; LS.setItem(K.scope,SCOPE);
@@ -2627,6 +2629,13 @@ const PAGE_PERM={actedit:'actedit',entries:'entries',score:'score',publish:'publ
   newsmgr:'newsmgr',site:'site',print:'print',perm:'perm'};
 const OWNER_PAGES=['admins','season','backup'];
 function isAdminPage(p){ return ADMIN_PAGES.indexOf(p)>=0; }
+/** ผู้ที่ยังไม่เข้าสู่ระบบ: บังคับให้อยู่หน้าสาธารณะ และถ้าค้างอยู่ที่หน้าหลังบ้าน (เช่นลิงก์เก่าในช่อง URL)
+    ให้กลับหน้าแรกเงียบ ๆ ไม่ต้องเด้งหน้าเข้าสู่ระบบขึ้นมาทับหน้าเว็บ */
+function guestPage_(){
+  if(ME) return;
+  VIEW='public'; try{ LS.setItem(K.view,'public'); }catch(e){}
+  if(isAdminPage(PAGE) || !PUBLIC_PAGES.some(x=>x[0]===PAGE)) PAGE='home';
+}
 
 /** สวิตช์เปิด-ปิดระบบ: ค่าของกลุ่มทับค่าของเขต ถ้ากลุ่มเว้นว่างให้ใช้ค่าของเขต */
 function isOpen(key){
@@ -3905,7 +3914,7 @@ async function delStaff(id){
 /* ============================ nav ============================ */
 function go(p){
   /* กันไม่ให้ผู้ที่ยังไม่เข้าสู่ระบบเปิดหน้าหลังบ้าน แม้จะพิมพ์ URL เข้ามาเอง */
-  if(isAdminPage(p) && !ME){ PAGE='home'; openLogin(); return; }
+  if(isAdminPage(p) && !ME){ p='home'; VIEW='public'; }   /* ลิงก์เก่าของหน้าหลังบ้าน → กลับหน้าแรก (ไม่เด้งหน้าเข้าสู่ระบบ) */
   if(p==='setup' && ME && ME.role!=='district_admin'){ p='dash'; }
   if(ME && ME.role==='selector' && isAdminPage(p) && p!=='judgeapp') p='judgeapp';
   /* กันคนที่ไม่มีสิทธิ์เปิดหน้านั้น แม้จะพิมพ์ลิงก์เข้ามาเอง */
@@ -3992,7 +4001,7 @@ function renderHome(){
   api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{
     window.__PUB=r;
     const b=$('#rankMethodTag'); if(b) b.textContent=medalSortLabel();
-    tbl($('#homeMedals'),['อันดับ','โรงเรียน','ชนะเลิศ','ทอง','เงิน','ทองแดง'],
+    tbl($('#homeMedals'),['อันดับ','โรงเรียน','ชนะเลิศ','รองชนะเลิศอันดับ 1','รองชนะเลิศอันดับ 2','ทอง','เงิน','ทองแดง'],
       medalTally(r).slice(0,8).map((m,i)=>medalRow(m,i)).join(''));
   }).catch(()=>{});
   api('listNews',{scope:SCOPE==='ALL'?'':SCOPE}).then(rows=>{
@@ -5294,12 +5303,16 @@ async function delSelector(id,name){
 /** เรียงตารางเหรียญได้ 2 แบบ — ตามจำนวน "ชนะเลิศ (อันดับ 1 เหรียญทอง)" หรือตามจำนวนเหรียญทอง */
 let MEDAL_SORT = (function(){ try{ return LS.getItem('sillapa.medalsort')||'win'; }catch(e){ return 'win'; } })();
 function medalSortLabel(){ return MEDAL_SORT==='win' ? '🏆 เรียงตามชนะเลิศ' : '🥇 เรียงตามเหรียญทอง'; }
+/** คำอธิบายใต้ตาราง — บอกว่ากำลังเรียงด้วยอะไร เพื่อให้เห็นความต่างชัดเมื่อสลับ */
+function medalSortNote(){ return MEDAL_SORT==='win'
+  ? 'เรียงตามจำนวน ชนะเลิศ → รองชนะเลิศอันดับ 1 → รองชนะเลิศอันดับ 2 → เหรียญทอง'
+  : 'เรียงตามจำนวน เหรียญทอง → เหรียญเงิน → เหรียญทองแดง → ชนะเลิศ'; }
 function toggleMedalSort(){
   MEDAL_SORT = (MEDAL_SORT==='win') ? 'gold' : 'win';
   try{ LS.setItem('sillapa.medalsort', MEDAL_SORT); }catch(e){}
   if(window.__PUB){
     const b=$('#rankMethodTag'); if(b) b.textContent=medalSortLabel();
-    const t=$('#homeMedals'); if(t) tbl(t,['อันดับ','โรงเรียน','ชนะเลิศ','ทอง','เงิน','ทองแดง'],
+    const t=$('#homeMedals'); if(t) tbl(t,['อันดับ','โรงเรียน','ชนะเลิศ','รองชนะเลิศอันดับ 1','รองชนะเลิศอันดับ 2','ทอง','เงิน','ทองแดง'],
       medalTally(window.__PUB).slice(0,8).map((m,i)=>medalRow(m,i)).join(''));
   }
   if(PAGE==='medals') drawMedals();
@@ -5307,23 +5320,28 @@ function toggleMedalSort(){
 /** รวมเหรียญรายโรงเรียน + นับจำนวนรายการที่ชนะเลิศ แล้วเรียงตามโหมดที่เลือก */
 function medalTally(r){
   const t={};
-  (r.medals||[]).forEach(m=>{ t[m.school]={school:m.school,g:Number(m.g)||0,s:Number(m.s)||0,b:Number(m.b)||0,win:0}; });
+  const mk=n=>({school:n,g:0,s:0,b:0,w1:0,w2:0,w3:0});
+  (r.medals||[]).forEach(m=>{ const k=t[m.school]||(t[m.school]=mk(m.school));
+    k.g=Number(m.g)||0; k.s=Number(m.s)||0; k.b=Number(m.b)||0; });
   (r.results||[]).forEach(x=>{
     if(!x.school) return;
-    const k=t[x.school]||(t[x.school]={school:x.school,g:0,s:0,b:0,win:0});
-    if(Number(x.rank)===1 && x.medal==='ทอง') k.win++;
+    const k=t[x.school]||(t[x.school]=mk(x.school));
+    const rk=Number(x.rank);
+    if(rk===1) k.w1++; else if(rk===2) k.w2++; else if(rk===3) k.w3++;
   });
   const rows=Object.keys(t).map(k=>t[k]);
   rows.sort(MEDAL_SORT==='win'
-    ? (a,b)=> b.win-a.win || b.g-a.g || b.s-a.s || b.b-a.b
-    : (a,b)=> b.g-a.g || b.s-a.s || b.b-a.b || b.win-a.win);
+    ? (a,b)=> b.w1-a.w1 || b.w2-a.w2 || b.w3-a.w3 || b.g-a.g || b.s-a.s || b.b-a.b
+    : (a,b)=> b.g-a.g || b.s-a.s || b.b-a.b || b.w1-a.w1 || b.w2-a.w2 || b.w3-a.w3);
   return rows;
 }
 function medalRow(m,i){
   return `<tr><td><span class="medal ${i<3?'m'+(i+1):''}"
       style="${i>2?'background:#EFE7E0;color:#6B5F55':''}">${i+1}</span></td>
     <td>${cleanName(m.school)}</td>
-    <td class="num"><b>${m.win}</b></td>
+    <td class="num"><b>${m.w1}</b></td>
+    <td class="num">${m.w2}</td>
+    <td class="num">${m.w3}</td>
     <td class="num" style="color:var(--m-g);font-weight:700">${m.g}</td>
     <td class="num" style="color:var(--m-s);font-weight:700">${m.s}</td>
     <td class="num" style="color:var(--m-b);font-weight:700">${m.b}</td></tr>`;
@@ -5356,7 +5374,8 @@ function drawMedals(){
   const rows=medalTally(r);
   const b=$('#medSortBtn'); if(b) b.textContent=medalSortLabel();
   const c=$('#medCount'); if(c) c.textContent = rows.length? rows.length+' โรงเรียน' : '';
-  tbl($('#medTbl'),['อันดับ','โรงเรียน','ชนะเลิศ','ทอง','เงิน','ทองแดง'],
+  const n=$('#medSortNote'); if(n) n.textContent = medalSortNote();
+  tbl($('#medTbl'),['อันดับ','โรงเรียน','ชนะเลิศ','รองชนะเลิศอันดับ 1','รองชนะเลิศอันดับ 2','ทอง','เงิน','ทองแดง'],
     rows.map((m,i)=>medalRow(m,i)).join(''));
 }
 function renderSched(){
@@ -5540,7 +5559,11 @@ setInterval(()=>{ const s=new Date().toTimeString().slice(0,8);
   if(q.get('scope')) SCOPE=q.get('scope');
   if(q.get('view')) VIEW=q.get('view');
   if(VIEW==='admin' && !ME) VIEW='public';
-  boot().then(()=>{ if(q.get('page')) go(q.get('page')); });
+  let hp = q.get('page')||'';
+  /* ลิงก์เก่าที่ค้างอยู่ในช่อง URL อาจชี้ไปหน้าหลังบ้าน — ถ้ายังไม่เข้าสู่ระบบให้เข้าหน้าแรกตามปกติ */
+  if(hp && !ME && (isAdminPage(hp) || !PUBLIC_PAGES.some(x=>x[0]===hp))) hp='';
+  if(hp) PAGE=hp;
+  boot().then(()=>{ if(hp) go(hp); });
 })();
 </script>
 </body>
