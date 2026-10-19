@@ -10,14 +10,18 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#151210; --ink-2:#4C433C; --ink-3:#8A7E75;
-  --line:#E8E2DC; --line-2:#F2EDE8; --bg:#F7F4F1; --card:#fff;
-  --pri:#E2620E; --pri-2:#BF4F08; --pri-soft:#FDEFE3;
-  --black:#141210;
-  --ok:#1B7A56; --ok-soft:#E5F4EE; --warn:#96660A; --warn-soft:#FBF1DA;
+  /* ชุดสี Warm Earth Tones — #7C2D12 · #B45309 · #D97706 · #EAD9C6 · #FAF7F2 */
+  --ink:#2B1810; --ink-2:#5C4536; --ink-3:#92796A;
+  --line:#EAD9C6; --line-2:#F4E9DC; --bg:#FAF7F2; --card:#fff;
+  --pri:#D97706; --pri-2:#B45309; --pri-soft:#FBEEDC;
+  --brown:#7C2D12; --sand:#EAD9C6; --cream:#FAF7F2;
+  --black:#5A2410;
+  --ok:#15803D; --ok-soft:#E6F3E9; --warn:#B45309; --warn-soft:#FBEEDC;
   --bad:#B3261E; --bad-soft:#FCEBE9;
-  --m-g:#D6A63C; --m-s:#9AA6B4; --m-b:#B4713B;
-  --r:12px; --sh:0 1px 2px rgba(21,18,16,.06),0 6px 20px rgba(21,18,16,.05);
+  --m-g:#D97706; --m-s:#8A9AA8; --m-b:#A05A2C;
+  --c1:#7C2D12; --c1s:#F4E2D6; --c2:#B45309; --c2s:#FBEBD7;
+  --c3:#15803D; --c3s:#E6F3E9; --c4:#1D4ED8; --c4s:#E6ECFB;
+  --r:12px; --sh:0 1px 2px rgba(124,45,18,.06),0 6px 20px rgba(124,45,18,.06);
 }
 body[data-scope="group"]{--pri:#9C3A12;--pri-2:#7E2E0C;--pri-soft:#F8EBE3}
 *{box-sizing:border-box}
@@ -60,10 +64,11 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .btn.sm{padding:5px 11px;font-size:12.5px}
 .btn[disabled]{opacity:.45;pointer-events:none}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:600}
-.pill.ok{background:var(--ok-soft);color:var(--ok)}
-.pill.w{background:var(--warn-soft);color:var(--warn)}
-.pill.b{background:var(--bad-soft);color:var(--bad)}
-.pill.i{background:var(--pri-soft);color:var(--pri)}
+.pill.ok{background:var(--c3s);color:var(--c3);box-shadow:inset 0 0 0 1px rgba(21,128,61,.18)}
+.pill.w{background:var(--c2s);color:var(--c2);box-shadow:inset 0 0 0 1px rgba(180,83,9,.18)}
+.pill.b{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 1px rgba(179,38,30,.18)}
+.pill.i{background:var(--c1s);color:var(--c1);box-shadow:inset 0 0 0 1px rgba(124,45,18,.18)}
+.pill.n{background:var(--c4s);color:var(--c4);box-shadow:inset 0 0 0 1px rgba(29,78,216,.16)}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 th{text-align:left;font-weight:600;color:var(--ink-2);font-size:12.5px;padding:9px 11px;border-bottom:1px solid var(--line);background:#FBF8F5;position:sticky;top:0}
 td{padding:9px 11px;border-bottom:1px solid var(--line-2);vertical-align:middle}
@@ -72,13 +77,19 @@ tbody tr:hover{background:#FCFAF8}
 .grid{display:grid;gap:14px}
 .grid>*{min-width:0}
 .g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
-.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh)}
+.stat{position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--r);
+  padding:16px 16px 14px;box-shadow:var(--sh);overflow:hidden}
+.stat::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--pri)}
 .stat .l{font-size:12px;color:var(--ink-3);font-weight:600}
-.stat .v{font-size:25px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.stat .v{font-size:25px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--pri)}
 .stat .s{font-size:11.5px;color:var(--ink-3)}
+.stat.s1{--pri:var(--c1)}.stat.s1{background:linear-gradient(180deg,var(--c1s) 0,#fff 46px)}
+.stat.s2{--pri:var(--c2)}.stat.s2{background:linear-gradient(180deg,var(--c2s) 0,#fff 46px)}
+.stat.s3{--pri:var(--c3)}.stat.s3{background:linear-gradient(180deg,var(--c3s) 0,#fff 46px)}
+.stat.s4{--pri:var(--c4)}.stat.s4{background:linear-gradient(180deg,var(--c4s) 0,#fff 46px)}
 .note{display:flex;gap:10px;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.55}
-.note.i{background:var(--pri-soft);color:#8C4409}.note.w{background:var(--warn-soft);color:#7A5205}
-.note.b{background:var(--bad-soft);color:#8C1D17}.note.g{background:var(--ok-soft);color:#0E5645}
+.note.i{background:var(--c1s);color:#7C2D12}.note.w{background:var(--c2s);color:#8A3E07}
+.note.b{background:var(--bad-soft);color:#8C1D17}.note.g{background:var(--c3s);color:#115E2E}
 .fld{margin-bottom:11px}
 .fld label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
 .fld input,.fld select,.fld textarea{width:100%;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
@@ -95,11 +106,11 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .hero h2{font-size:26px;margin:7px 0 6px;max-width:660px}
 .hero p{margin:0;color:#EBD9CB;font-size:13.5px;max-width:600px}
 .hero::after{content:'🏆';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:110px;opacity:.09}
-.livebar{display:flex;align-items:center;gap:12px;background:#141210;color:#E8DED5;border-radius:12px;padding:12px 15px;margin-bottom:12px}
+.livebar{display:flex;align-items:center;gap:12px;background:linear-gradient(100deg,#5A2410,#7C2D12 55%,#8A3B16);color:#F3E3D6;border-radius:12px;padding:12px 15px;margin-bottom:12px}
 .livebar .dt{width:9px;height:9px;border-radius:50%;background:#4ADE80;animation:bl 1.5s infinite}
 @keyframes bl{50%{opacity:.25}}
 .livebar b{display:block;color:#fff;font-size:13.5px}
-.livebar small{color:#A99787;font-size:12px}
+.livebar small{color:#E0C6B2;font-size:12px}
 .livebar .a{margin-left:auto;display:flex;gap:8px}
 .livebar .a button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:9px;font-size:12.5px;font-weight:600}
 .livebar .a button:hover{background:var(--pri);border-color:var(--pri)}
@@ -2724,7 +2735,8 @@ function renderBanner(){
   b.style.backgroundImage = c.banner_url? `url('${imgSrc(c.banner_url)}')` : '';
   $('#bKw').textContent = SCOPE==='ALL'? shortName() : 'รอบคัดเลือกระดับกลุ่มโรงเรียน';
   $('#bH1').textContent = c.banner_title || (SCOPE==='ALL'? shortName() : groupName(SCOPE));
-  $('#bP').textContent  = (c.banner_subtitle || '') + (SCOPE==='ALL'? eventDateLine() : '');
+  const sub=(c.banner_subtitle||'').trim(), dl=(SCOPE==='ALL'? eventDateLine() : '');
+  $('#bP').textContent = sub ? sub+dl : dl.replace(/^\s*·\s*/,'');
   const n=$('#bannerNote');
   n.style.display = c.banner_note? 'block':'none'; n.textContent = c.banner_note||'';
   $('#fName').textContent=eventName();
@@ -4120,7 +4132,7 @@ function renderHome(){
        ['นักเรียนในกลุ่ม',S.reduce((a,b)=>a+Number(b.n_total||0),0).toLocaleString(),''],
        ['โรงเรียนขยายโอกาส',S.filter(x=>x.is_expansion==='Y').length,'ลงรายการ ม.1-3 ได้'],
        ['รายการแข่งขัน',A.length,'เปิดแข่ง '+A.filter(a=>a.status==='เปิด').length+' รายการ']];
-  $('#homeStats').innerHTML=stats.map(s=>`<div class="stat"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
+  $('#homeStats').innerHTML=stats.map((s,i)=>`<div class="stat s${(i%4)+1}"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
   /* เว็บระดับเขตไม่ต้องมีตารางกลุ่มโรงเรียนในหน้าแรก — ใช้ปุ่ม “เข้าเว็บกลุ่มโรงเรียน” บนแถบบนแทน
      ส่วนเว็บของกลุ่มยังแสดง “โรงเรียนสมาชิก” ไว้เหมือนเดิม */
   const gcard=$('#homeGroupCard'), grid2=$('#homeGrid2'), hideG = (SCOPE==='ALL');
@@ -4273,7 +4285,7 @@ function renderDash(){
         'นักเรียน '+ent.reduce((a,b)=>a+(b.students||[]).length,0)+' คน'],
       ['ประกาศผลแล้ว',pubActs.size,'จาก '+A.length+' รายการ'],
       ['โรงเรียนที่ส่งเข้าแข่ง',new Set(ent.map(e=>e.school_smis)).size,'']
-    ].map(s=>`<div class="stat"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
+    ].map((s,i)=>`<div class="stat s${(i%4)+1}"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
     tbl($('#dashTbl'),['รายการแข่งขัน','ระดับชั้น','ทีมที่สมัคร','เกณฑ์','สถานะ'],
       A.map(a=>{ const n=ent.filter(e=>e.act_id===a.act_id).length;
         const nc=critCount(a.act_id);
