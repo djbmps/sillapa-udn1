@@ -309,8 +309,8 @@ body[data-view="admin"] .utilbar{display:none}
 .sheetdoc .meta{text-align:center;font-size:13px;margin-top:6px;color:#333}
 .sheetdoc table{font-size:13px;margin-top:14px}
 .sheetdoc th,.sheetdoc td{border:1px solid #444;padding:6px 8px;background:none!important;position:static}
-.sheetdoc .sign{display:flex;justify-content:space-around;margin-top:40px;font-size:13px;text-align:center}
-.sheetdoc .sign div{width:32%}
+.sheetdoc .sign{display:flex;flex-wrap:wrap;justify-content:space-around;row-gap:34px;margin-top:40px;font-size:13px;text-align:center}
+.sheetdoc .sign div{width:31%}
 .sheetdoc .ln{border-bottom:1px dotted #333;height:22px;margin-bottom:5px}
 @media print{
   body{background:#fff}
@@ -5024,6 +5024,11 @@ function todayBE(){ const d=new Date();
   return (d.getFullYear()+543)+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 const TH_MONTH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
   'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+/** แสดงวันที่แบบไทยยาว — 2569-12-18 → 18 ธันวาคม 2569 */
+function thDateLong(v){
+  const m=String(dstr(v)||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? Number(m[3])+' '+TH_MONTH[Number(m[2])-1]+' '+m[1] : '';
+}
 /** ช่องวันที่แบบเลือก วัน-เดือน-ปี (พ.ศ.) — เก็บค่าเป็น 2569-10-20 เหมือนเดิม */
 function dateSelHTML(id, val){
   const v=String(dstr(val)||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -5475,6 +5480,8 @@ function saveApi(){ API=$('#apiUrl').value.trim(); LS.setItem(K.api,API);
 function clearApi(){ API=''; LS.removeItem(K.api); boot().then(()=>renderSetup()); }
 
 /* ---------- เอกสารพิมพ์ ---------- */
+/** คณะกรรมการตัดสินกิจกรรมละ 5 คน — ใช้ร่วมกันทุกแบบฟอร์มที่ต้องลงลายมือชื่อ */
+const JUDGE_SEATS=['ประธานกรรมการ','กรรมการ','กรรมการ','กรรมการ','กรรมการและเลขานุการ'];
 function printDoc(kind){ go('print'); $('#prtDoc').value=kind; buildDoc(); }
 async function buildDoc(){
   if(printLock('print_open','เอกสารการแข่งขัน')) return;
@@ -5487,10 +5494,14 @@ async function buildDoc(){
     <h2>${SCOPE==='ALL'?'ระดับเขตพื้นที่การศึกษา · '+districtName():'รอบคัดเลือกระดับกลุ่มโรงเรียน · '+groupName(SCOPE)}</h2>
     <div class="meta"><b>${act.act_name||''}</b> · ระดับชั้น ${act.level||''} · ${act.category||''}</div>`;
   const dots='(............................................)';
-  const sign=()=>`<div class="sign">
-      <div><div class="ln"></div>${dots}<br>กรรมการคนที่ 1</div>
-      <div><div class="ln"></div>${dots}<br>กรรมการคนที่ 2</div>
-      <div><div class="ln"></div>${dots}<br>ประธานกรรมการ</div></div>`;
+  /* คณะกรรมการตัดสินกิจกรรมละ 5 คน — คนแรกเป็นประธาน คนสุดท้ายเป็นกรรมการและเลขานุการ */
+  const sign=()=>`<div class="sign">${JUDGE_SEATS.map(r=>
+      `<div><div class="ln"></div>${dots}<br>${r}</div>`).join('')}</div>`;
+  /* วันที่/เวลา/สนามแข่งขันของรายการนี้ (ถ้ายังไม่จัดตาราง เว้นช่องให้กรอกมือ) */
+  const sch=(pack.schedule||[]).find(x=>String(x.act_id)===String(act.act_id))||{};
+  const dateLine=`<div class="meta">วันที่แข่งขัน <b>${sch.date? thDateLong(sch.date) : '..............................'}</b>`
+    + ` · เวลา ${sch.start_time||'..................'} น.`
+    + ` · สนามแข่งขัน ${sch.venue_id||'..............................'}</div>`;
   let body='';
   if(kind==='entrylist'){
     body=`<table><thead><tr><th style="width:44px">ที่</th><th>โรงเรียน</th><th>นักเรียน</th><th>ครูผู้ฝึกสอน</th></tr></thead><tbody>
@@ -5511,24 +5522,29 @@ async function buildDoc(){
       <p style="font-size:12px;margin-top:10px">เกณฑ์เหรียญ: ร้อยละ 80 ขึ้นไป = ทอง · 70–79.99 = เงิน · 60–69.99 = ทองแดง · ต่ำกว่า 60 = เข้าร่วม (คะแนนเท่ากันได้เหรียญเท่ากัน)</p>
       ${sign()}`;
   } else if(kind==='summary'){
-    body=`<table><thead><tr><th style="width:40px">ที่</th><th>โรงเรียน</th><th>กรรมการ 1</th><th>กรรมการ 2</th><th>กรรมการ 3</th><th>เฉลี่ย</th><th>เหรียญ</th><th>อันดับ</th></tr></thead><tbody>
-      ${ent.map((e,i)=>`<tr><td>${i+1}</td><td>${e.school_name}</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>`).join('')}
+    body=`${dateLine}<table><thead><tr><th style="width:40px">ที่</th><th>โรงเรียน</th>
+      ${JUDGE_SEATS.map((r,i)=>`<th style="width:62px">กรรมการ ${i+1}</th>`).join('')}
+      <th style="width:62px">เฉลี่ย</th><th style="width:70px">เหรียญ</th><th style="width:60px">อันดับ</th></tr></thead><tbody>
+      ${ent.map((e,i)=>`<tr><td>${i+1}</td><td>${e.school_name}</td>
+        ${JUDGE_SEATS.map(()=>'<td></td>').join('')}<td></td><td></td><td></td></tr>`).join('')}
       </tbody></table>${sign()}`;
   } else if(kind==='resultsheet'){
     const pub=await api('publicResults',{group:SCOPE==='ALL'?'':SCOPE});
     const rows=pub.results.filter(r=>r.act_id===act.act_id).sort((a,b)=>a.rank-b.rank);
-    body=`<table><thead><tr><th style="width:60px">อันดับ</th><th>โรงเรียน</th><th style="width:90px">คะแนน</th><th style="width:100px">เหรียญ</th></tr></thead><tbody>
+    body=`${dateLine}<table><thead><tr><th style="width:60px">อันดับ</th><th>โรงเรียน</th><th style="width:90px">คะแนน</th><th style="width:100px">เหรียญ</th></tr></thead><tbody>
       ${rows.map(r=>`<tr><td>${r.rank}</td><td>${r.school}</td><td>${r.total}</td><td>${r.medal}</td></tr>`).join('')}
       </tbody></table>${sign()}`;
   } else if(kind==='judgesign'){
-    body=`<table><thead><tr><th style="width:40px">ที่</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง/หน่วยงาน</th><th style="width:130px">ลายมือชื่อ</th></tr></thead><tbody>
-      ${Array.from({length:Number(act.judges_required||3)+2},(_,i)=>`<tr><td>${i+1}</td><td></td><td></td><td></td></tr>`).join('')}
+    body=`${dateLine}<table><thead><tr><th style="width:40px">ที่</th><th>ชื่อ-สกุล</th>
+      <th style="width:150px">ตำแหน่งในคณะกรรมการ</th><th>ตำแหน่ง / หน่วยงาน</th>
+      <th style="width:130px">ลายมือชื่อ</th><th style="width:70px">เวลา</th></tr></thead><tbody>
+      ${JUDGE_SEATS.map((r,i)=>`<tr><td>${i+1}</td><td></td><td>${r}</td><td></td><td></td><td></td></tr>`).join('')}
       </tbody></table>`;
   } else if(kind==='attend'){
-    body=`<table><thead><tr><th style="width:40px">ที่</th><th>โรงเรียน</th><th>ชื่อนักเรียน</th><th style="width:130px">ลายมือชื่อ</th><th style="width:70px">เวลา</th></tr></thead><tbody>
+    body=`${dateLine}<table><thead><tr><th style="width:40px">ที่</th><th>โรงเรียน</th><th>ชื่อนักเรียน</th><th style="width:130px">ลายมือชื่อ</th><th style="width:70px">เวลา</th></tr></thead><tbody>
       ${ent.flatMap((e,i)=>(e.students||[{}]).map(s=>`<tr><td>${i+1}</td><td>${e.school_name}</td>
         <td>${s.prefix?s.prefix+s.first_name+' '+s.last_name:''}</td><td></td><td></td></tr>`)).join('')}
-      </tbody></table>`;
+      </tbody></table>${sign()}`;
   } else if(kind==='schedule'){
     body=`<table><thead><tr><th>สนาม</th><th>วันที่</th><th>เวลา</th><th>รายการแข่งขัน</th><th>ระดับชั้น</th><th>ทีม</th></tr></thead><tbody>
       ${(pack.schedule||[]).map(s=>`<tr><td>${s.venue_id||''}</td><td>${dstr(s.date)}</td><td>${s.start_time||''}</td>
