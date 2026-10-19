@@ -1053,9 +1053,33 @@ body[data-view="admin"] .utilbar{display:none}
         <b>ผู้ดูแลรอง</b> ทำได้เฉพาะเมนูที่เปิดสิทธิ์ให้ และแตะเรื่องที่สงวนไว้ไม่ได้
         <div class="hint" style="margin-top:6px">ต้องมีผู้ดูแลหลักอย่างน้อย 1 คนเสมอ ระบบจะกันไม่ให้ถอดคนสุดท้ายออก</div></div></div>
 
-      <div class="card"><div class="ch"><h3>รายชื่อผู้ดูแล</h3><span class="sp"></span>
-        <input id="ad_q" placeholder="ค้นชื่อ / ชื่อผู้ใช้…" oninput="drawAdmins()"
-               style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
+      <div class="card"><div class="ch"><h3>รายชื่อผู้ดูแล &amp; บัญชีผู้ใช้</h3><span class="sp"></span>
+        <select id="ad_level" onchange="searchAccounts()"
+                style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
+          <option value="">ทุกระดับ</option>
+          <option value="district_admin">ระดับเขต</option>
+          <option value="group_admin">ระดับกลุ่มโรงเรียน</option>
+          <option value="school">ระดับโรงเรียน</option>
+          <option value="other">กรรมการ / เจ้าหน้าที่</option></select>
+        <select id="ac_group" onchange="searchAccounts()"
+                style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select>
+        <input id="ad_q" placeholder="ค้นชื่อ / ชื่อผู้ใช้ / โรงเรียน…" oninput="adQDebounce()"
+               onkeydown="if(event.key==='Enter')searchAccounts()"
+               style="min-width:210px;padding:8px 12px;border:1px solid var(--line);border-radius:10px">
+        <button class="btn g" onclick="searchAccounts()">ค้นหา</button></div>
+        <div class="cb" id="adTools" style="padding:14px 16px 4px">
+          <div class="note i" style="margin-bottom:10px"><span>🔐</span><div>
+            ระบบไม่แสดงรหัสผ่านเดิมเพื่อความปลอดภัย — ถ้าผู้ใช้ลืมรหัส ให้กด <b>รีเซ็ตรหัสผ่าน</b> ที่ท้ายแถวนั้น
+            ระบบจะออกรหัสใหม่และแสดงให้เห็นครั้งเดียว กรุณาคัดลอกส่งให้เจ้าตัวทันที</div></div>
+          <div class="row" style="margin-bottom:10px" id="adPassTools">
+            <label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;cursor:pointer">
+              <input type="checkbox" id="ac_showpass" onchange="searchAccounts()" style="width:18px;height:18px">
+              แสดงรหัสผ่าน</label>
+            <span class="sp"></span>
+            <button class="btn g" onclick="exportAccounts()">ดาวน์โหลดรายชื่อ + รหัสผ่าน (CSV)</button></div>
+          <div id="acMsg" style="margin-bottom:10px"></div>
+          <div id="acNote" style="margin-bottom:10px"></div>
+        </div>
         <div class="cb" style="padding:0"><div style="overflow:auto"><table id="adTbl"></table></div></div></div>
 
       <div class="card" id="rqCard" style="margin-top:14px">
@@ -1065,35 +1089,6 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="cb">
           <div id="rqMsg" style="margin-bottom:10px"></div>
           <div style="overflow:auto"><table id="rqTbl"></table></div>
-        </div></div>
-
-      <div class="card" id="acCard" style="margin-top:14px">
-        <div class="ch"><h3>บัญชีกลุ่มโรงเรียน &amp; โรงเรียน — รีเซ็ตรหัสผ่าน</h3><span class="sp"></span>
-          <select id="ac_kind" onchange="searchAccounts()"
-                  style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
-            <option value="">ทุกประเภท</option>
-            <option value="group_admin">ผู้ดูแลกลุ่มโรงเรียน</option>
-            <option value="school">โรงเรียน</option>
-            <option value="selector">กรรมการคัดเลือก</option>
-            <option value="district_admin">ผู้ดูแลเขต</option></select>
-          <select id="ac_group" onchange="searchAccounts()"
-                  style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select>
-          <input id="ac_q" placeholder="ค้นชื่อโรงเรียน / ชื่อผู้ใช้…" onkeydown="if(event.key==='Enter')searchAccounts()"
-                 style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px">
-          <button class="btn g" onclick="searchAccounts()">ค้นหา</button></div>
-        <div class="cb">
-          <div class="note i" style="margin-bottom:10px"><span>🔐</span><div>
-            ระบบไม่แสดงรหัสผ่านเดิมเพื่อความปลอดภัย — ถ้าผู้ใช้ลืมรหัส ให้กด <b>รีเซ็ตรหัสผ่าน</b>
-            ระบบจะออกรหัสใหม่และแสดงให้เห็นครั้งเดียว กรุณาคัดลอกส่งให้เจ้าตัวทันที</div></div>
-          <div class="row" id="acTools" style="margin-bottom:10px">
-            <label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;cursor:pointer">
-              <input type="checkbox" id="ac_showpass" onchange="searchAccounts()" style="width:18px;height:18px">
-              แสดงรหัสผ่าน</label>
-            <span class="sp"></span>
-            <button class="btn g" onclick="exportAccounts()">ดาวน์โหลดรายชื่อ + รหัสผ่าน (CSV)</button></div>
-          <div id="acMsg" style="margin-bottom:10px"></div>
-          <div id="acNote" style="margin-bottom:10px"></div>
-          <div style="overflow:auto"><table id="acTbl"></table></div>
         </div></div>
 
       <div class="card" id="adForm" style="display:none;margin-top:14px">
@@ -3277,8 +3272,8 @@ function renderPrint(){
 /* ============================ จัดการผู้ดูแล ============================ */
 let ADMINS=[], ADEDIT=null;
 function renderAdmins(){
-  const ac=$('#acCard'); if(ac) ac.style.display = isOwner()? '' : 'none';
   const rq=$('#rqCard'); if(rq) rq.style.display = isOwner()? '' : 'none';
+  const at=$('#adTools'); if(at) at.style.display = isOwner()? '' : 'none';
   if(isOwner()){ searchAccounts(); loadResetRequests(); }
   $('#adSub').textContent = (ME&&ME.role==='group_admin')
     ? 'ผู้ดูแลของ '+groupName(ME.scope)
@@ -3297,21 +3292,51 @@ function permChips(a){
   if(!ks.length) return '<span class="hint">ดูอย่างเดียว</span>';
   return ks.map(k=>`<span class="pill" style="background:var(--line-2);color:var(--ink-2)">${PERM_LABEL[k]||k}</span>`).join(' ');
 }
+/** ตารางเดียว — ผู้ดูแลระดับเขต → ระดับกลุ่มโรงเรียน → ระดับโรงเรียน (และกรรมการ/เจ้าหน้าที่)
+    พร้อมปุ่มแก้ไข ลบ และรีเซ็ตรหัสผ่านอยู่ในแถวเดียวกัน */
+const AD_LVTXT={district_admin:'ระดับเขต',group_admin:'ระดับกลุ่มโรงเรียน',school:'ระดับโรงเรียน',
+  selector:'กรรมการคัดเลือก',judge:'กรรมการตัดสิน',head_judge:'ประธานกรรมการ',venue_staff:'เจ้าหน้าที่สนาม'};
+function adOrder(r){ return r==='district_admin'?0 : r==='group_admin'?1 : r==='school'?2 : 3; }
 function drawAdmins(){
-  const q=($('#ad_q').value||'').trim();
-  const rows=ADMINS.filter(a=>!q||[a.name,a.username].join(' ').includes(q));
-  tbl($('#adTbl'),['ชื่อ-สกุล','ชื่อผู้ใช้','ระดับ','ประเภท','สิทธิ์','สถานะ',''],
-    rows.map(a=>{
-      const i=ADMINS.indexOf(a);
-      return `<tr><td><b>${cleanTxt(a.name||'')}</b></td>
-        <td style="font-family:ui-monospace,monospace">${a.username}</td>
-        <td>${a.role==='district_admin'?'เขต':groupName(a.scope)}</td>
-        <td>${a.is_owner==='Y'?'<span class="pill w">ผู้ดูแลหลัก</span>':'ผู้ดูแลรอง'}</td>
-        <td style="max-width:320px">${permChips(a)}</td>
-        <td>${a.status||'ใช้งาน'}</td>
-        <td style="white-space:nowrap"><button class="btn g sm" onclick="editAdmin(${i})">แก้ไข</button>
-          <button class="btn g sm" onclick="delAdmin('${a.user_id}','${String(a.name||'').replace(/'/g,'')}')">ลบ</button></td></tr>`;
-    }).join(''));
+  const lv=($('#ad_level')&&$('#ad_level').value)||'';
+  const show=$('#ac_showpass')&&$('#ac_showpass').checked;
+  const q=(($('#ad_q')&&$('#ad_q').value)||'').trim();
+  const amap={}; (ADMINS||[]).forEach(a=>{ amap[String(a.username)]=a; });
+  let rows=(ACC||[]).slice();
+  (ADMINS||[]).forEach(a=>{                       /* ผู้ดูแลที่ยังไม่อยู่ในผลค้นหา ให้แสดงด้วย */
+    if(!rows.some(x=>String(x.username)===String(a.username)))
+      rows.push({user_id:a.user_id, username:a.username, name:a.name, role:a.role, status:a.status,
+        where: a.role==='district_admin'? ((DB.config||{}).district_name||'สพป.อุดรธานี เขต 1') : groupName(a.scope)});
+  });
+  if(lv==='other') rows=rows.filter(x=>adOrder(x.role)===3);
+  else if(lv) rows=rows.filter(x=>String(x.role)===lv);
+  if(q) rows=rows.filter(x=>[x.name,x.username,x.where].join(' ').indexOf(q)>=0);
+  rows.sort((a,b)=> adOrder(a.role)-adOrder(b.role)
+    || String(a.where||'').localeCompare(String(b.where||''),'th')
+    || String(a.username).localeCompare(String(b.username)));
+  const head=['ชื่อ-สกุล','ชื่อผู้ใช้'].concat(show?['รหัสผ่าน']:[])
+    .concat(['ระดับ','สังกัด','ประเภท / สิทธิ์','สถานะ','จัดการ']);
+  tbl($('#adTbl'), head, rows.map(x=>{
+    const a=amap[String(x.username)], i=a? ADMINS.indexOf(a) : -1;
+    const nm=String(x.name||x.username).replace(/'/g,'');
+    return `<tr><td><b>${cleanTxt(x.name||'')}</b></td>
+      <td style="font-family:ui-monospace,monospace">${x.username}</td>
+      ${show? `<td><code style="font-size:14px;font-weight:700;letter-spacing:.5px">${x.pass_code||''}</code></td>`:''}
+      <td>${AD_LVTXT[x.role]||x.role}</td>
+      <td>${cleanTxt(x.where||'')}</td>
+      <td style="max-width:300px">${a? (a.is_owner==='Y'?'<span class="pill w">ผู้ดูแลหลัก</span> ':'<span class="hint">ผู้ดูแลรอง</span> ')+permChips(a)
+                                     : '<span class="hint">—</span>'}</td>
+      <td>${x.status||'ใช้งาน'}</td>
+      <td style="white-space:nowrap">
+        ${i>=0? `<button class="btn g sm" onclick="editAdmin(${i})">แก้ไข</button>
+        <button class="btn g sm" onclick="delAdmin('${a.user_id}','${nm}')">ลบ</button>`:''}
+        ${isOwner()? `<button class="btn g sm" onclick="resetPass('${x.user_id}','${nm}')">รีเซ็ตรหัสผ่าน</button>`:''}
+      </td></tr>`;
+  }).join(''));
+  const n=$('#acNote');
+  if(n) n.innerHTML = (ACC_TOTAL>300)
+    ? `<div class="note w"><span>ℹ️</span><div>พบ ${ACC_TOTAL} บัญชี แสดง 300 รายการแรก — พิมพ์คำค้นหรือเลือกกลุ่มให้แคบลง</div></div>`
+    : `<div class="hint">แสดง ${rows.length} รายการ</div>`;
 }
 function adPermBoxes(checked){
   const set=new Set(checked||[]);
@@ -4842,38 +4867,32 @@ async function doResetReq(id, decision){
 }
 
 /* ---------- บัญชีผู้ใช้ & รีเซ็ตรหัสผ่าน (ผู้ดูแลหลัก) ---------- */
-let ACC=[];
+let ACC=[], ACC_TOTAL=0, ACQ=0;
+function adQDebounce(){ clearTimeout(ACQ); ACQ=setTimeout(searchAccounts,400); }
 async function searchAccounts(){
   try{
     const gsel=$('#ac_group');
     if(gsel && !gsel.options.length)
       gsel.innerHTML='<option value="">ทุกกลุ่ม</option>'+
         (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
-    const show=$('#ac_showpass').checked;
-    const r=await api('listAccounts',{q:$('#ac_q').value.trim(), kind:$('#ac_kind').value,
-      group_code:(gsel? gsel.value : ''), show_pass: show?'1':''});
-    ACC=r.items||[];
-    $('#acTools').style.display = (ME&&ME.role==='district_admin')? '' : 'none';
-    const roleTxt={district_admin:'ผู้ดูแลเขต',group_admin:'ผู้ดูแลกลุ่ม',school:'โรงเรียน',
-                   selector:'กรรมการคัดเลือก',judge:'กรรมการ',head_judge:'ประธานกรรมการ',venue_staff:'เจ้าหน้าที่สนาม'};
-    const head=['ชื่อ','ชื่อผู้ใช้'].concat(show?['รหัสผ่าน']:[]).concat(['ประเภท','สังกัด','เข้าระบบล่าสุด','จัดการ']);
-    tbl($('#acTbl'),head,
-      ACC.map(x=>`<tr><td>${x.name||''}</td><td><code>${x.username}</code></td>
-        ${show? `<td><code style="font-size:14px;font-weight:700;letter-spacing:.5px">${x.pass_code||''}</code></td>`:''}
-        <td>${roleTxt[x.role]||x.role}</td><td>${x.where||''}</td>
-        <td class="hint">${x.last_login||'-'}</td>
-        <td><button class="btn g sm" onclick="resetPass('${x.user_id}','${String(x.name||x.username).replace(/'/g,"")}')">รีเซ็ตรหัสผ่าน</button></td></tr>`).join(''));
-    $('#acNote').innerHTML = r.total>300
-      ? `<div class="note w"><span>ℹ️</span><div>พบ ${r.total} บัญชี แสดง 300 รายการแรก — พิมพ์คำค้นให้แคบลง</div></div>`
-      : `<div class="hint">พบ ${r.total} บัญชี</div>`;
-  }catch(e){ $('#acNote').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
+    const show=$('#ac_showpass')&&$('#ac_showpass').checked;
+    const lv=($('#ad_level')&&$('#ad_level').value)||'';
+    const r=await api('listAccounts',{q:(($('#ad_q')&&$('#ad_q').value)||'').trim(),
+      kind:(lv==='other'?'':lv), group_code:(gsel? gsel.value : ''), show_pass: show?'1':''});
+    ACC=r.items||[]; ACC_TOTAL=Number(r.total||ACC.length);
+    const at=$('#adTools'); if(at) at.style.display = isOwner()? '' : 'none';
+    const pt=$('#adPassTools'); if(pt) pt.style.display = (ME&&ME.role==='district_admin')? '' : 'none';
+    drawAdmins();
+  }catch(e){ ACC=[]; ACC_TOTAL=0; drawAdmins();
+    const n=$('#acNote'); if(n) n.innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
 }
 async function exportAccounts(){
   if(!ME || ME.role!=='district_admin') return alert('เฉพาะผู้ดูแลเขตเท่านั้น');
   try{
     const gsel=$('#ac_group');
-    const r=await api('listAccounts',{q:$('#ac_q').value.trim(), kind:$('#ac_kind').value,
-      group_code:(gsel? gsel.value : ''), show_pass:'1'});
+    const lv=($('#ad_level')&&$('#ad_level').value)||'';
+    const r=await api('listAccounts',{q:(($('#ad_q')&&$('#ad_q').value)||'').trim(),
+      kind:(lv==='other'?'':lv), group_code:(gsel? gsel.value : ''), show_pass:'1'});
     const rows=[['ชื่อผู้ใช้','รหัสผ่าน','ชื่อ','ประเภท','สังกัด','เข้าระบบล่าสุด']]
       .concat((r.items||[]).map(x=>[x.username,x.pass_code||'',x.name||'',x.role,x.where||'',x.last_login||'']));
     const text='\ufeff'+rows.map(a=>a.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
