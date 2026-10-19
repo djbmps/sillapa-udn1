@@ -607,6 +607,10 @@ body[data-view="admin"] .utilbar{display:none}
         <select id="scJudge" onchange="renderScore()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
         <button class="btn g sm" onclick="printDoc('scoresheet')">🖨️ ใบให้คะแนนกระดาษ</button>
       </div>
+      <div class="note i" id="scTotalNote" style="display:none;margin-bottom:12px"><span>🧮</span><div>
+        <b>ระดับเขต — กรอกคะแนนรวมของแต่ละทีม</b> ตามแบบรายงานคะแนนที่คณะกรรมการสรุปส่งมา
+        ระบบจะคิดเหรียญและจัดอันดับให้อัตโนมัติ ตรวจทานถูกต้องแล้วจึงไปที่หน้า
+        <b>ตรวจทาน &amp; ประกาศผล</b> เพื่อประกาศผลอย่างเป็นทางการ</div></div>
       <div class="card"><div class="cb" style="padding:0;overflow:auto"><table id="scTbl"></table></div></div>
       <div class="row" style="margin-top:12px">
         <span class="hint" id="scHint"></span><span class="sp"></span>
@@ -4602,12 +4606,20 @@ function editEntry(id){
     });
 }
 
-/* ---------- ให้คะแนน ---------- */
+/* ---------- ให้คะแนน ----------
+   · เว็บกลุ่มโรงเรียน — กรรมการกรอกคะแนนรายเกณฑ์ ระบบเฉลี่ยข้ามกรรมการให้
+   · เว็บระดับเขต — กรอก "คะแนนรวม" ของแต่ละทีมตามแบบรายงานที่คณะกรรมการสรุปมา
+     ระบบคิดเหรียญ/จัดอันดับให้ทันที แล้วแอดมินเขตจึงกดประกาศผลที่หน้าประกาศผล  */
 let SC_ENT=[];
+const SC_SUM_JUDGE='SUM', SC_SUM_CRIT='TOTAL';
 function renderScore(){
   const actId=$('#scAct').value;
   const act=(DB.activities||[]).find(a=>a.act_id===actId);
   if(!act) return;
+  const totalMode=(SCOPE==='ALL');
+  const jsel=$('#scJudge'); if(jsel) jsel.style.display = totalMode? 'none':'';
+  const nt=$('#scTotalNote'); if(nt) nt.style.display = totalMode? 'flex':'none';
+  if(totalMode) return renderScoreTotal(actId, act);
   const nj=Number(act.judges_required||3);
   if(!$('#scJudge').options.length || $('#scJudge').dataset.n!=nj){
     $('#scJudge').innerHTML=Array.from({length:nj},(_,i)=>`<option value="J${i+1}">กรรมการคนที่ ${i+1}</option>`).join('');
@@ -4630,11 +4642,70 @@ function renderScore(){
       ' · '+ent.length+' ทีม · '+($('#scJudge').selectedOptions[0]||{}).textContent;
   });
 }
+/** เกณฑ์เหรียญจากค่าตั้งค่าของเขต */
+function medalOf(total){
+  const c=DB.config||{};
+  const g=Number(c.medal_gold||80), si=Number(c.medal_silver||70), b=Number(c.medal_bronze||60);
+  const v=Number(total||0);
+  return v>=g?'ทอง' : v>=si?'เงิน' : v>=b?'ทองแดง' : 'เข้าร่วม';
+}
+/** ตารางกรอกคะแนนรวมของระดับเขต — จัดอันดับและคิดเหรียญให้สดทุกครั้งที่พิมพ์ */
+function renderScoreTotal(actId, act){
+  if(!DB.criteria){ ensureCrit().then(()=>renderScore()); return; }
+  const crit=(DB.criteria||[]).filter(c=>c.act_id===actId).sort((a,b)=>a.order-b.order);
+  if(!crit.length){ $('#scTbl').innerHTML='<tbody><tr><td style="padding:26px;text-align:center;color:var(--ink-3)">รายการนี้ยังไม่ได้ตั้งเกณฑ์การให้คะแนน — ไปที่ “จัดการรายการ &amp; เกณฑ์”</td></tr></tbody>'; return; }
+  const full=crit.reduce((a,b)=>a+Number(b.max_score||0),0) || 100;
+  window.__SCFULL=full; window.__SCCRIT=crit;
+  Promise.all([api('listEntries',{group:'DISTRICT', act_id:actId}),
+               api('computeResults',{act_id:actId, group:''}).catch(()=>({rows:[]}))])
+   .then(([ent,calc])=>{
+    SC_ENT=ent;
+    const S=schoolsOf('ALL');
+    const old={}; (calc.rows||[]).forEach(r=>{ old[String(r.entry_id)]=r.total; });
+    const rows=ent.slice().sort((a,b)=>Number(old[String(b.entry_id)]||0)-Number(old[String(a.entry_id)]||0));
+    tbl($('#scTbl'),['ที่','โรงเรียน','ที่มา','คะแนนรวม','เหรียญ','อันดับ'],
+      rows.map((e,i)=>{ const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
+        const v=old[String(e.entry_id)];
+        return `<tr data-e="${e.entry_id}"><td class="num">${i+1}</td>
+          <td><b>${cleanName(s.school_name||e.school_smis)}</b></td>
+          <td class="hint">${e.from_group? 'ตัวแทน '+groupName(e.from_group)+' อันดับ '+(e.from_rank||'') : ''}</td>
+          <td><input type="number" min="0" max="${full}" step="0.01" value="${v!==undefined?v:''}"
+             oninput="scTotalCalc()" style="width:96px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-weight:700"></td>
+          <td data-medal></td><td class="num" data-rank></td></tr>`;
+      }).join('') || '');
+    scTotalCalc();
+    $('#scHint').textContent = 'คะแนนเต็ม '+full+' · '+ent.length+' ทีม · กรอกคะแนนรวมจากแบบรายงานของคณะกรรมการ';
+  });
+}
+/** คิดเหรียญ + จัดอันดับสด ๆ (คะแนนเท่ากันได้อันดับเท่ากัน) */
+function scTotalCalc(){
+  const trs=[...document.querySelectorAll('#scTbl tbody tr[data-e]')];
+  const vals=trs.map(tr=>({tr:tr, v:Number((tr.querySelector('input')||{}).value||'')||null}));
+  const got=vals.filter(x=>x.v!==null).sort((a,b)=>b.v-a.v);
+  let rank=0, prev=null, seen=0;
+  got.forEach(x=>{ seen++; if(prev===null||x.v!==prev){ rank=seen; prev=x.v; } x.rank=rank; });
+  vals.forEach(x=>{
+    const md=x.tr.querySelector('[data-medal]'), rk=x.tr.querySelector('[data-rank]');
+    if(x.v===null){ md.innerHTML=''; rk.textContent=''; return; }
+    const m=medalOf(x.v);
+    md.innerHTML=`<span class="pill ${m==='ทอง'?'ok':m==='เงิน'?'i':'w'}">${m}</span>`;
+    rk.innerHTML = x.rank===1? '<b>1</b>' : String(x.rank);
+  });
+}
+/** จัดเรียงแถวตามคะแนนจากมากไปน้อย (เรียกหลังบันทึก) */
+function scTotalSort(){
+  const tb=document.querySelector('#scTbl tbody'); if(!tb) return;
+  const trs=[...tb.querySelectorAll('tr[data-e]')];
+  trs.sort((a,b)=>Number((b.querySelector('input')||{}).value||0)-Number((a.querySelector('input')||{}).value||0));
+  trs.forEach((tr,i)=>{ tr.children[0].textContent=i+1; tb.appendChild(tr); });
+  scTotalCalc();
+}
 function scRow(inp){ const tr=inp.closest('tr');
   tr.querySelector('[data-total]').textContent=[...tr.querySelectorAll('input')]
     .reduce((a,b)=>a+Number(b.value||0),0); }
 async function saveScores(src){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  if(SCOPE==='ALL') return saveScoreTotals();
   const jid=$('#scJudge').value, out=[];
   $$('#scTbl tbody tr').forEach(tr=>{
     tr.querySelectorAll('input').forEach(i=>{ if(i.value!=='')
@@ -4646,6 +4717,37 @@ async function saveScores(src){
   }catch(e){ alert(e.message); }
 }
 
+/** บันทึกคะแนนรวมของระดับเขต — เก็บเป็นคะแนนสรุป 1 ค่าต่อทีม */
+async function saveScoreTotals(){
+  const crit=window.__SCCRIT||[], full=Number(window.__SCFULL||100);
+  if(!crit.length) return alert('รายการนี้ยังไม่ได้ตั้งเกณฑ์การให้คะแนน');
+  const teams=[], out=[];
+  $$('#scTbl tbody tr[data-e]').forEach(tr=>{
+    const v=(tr.querySelector('input')||{}).value;
+    if(v==='' || v===undefined || v===null) return;
+    teams.push({id:tr.dataset.e, total:Number(v)});
+  });
+  if(!teams.length) return alert('ยังไม่ได้กรอกคะแนนรวม');
+  if(teams.some(t=>!(t.total>=0 && t.total<=full)))
+    return alert('คะแนนรวมต้องอยู่ระหว่าง 0–'+full+' คะแนน');
+  /* เก็บเป็นคะแนนชุดเดียว (ผู้ให้คะแนน = สรุปจากคณะกรรมการ)
+     กระจายตามสัดส่วนของเกณฑ์ เพื่อให้ผลรวมเท่ากับคะแนนรวมที่กรอกพอดี */
+  teams.forEach(t=>{
+    let left=Math.round(t.total*100);
+    crit.forEach((c,i)=>{
+      let part;
+      if(i===crit.length-1) part=left;
+      else { part=Math.round(t.total*100*Number(c.max_score||0)/full); left-=part; }
+      out.push({entry_id:t.id, judge_id:SC_SUM_JUDGE, crit_id:c.crit_id, score:Math.round(part)/100});
+    });
+  });
+  try{
+    await api('saveScores',{act_id:$('#scAct').value, group:'DISTRICT', scores:out, source:'report'});
+    scTotalSort();
+    alert('บันทึกคะแนนรวมแล้ว '+teams.length+' ทีม\n\nตรวจทานอันดับให้ถูกต้อง แล้วไปที่หน้า “ตรวจทาน & ประกาศผล” เพื่อประกาศผล');
+  }catch(e){ alert(e.message); }
+}
+
 /* ---------- ประกาศผล ---------- */
 function renderPublish(){
   const actId=$('#pbAct').value; if(!actId) return;
@@ -4654,11 +4756,14 @@ function renderPublish(){
     const warn=c.rows.filter(r=>r.spread>c.warn_gap);
     $('#pbWarn').innerHTML = warn.length? `<div class="note w"><span>🔔</span><div><b>คะแนนกรรมการต่างกันมาก ${warn.length} ทีม</b>
       — ต่างกันเกิน ${c.warn_gap} คะแนน ควรให้กรรมการหารือก่อนประกาศผล</div></div>`:'';
-    tbl($('#pbTbl'),['อันดับ','โรงเรียน','กรรมการที่ให้คะแนน','ช่วงห่างคะแนน','คะแนนเฉลี่ย','ผล'],
+    const dist=(SCOPE==='ALL');
+    tbl($('#pbTbl'),dist? ['อันดับ','โรงเรียน','ที่มาคะแนน','—','คะแนนรวม','ผล']
+                        : ['อันดับ','โรงเรียน','กรรมการที่ให้คะแนน','ช่วงห่างคะแนน','คะแนนเฉลี่ย','ผล'],
       c.rows.map(r=>{ const s=S.find(x=>String(x.smis)===String(r.school_smis))||{};
         const mp={'ทอง':'m1','เงิน':'m2','ทองแดง':'m3'}[r.medal];
         return `<tr><td class="num"><b>${r.rank}</b></td><td><b>${cleanName(s.school_name||r.school_smis)}</b></td>
-          <td class="num">${r.judges}</td><td class="num" ${r.spread>c.warn_gap?'style="color:var(--bad);font-weight:700"':''}>${r.spread}</td>
+          <td class="${dist?'hint':'num'}">${dist?'สรุปจากคณะกรรมการ':r.judges}</td>
+          <td class="num" ${(!dist&&r.spread>c.warn_gap)?'style="color:var(--bad);font-weight:700"':''}>${dist?'':r.spread}</td>
           <td class="num" style="font-weight:700">${r.total.toFixed(2)}</td>
           <td>${mp?`<span class="medal ${mp}">●</span> `:''}<span class="pill ${r.medal==='เข้าร่วม'?'i':'ok'}">${r.medal}</span></td></tr>`;
       }).join(''));
