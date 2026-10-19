@@ -1924,17 +1924,26 @@ function demoApi(action,p){
       (p.coaches||[]).forEach((c,i)=>MEM.coaches.push(Object.assign({id:'T'+Date.now()+i,entry_id:e.entry_id},c)));
       memSave(); return e; }
     case 'saveScores':{
+      /* ล็อกคะแนนเฉพาะรอบของตัวเองที่ประกาศผลแล้ว (กลุ่มอื่นยังให้คะแนนรายการเดียวกันได้) */
+      {
+        const gS=p.group || demoRound();
+        const egS={}; MEM.entries.forEach(e=>egS[e.entry_id]=String(e.group_code));
+        if((MEM.results||[]).some(r=>r.act_id===p.act_id && r.status==='ประกาศแล้ว' && egS[r.entry_id]===String(gS)))
+          throw new Error('รายการนี้ประกาศผลแล้ว คะแนนถูกล็อก');
+      }
       p.scores.forEach(s=>{
         const k=MEM.scores.find(x=>x.entry_id===s.entry_id&&x.judge_id===s.judge_id&&x.crit_id===s.crit_id);
         if(k){k.score=s.score;k.source=p.source;} else MEM.scores.push(Object.assign({},s,{source:p.source}));
       }); memSave(); return {saved:p.scores.length}; }
-    case 'computeResults': return demoCompute(p.act_id);
+    case 'computeResults': return demoCompute(p.act_id, p.group);
     case 'publishResults':{
-      const c=demoCompute(p.act_id);
-      MEM.results=MEM.results.filter(r=>r.act_id!==p.act_id);
+      const g=p.group || demoRound();
+      const c=demoCompute(p.act_id, g);
+      const eg={}; MEM.entries.forEach(e=>eg[e.entry_id]=String(e.group_code));
+      MEM.results=MEM.results.filter(r=>!(r.act_id===p.act_id && eg[r.entry_id]===String(g)));
       c.rows.forEach(r=>MEM.results.push({result_id:'R'+Date.now()+r.entry_id,act_id:p.act_id,entry_id:r.entry_id,
         total:r.total,medal:r.medal,rank:r.rank,status:'ประกาศแล้ว',published_at:nowStr()}));
-      memSave(); return {published:c.rows.length}; }
+      memSave(); return {published:c.rows.length, group:g}; }
     case 'promoteToDistrict':{
       if(ME&&ME.role==='group_admin'){ const w=demoPromoteWin();
         if(!w.open) throw new Error('ยังไม่เปิดให้โอนตัวแทนเข้าเขต — '+w.note); }
@@ -2324,9 +2333,12 @@ function demoApi(action,p){
 }
 function needD(){ if(!ME||ME.role!=='district_admin') throw new Error('รายการแข่งขัน หมวดหมู่ และเกณฑ์การให้คะแนน อยู่ในความดูแลของสำนักงานเขตพื้นที่การศึกษาเท่านั้น — กลุ่มโรงเรียนและโรงเรียนใช้ชุดเดียวกันกับเขต'); }
 function demoToken(u){ return {token:'demo', user:u}; }
-function demoCompute(actId){
+function demoRound(){ return (ME&&(ME.role==='group_admin'||ME.role==='school'))? ME.scope
+  : (SCOPE && SCOPE!=='ALL' ? SCOPE : 'DISTRICT'); }
+function demoCompute(actId, g){
+  g = g || demoRound();
   const crit=MEM.criteria.filter(c=>c.act_id===actId).map(c=>c.crit_id);
-  const ent=MEM.entries.filter(e=>e.act_id===actId&&e.status!=='ตัดสิทธิ์');
+  const ent=MEM.entries.filter(e=>e.act_id===actId&&e.status!=='ตัดสิทธิ์'&&String(e.group_code)===String(g));
   const rows=ent.map(e=>{
     const byJ={};
     MEM.scores.filter(s=>s.entry_id===e.entry_id&&crit.includes(s.crit_id))
@@ -2339,7 +2351,7 @@ function demoCompute(actId){
   let rank=0,prev=null,seen=0;
   rows.forEach(r=>{ seen++; if(prev===null||r.total!==prev){rank=seen;prev=r.total;}
     r.rank=rank; r.medal=r.total>=80?'ทอง':r.total>=70?'เงิน':r.total>=60?'ทองแดง':'เข้าร่วม'; });
-  return {act_id:actId, rows, warn_gap:15};
+  return {act_id:actId, group:g, rows, warn_gap:15};
 }
 function nowStr(){ const d=new Date(); return d.toISOString().slice(0,19).replace('T',' '); }
 
@@ -4524,7 +4536,7 @@ async function saveScores(src){
 /* ---------- ประกาศผล ---------- */
 function renderPublish(){
   const actId=$('#pbAct').value; if(!actId) return;
-  api('computeResults',{act_id:actId}).then(c=>{
+  api('computeResults',{act_id:actId, group: SCOPE==='ALL'?'':SCOPE}).then(c=>{
     const S=schoolsOf('ALL');
     const warn=c.rows.filter(r=>r.spread>c.warn_gap);
     $('#pbWarn').innerHTML = warn.length? `<div class="note w"><span>🔔</span><div><b>คะแนนกรรมการต่างกันมาก ${warn.length} ทีม</b>
@@ -4542,7 +4554,7 @@ function renderPublish(){
 async function publishAct(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   if(!confirm('ประกาศผลรายการนี้? หลังประกาศคะแนนจะถูกล็อกทันที')) return;
-  try{ const r=await api('publishResults',{act_id:$('#pbAct').value});
+  try{ const r=await api('publishResults',{act_id:$('#pbAct').value, group: SCOPE==='ALL'?'':SCOPE});
     alert('ประกาศผลแล้ว '+r.published+' ทีม'); renderPublish(); renderHome();
   }catch(e){ alert(e.message); }
 }
