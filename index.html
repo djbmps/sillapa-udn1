@@ -42,6 +42,37 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .nv:hover{background:rgba(255,255,255,.07);color:#fff}
 .nv.on{background:rgba(226,98,14,.2);color:#FFB779;font-weight:600;box-shadow:inset 3px 0 0 var(--pri)}
 .nv i{width:18px;text-align:center;font-style:normal;font-size:14px}
+/* แถบเมนูหลังบ้านแบบจัดหมวด — พับเก็บได้ และมีช่องค้นหาเมนู */
+.ngb{display:flex;flex-direction:column;gap:1px}
+.ng>span.ngh{display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;
+  user-select:none;border-radius:8px;margin:0 0 4px;padding:5px 8px;transition:color .15s,background .15s}
+.ng>span.ngh:hover{background:rgba(255,255,255,.05);color:#C6BCB3}
+.ng>span.ngh .cv{font-style:normal;font-size:9px;opacity:.55;transition:transform .18s}
+.ng.cl>.ngb{display:none}
+.ng.cl>span.ngh .cv{transform:rotate(-90deg)}
+.ng.act>span.ngh{color:#C9A227}
+.navfind{position:relative;padding:12px 13px 2px}
+.navfind input{width:100%;padding:7px 26px 7px 27px;border-radius:9px;font-family:inherit;font-size:12.5px;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#E8E0D9}
+.navfind input:focus{outline:none;border-color:rgba(245,128,33,.6);background:rgba(255,255,255,.1)}
+.navfind input::placeholder{color:#8A7C70}
+.navfind:before{content:"🔍";position:absolute;left:20px;top:19px;font-size:10.5px;opacity:.65;pointer-events:none}
+.navx{position:absolute;right:19px;top:17px;color:#8A7C70;font-size:12px;display:none;line-height:1}
+.navfind.has .navx{display:block}
+.nv.hide{display:none!important}
+/* ระบบขอเปลี่ยนตัว */
+.steps{margin:0;padding-left:20px;line-height:1.85;font-size:14px}
+.steps li{margin-bottom:8px}
+.steps b{color:var(--ink)}
+.sigbox{border:1px solid var(--line);border-radius:11px;background:#FFFDF8;overflow:hidden;
+  background-image:linear-gradient(90deg,transparent 0 calc(100% - 1px),rgba(0,0,0,.05) 0)}
+.sigbox canvas{display:block;width:100%;height:180px;touch-action:none;cursor:crosshair}
+.subdoc{max-width:360px;border-radius:10px;border:1px solid var(--line)}
+.e5{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:#fff}
+.e5 h4{margin:0 0 4px;font-size:16px}
+.e5 .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:13.5px;margin-top:10px}
+.e5 .kv span{color:var(--ink-3)}
+.subqr{width:104px;height:104px;border:1px solid var(--line);border-radius:8px;background:#fff}
 .main{padding:0 26px 60px;max-width:1240px;min-width:0}
 .top{display:flex;align-items:center;gap:11px;padding:13px 0 13px;border-bottom:1px solid var(--line);margin-bottom:16px;position:sticky;top:0;background:var(--bg);z-index:20}
 .top .bc{font-size:13px;color:var(--ink-3)}
@@ -383,8 +414,10 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="fld"><label>เข้าสู่ระบบของ</label>
         <select id="lgScope" onchange="lgScopeChange()"></select>
         <div class="hint" style="margin-top:5px">ผู้ดูแลกลุ่มและโรงเรียนเลือกกลุ่มของตนเอง · ระบบจะพาเข้าเว็บกลุ่มนั้นให้อัตโนมัติ</div></div>
-      <div class="fld"><label>ชื่อผู้ใช้</label><input id="lgUser" placeholder="เช่น admin-g01 หรือ sc0001"></div>
-      <div class="fld"><label>รหัสผ่าน</label><input id="lgPass" type="password" placeholder="รหัสที่ได้รับจากผู้ดูแล"></div>
+      <div class="fld"><label>ชื่อผู้ใช้</label><input id="lgUser" autocomplete="username"
+           placeholder="เช่น admin-g01 หรือ sc0001" oninput="lgTyping()"></div>
+      <div class="fld"><label>รหัสผ่าน</label><input id="lgPass" type="password" autocomplete="current-password"
+           placeholder="รหัสที่ได้รับจากผู้ดูแล" oninput="lgTyping()"></div>
       <button class="btn" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">เข้าสู่ระบบ</button>
       <div id="lgErr" class="note b" style="display:none;margin-top:12px"></div>
       <p class="hint" style="margin-top:14px">
@@ -436,43 +469,70 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="mk" id="bMk">🏆</div>
       <div><h1 id="bTitle">ศิลปหัตถกรรมนักเรียน</h1><p id="bSub">สพป.อุดรธานี เขต 1</p></div>
     </div>
-    <div class="ng" id="navPublic"><span>ข้อมูลสาธารณะ</span></div>
-    <div class="ng" id="navAdmin"><span>งานของผู้ดูแล</span>
-      <button class="nv" data-p="dash"><i>📊</i>แดชบอร์ด</button>
-      <button class="nv" data-p="schools"><i>🏫</i>ทะเบียนโรงเรียน</button>
-      <button class="nv" data-p="actedit" data-role="district_admin" data-perm="actedit"><i>⚙️</i>จัดการรายการ &amp; เกณฑ์</button>
-      <button class="nv" data-p="entries" data-perm="entries"><i>📝</i>ผู้สมัครแข่งขัน</button>
-      <button class="nv" data-p="score" data-role="district_admin,group_admin,head_judge,judge" data-perm="score"><i>✍️</i>ให้คะแนน</button>
-      <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ประกาศผล</button>
-      <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
-      <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
-      <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกกรรมการ</button>
-      <button class="nv" data-p="certadm" data-role="district_admin,group_admin" data-perm="certadm"><i>🎖️</i>ระบบเกียรติบัตร</button>
-      <button class="nv" data-p="cards" data-role="district_admin,group_admin,school" data-perm="cards"><i>🪪</i>บัตรประจำตัว</button>
-      <button class="nv" data-p="perm" data-role="district_admin,group_admin" data-perm="perm"><i>🔐</i>เปิด-ปิดระบบ &amp; สิทธิ์การพิมพ์</button>
-      <button class="nv" data-p="newsmgr" data-role="district_admin,group_admin" data-perm="newsmgr"><i>📣</i>ประชาสัมพันธ์</button>
-      <button class="nv" data-p="site" data-role="district_admin,group_admin" data-perm="site"><i>🖼️</i>หน้าเว็บ &amp; แบนเนอร์</button>
-      <button class="nv" data-p="print" data-perm="print"><i>🖨️</i>พิมพ์เอกสาร</button>
+    <div class="navfind" id="navFind">
+      <input id="navQ" placeholder="ค้นหาเมนู…" oninput="navFilter(this.value)" autocomplete="off" spellcheck="false">
+      <button class="navx" onclick="navFilter('',1)" title="ล้างคำค้น">✕</button>
     </div>
-    <div class="ng" id="navOwner"><span>เฉพาะผู้ดูแลหลัก</span>
-      <button class="nv" data-p="admins" data-role="district_admin,group_admin" data-owner="1"><i>👥</i>จัดการผู้ดูแล</button>
-      <button class="nv" data-p="backup" data-role="district_admin,group_admin" data-owner="1"><i>💾</i>สำรอง &amp; กู้คืนข้อมูล</button>
-      <button class="nv" data-p="season" data-role="district_admin,group_admin" data-owner="1"><i>🗄️</i>ปีการศึกษา &amp; สำรอง/ล้างข้อมูล</button>
+
+    <div class="ng" id="navPublic" data-sec="pub"></div>
+
+    <div id="navAdmin" style="display:none">
+      <div class="ng" data-sec="ov"><span class="ngh" onclick="togSec(this)">ภาพรวม<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-p="dash"><i>📊</i>แดชบอร์ด</button>
+      </div></div>
+
+      <div class="ng" data-sec="cfg"><span class="ngh" onclick="togSec(this)">การจัดการระบบการแข่งขัน<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-p="schools"><i>🏫</i>ทะเบียนโรงเรียน</button>
+        <button class="nv" data-p="groups" data-dist="1"><i>🏘️</i>กลุ่มโรงเรียน 20 กลุ่ม</button>
+        <button class="nv" data-p="actedit" data-role="district_admin" data-perm="actedit"><i>📋</i>จัดการรายการ &amp; เกณฑ์</button>
+        <button class="nv" data-p="site" data-role="district_admin,group_admin" data-perm="site"><i>🖼️</i>หน้าเว็บ &amp; แบนเนอร์</button>
+        <button class="nv" data-p="newsmgr" data-role="district_admin,group_admin" data-perm="newsmgr"><i>📣</i>ประชาสัมพันธ์</button>
+      </div></div>
+
+      <div class="ng" data-sec="reg"><span class="ngh" onclick="togSec(this)">การลงทะเบียนแข่งขัน<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-p="entries" data-perm="entries"><i>📝</i>ผู้สมัครแข่งขัน</button>
+        <button class="nv" data-p="cards" data-role="district_admin,group_admin,school" data-perm="cards"><i>🪪</i>บัตรประจำตัว</button>
+        <button class="nv" data-p="submgr" data-role="district_admin,group_admin,school"><i>🔁</i>ขอเปลี่ยนตัวนักเรียน</button>
+      </div></div>
+
+      <div class="ng" data-sec="jd"><span class="ngh" onclick="togSec(this)">คณะกรรมการตัดสิน<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกกรรมการ</button>
+        <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
+      </div></div>
+
+      <div class="ng" data-sec="sc"><span class="ngh" onclick="togSec(this)">บันทึกคะแนน &amp; ประกาศผล<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-p="score" data-role="district_admin,group_admin,head_judge,judge" data-perm="score"><i>✍️</i>ให้คะแนน</button>
+        <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ตรวจทาน &amp; ประกาศผล</button>
+        <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
+      </div></div>
+
+      <div class="ng" data-sec="doc"><span class="ngh" onclick="togSec(this)">พิมพ์เอกสาร &amp; เกียรติบัตร<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-p="print" data-perm="print"><i>🖨️</i>พิมพ์เอกสารการแข่งขัน</button>
+        <button class="nv" data-p="certadm" data-role="district_admin,group_admin" data-perm="certadm"><i>🎖️</i>ระบบเกียรติบัตร</button>
+      </div></div>
+
+      <div class="ng" data-sec="live"><span class="ngh" onclick="togSec(this)">จอฉายหน้างาน<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-always="1" onclick="openScreen('live')"><i>📺</i>จอผลสด</button>
+        <button class="nv" data-always="1" onclick="openScreen('queue')"><i>⏱️</i>จอคิวตารางแข่งขัน</button>
+      </div></div>
+
+      <div class="ng" data-sec="set"><span class="ngh" onclick="togSec(this)">ตั้งค่า &amp; ผู้ดูแลระบบ<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-p="perm" data-role="district_admin,group_admin" data-perm="perm"><i>🔐</i>เปิด-ปิดระบบ &amp; สิทธิ์การพิมพ์</button>
+        <button class="nv" data-p="admins" data-role="district_admin,group_admin" data-owner="1"><i>👥</i>จัดการผู้ดูแล</button>
+        <button class="nv" data-p="backup" data-role="district_admin,group_admin" data-owner="1"><i>💾</i>สำรอง &amp; กู้คืนข้อมูล</button>
+        <button class="nv" data-p="season" data-role="district_admin,group_admin" data-owner="1"><i>🗄️</i>ปีการศึกษา &amp; ล้างข้อมูล</button>
+      </div></div>
+
+      <div class="ng" data-sec="out"><span class="ngh" onclick="togSec(this)">ออกจากหลังบ้าน<i class="cv">▾</i></span><div class="ngb">
+        <button class="nv" data-always="1" onclick="setView('public')"><i>🌐</i>ไปหน้าเว็บสาธารณะ</button>
+      </div></div>
     </div>
-    <div class="ng" id="navDistrict"><span>เฉพาะระดับเขต</span>
-      <button class="nv" data-p="groups"><i>🏘️</i>กลุ่มโรงเรียน 20 กลุ่ม</button>
-    </div>
-    <div class="ng"><span>จอฉายหน้างาน</span>
-      <button class="nv" onclick="openScreen('live')"><i>📺</i>จอผลสด</button>
-      <button class="nv" onclick="openScreen('queue')"><i>⏱️</i>จอคิวตารางแข่งขัน</button>
-    </div>
-    <div class="ng"><span>ออกจากหลังบ้าน</span>
-      <button class="nv" onclick="setView('public')"><i>🌐</i>ไปหน้าเว็บสาธารณะ</button>
-    </div>
-    <div class="ng"><span>บัญชี</span>
+
+    <div class="ng" data-sec="acc"><span class="ngh" onclick="togSec(this)">บัญชี<i class="cv">▾</i></span><div class="ngb">
       <button class="nv" id="authBtn" onclick="toggleAuth()"><i>🔑</i>เข้าสู่ระบบ</button>
       <button class="nv" data-p="setup" data-role="district_admin" data-anon="1"><i>🔧</i>ตั้งค่าเชื่อมฐานข้อมูล</button>
-    </div>
+    </div></div>
+
     <div class="sdev">พัฒนาโดย <b>ศน.ดวงใจ บุญมีประเสริฐ</b><br>
       ศึกษานิเทศก์ สพป.อุดรธานี เขต 1<br>
       <a href="mailto:djbmps@gmail.com" style="color:#8E8278;text-decoration:underline">djbmps@gmail.com</a></div>
@@ -1087,10 +1147,131 @@ body[data-view="admin"] .utilbar{display:none}
             <input id="pm_print_note" placeholder="เช่น จะเปิดให้พิมพ์เอกสารหลังปิดรับสมัคร"></div>
         </div></div>
 
+      <div class="card" id="pmSubCard" style="margin-bottom:14px"><div class="ch"><h3>ระบบขอเปลี่ยนตัวนักเรียน / ครูผู้ฝึกสอน</h3>
+        <span class="sp"></span><span id="pmSubState"></span></div>
+        <div class="cb">
+          <div id="pmSubRead" style="display:none"></div>
+          <div id="pmSubEdit">
+            <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+              <input type="checkbox" id="sw_open" onchange="renderSubWinUI()" style="width:20px;height:20px">
+              เปิดระบบให้โรงเรียนยื่นคำขอเปลี่ยนตัวออนไลน์</label>
+            <div class="g2" style="margin-top:12px">
+              <div class="fld"><label>เปิดรับคำขอตั้งแต่วันที่</label><div id="sw_from_wrap"></div></div>
+              <div class="fld"><label>ถึงวันที่</label><div id="sw_to_wrap"></div></div>
+            </div>
+            <div class="fld"><label>ข้อความที่แสดงเมื่อยังไม่เปิด / ปิดแล้ว</label>
+              <input id="sw_note" placeholder="เช่น เปิดให้ยื่นคำขอเปลี่ยนตัวระหว่างวันที่ 1–10 ธันวาคม 2569"></div>
+            <div class="note i" style="margin-top:10px"><span>🔁</span><div>
+              เมื่อเปิดระบบ แท็บ <b>“ขอเปลี่ยนตัว”</b> จะโผล่ขึ้นในเมนูหน้าเว็บสาธารณะโดยอัตโนมัติ
+              และหายไปเองเมื่อพ้นกำหนด — โรงเรียนยื่นคำขอ แนบหลักฐาน และลงลายมือชื่อ ผอ. ได้ในระบบ
+              ไม่ต้องส่งกระดาษ</div></div>
+          </div>
+        </div></div>
+
       <div class="card"><div class="ch"><h3>เกียรติบัตร</h3><span class="sp"></span><span id="pmCertState"></span></div>
         <div class="cb"><div class="row"><span class="hint" style="flex:1">
           การเปิด-ปิดดาวน์โหลดเกียรติบัตรตั้งค่าอยู่ที่หน้า “ระบบเกียรติบัตร” พร้อมกับพื้นหลังและข้อความ</span>
           <button class="btn g" onclick="go('certadm')">ไปหน้าระบบเกียรติบัตร →</button></div></div></div>
+    </section>
+
+    <!-- ---------- ขอเปลี่ยนตัวนักเรียน (หน้าสาธารณะ) ---------- -->
+    <section class="page" id="p-subs">
+      <div class="hd"><div><h2>ขอเปลี่ยนตัวนักเรียน / ครูผู้ฝึกสอน</h2>
+        <p>ยื่นคำขอออนไลน์ แนบหลักฐาน ลงลายมือชื่อในระบบ — ไม่ต้องส่งเอกสารกระดาษ</p></div></div>
+      <div id="subPubState"></div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="card"><div class="ch"><h3>ขั้นตอนการขอเปลี่ยนตัว</h3></div>
+          <div class="cb"><ol class="steps" id="subSteps">
+            <li><b>โรงเรียนยื่นคำขอ</b> เข้าสู่ระบบด้วยบัญชีโรงเรียน เลือกรายการแข่งขันและทีมที่ต้องการเปลี่ยนตัว</li>
+            <li><b>แนบหลักฐาน</b> ถ่ายรูปจากมือถือหรือแนบไฟล์ เช่น ใบรับรองแพทย์ หนังสือย้าย หรือหนังสือของโรงเรียน</li>
+            <li><b>ผู้อำนวยการโรงเรียนลงลายมือชื่อ</b> เซ็นบนหน้าจอได้เลย ระบบบันทึกชื่อ ตำแหน่ง วันเวลา และเลขที่คำขอกำกับไว้</li>
+            <li><b>ประธานกลุ่มโรงเรียน / เขตพื้นที่พิจารณา</b> เมื่ออนุมัติ ระบบจะเปลี่ยนรายชื่อในทีมให้อัตโนมัติ
+                และออกใบอนุญาตเปลี่ยนตัวอิเล็กทรอนิกส์พร้อมรหัสตรวจสอบ</li>
+          </ol></div></div>
+        <div class="card"><div class="ch"><h3>ตรวจสอบสถานะคำขอ</h3></div>
+          <div class="cb">
+            <div class="fld"><label>กรอกเลขที่คำขอที่ได้รับจากระบบ</label>
+              <input id="subFind" placeholder="เช่น SB-25690001" onkeydown="if(event.key==='Enter')subLookup()"
+                     style="text-transform:uppercase"></div>
+            <button class="btn" onclick="subLookup()">ตรวจสอบ</button>
+            <div id="subFindOut" style="margin-top:12px"></div>
+            <p class="hint" style="margin-top:10px">กรรมการหน้างานสแกน QR บนใบอนุญาตเปลี่ยนตัว
+              หรือกรอกเลขที่คำขอในช่องนี้ ก็ตรวจสอบได้ทันทีว่าทีมนี้เปลี่ยนตัวถูกต้องหรือไม่</p>
+          </div></div>
+      </div>
+      <div class="card"><div class="ch"><h3>สรุปคำขอเปลี่ยนตัวในระบบ</h3></div>
+        <div class="cb" id="subPubStat"></div></div>
+    </section>
+
+    <!-- ---------- ขอเปลี่ยนตัว (หลังบ้าน) ---------- -->
+    <section class="page" id="p-submgr">
+      <div class="hd"><div><h2>ขอเปลี่ยนตัวนักเรียน / ครูผู้ฝึกสอน</h2><p id="smSub"></p></div>
+        <span class="sp"></span>
+        <button class="btn" id="smNewBtn" onclick="subNew()">+ ยื่นคำขอเปลี่ยนตัว</button></div>
+      <div id="smState"></div>
+
+      <div class="card" id="smFormCard" style="display:none;margin-bottom:14px">
+        <div class="ch"><h3 id="smFormTitle">แบบคำขอเปลี่ยนตัว</h3><span class="sp"></span>
+          <button class="btn g sm" onclick="subCloseForm()">ปิด</button></div>
+        <div class="cb">
+          <div class="g2">
+            <div class="fld"><label>รายการแข่งขัน / ทีมที่ขอเปลี่ยนตัว</label>
+              <select id="sb_entry" onchange="subPickEntry()"></select></div>
+            <div class="fld"><label>ขอเปลี่ยนตัว</label>
+              <select id="sb_kind" onchange="subPickEntry()">
+                <option>นักเรียน</option><option>ครูผู้ฝึกสอน</option></select></div>
+          </div>
+          <div class="g2">
+            <div class="fld"><label>รายชื่อเดิม (คนที่ขอถอนออก)</label>
+              <select id="sb_old"></select></div>
+            <div class="fld"><label>รายชื่อใหม่ (คนที่ขอเปลี่ยนเข้าแทน)</label>
+              <input id="sb_new" placeholder="คำนำหน้า ชื่อ สกุล"></div>
+          </div>
+          <div class="g2">
+            <div class="fld"><label>ชั้น / ตำแหน่ง ของคนใหม่</label>
+              <input id="sb_newinfo" placeholder="เช่น ป.6 หรือ ครูผู้สอน"></div>
+            <div class="fld"><label>สาเหตุ</label>
+              <select id="sb_reasontype">
+                <option>เจ็บป่วย</option><option>ย้ายโรงเรียน</option><option>ลาออก</option>
+                <option>ติดภารกิจราชการ</option><option>อื่น ๆ</option></select></div>
+          </div>
+          <div class="fld"><label>รายละเอียดเหตุผล</label>
+            <textarea id="sb_reason" rows="3" placeholder="อธิบายเหตุผลประกอบการขอเปลี่ยนตัว"></textarea></div>
+
+          <div class="fld"><label>หลักฐานประกอบ (ใบรับรองแพทย์ / หนังสือโรงเรียน ฯลฯ)</label>
+            <div class="row" style="gap:8px">
+              <button type="button" class="btn g sm" id="sb_up" onclick="subPickDoc()">📎 แนบไฟล์ / ถ่ายรูป</button>
+              <span class="hint" id="sb_docmsg">รองรับรูปถ่ายจากมือถือ ระบบย่อขนาดให้อัตโนมัติ</span></div>
+            <input id="sb_doc" placeholder="หรือวางลิงก์ไฟล์หลักฐานที่นี่" style="margin-top:7px" oninput="subDocPreview()">
+            <div id="sb_docprev" style="margin-top:8px"></div></div>
+
+          <div class="card" style="margin-top:4px;box-shadow:none;border:1px dashed var(--line)">
+            <div class="ch"><h3>ลายมือชื่อผู้อำนวยการโรงเรียน</h3></div>
+            <div class="cb">
+              <div class="g2">
+                <div class="fld"><label>ชื่อ-สกุล ผู้ลงนาม</label><input id="sb_signname" placeholder="เช่น นายสมชาย ใจดี"></div>
+                <div class="fld"><label>ตำแหน่ง</label><input id="sb_signpos" value="ผู้อำนวยการโรงเรียน"></div>
+              </div>
+              <label style="display:block;font-size:13px;color:var(--ink-3);margin-bottom:5px">
+                เซ็นชื่อในกรอบด้านล่าง (ใช้นิ้วบนมือถือ หรือเมาส์บนคอมพิวเตอร์)</label>
+              <div class="sigbox"><canvas id="sb_sig" width="620" height="180"></canvas></div>
+              <div class="row" style="margin-top:7px"><button type="button" class="btn g sm" onclick="sigClear('sb_sig')">ล้างลายเซ็น</button>
+                <span class="hint">ระบบจะบันทึกวันเวลาและเลขที่คำขอกำกับลายมือชื่อไว้เป็นหลักฐาน</span></div>
+            </div></div>
+
+          <div class="row" style="margin-top:14px">
+            <button class="btn" onclick="subSubmit()">ส่งคำขอ</button>
+            <button class="btn g" onclick="subCloseForm()">ยกเลิก</button>
+            <span class="sp"></span><span id="sbMsg" class="hint"></span></div>
+        </div></div>
+
+      <div class="card"><div class="ch"><h3 id="smListTitle">คำขอเปลี่ยนตัว</h3><span class="sp"></span>
+        <select id="smFilter" onchange="renderSubList()"
+                style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
+          <option value="">ทุกสถานะ</option><option>รอพิจารณา</option><option>อนุมัติ</option><option>ไม่อนุมัติ</option>
+        </select>
+        <button class="btn g sm" onclick="loadSubs()">รีเฟรช</button></div>
+        <div class="cb" style="padding:0"><div style="overflow:auto"><table id="smTbl"></table></div></div></div>
     </section>
 
     <!-- ---------- จัดการผู้ดูแล (เฉพาะผู้ดูแลหลัก) ---------- -->
@@ -2381,6 +2562,49 @@ function demoApi(action,p){
         r.status='บรรจุแล้ว'; r.updated_at=nowStr();
       });
       memSave(); return {judges:nj,assigned:na,applications:rows.length}; }
+    /* ---------- ระบบขอเปลี่ยนตัว (โหมดตัวอย่าง) ---------- */
+    case 'saveSubWindow':{
+      if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้นที่กำหนดช่วงเวลาขอเปลี่ยนตัวได้');
+      MEM.site=MEM.site||{}; MEM.site.ALL=Object.assign(MEM.site.ALL||{},
+        {sub_open:p.sub_open, sub_open_at:p.sub_open_at,
+         sub_close_at:p.sub_close_at, sub_open_note:p.sub_open_note});
+      memSave(); return MEM.site.ALL; }
+    case 'listSubs':{
+      MEM.subs=MEM.subs||[];
+      let r=MEM.subs.slice().sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+      if(p.ref) return r.filter(x=>String(x.ref_code).toUpperCase()===String(p.ref).toUpperCase());
+      if(ME && ME.role==='school') r=r.filter(x=>String(x.school_smis)===String(ME.scope));
+      else if(p.group && p.group!=='DISTRICT') r=r.filter(x=>String(x.group_code)===String(p.group));
+      return r; }
+    case 'saveSub':{
+      if(!ME||ME.role!=='school') throw new Error('ยื่นคำขอเปลี่ยนตัวได้เฉพาะบัญชีของโรงเรียน');
+      MEM.subs=MEM.subs||[];
+      const n=MEM.subs.length+1;
+      const o=Object.assign({}, p.sub, {
+        sub_id:'S'+String(n).padStart(4,'0'),
+        ref_code:'SB-'+String((MEM.site&&MEM.site.ALL&&MEM.site.ALL.academic_year)||'2569').slice(-4)+String(n).padStart(4,'0'),
+        school_smis:ME.scope, status:'รอพิจารณา', created_at:nowStr(), updated_at:nowStr()});
+      MEM.subs.unshift(o); memSave(); return o; }
+    case 'decideSub':{
+      if(!ME||(ME.role!=='district_admin'&&ME.role!=='group_admin'))
+        throw new Error('พิจารณาคำขอได้เฉพาะผู้ดูแลเขตหรือผู้ดูแลกลุ่มโรงเรียน');
+      MEM.subs=MEM.subs||[];
+      const o=MEM.subs.find(x=>String(x.ref_code).toUpperCase()===String(p.ref_code).toUpperCase());
+      if(!o) throw new Error('ไม่พบคำขอเลขที่ '+p.ref_code);
+      if(o.status!=='รอพิจารณา') throw new Error('คำขอนี้พิจารณาไปแล้ว');
+      Object.assign(o,{status:p.status, dec_by:p.dec_by||ME.name, dec_pos:p.dec_pos||'',
+        dec_note:p.dec_note||'', dec_sign:p.dec_sign||'', dec_at:nowStr(), updated_at:nowStr()});
+      /* อนุมัติแล้วเปลี่ยนรายชื่อในทีมให้อัตโนมัติ */
+      if(p.status==='อนุมัติ'){
+        const list = o.kind==='ครูผู้ฝึกสอน'? MEM.coaches : MEM.students;
+        const hit = list.find(x=>String(x.entry_id)===String(o.entry_id) &&
+                      (String(x.id||'')===String(o.old_id||'') ||
+                       String(x.name||x.full_name||'')===String(o.old_name||'')));
+        if(hit){ if(hit.name!==undefined) hit.name=o.new_name; else hit.full_name=o.new_name;
+                 if(o.new_info && hit.klass!==undefined) hit.klass=o.new_info; }
+        else list.push({entry_id:o.entry_id, name:o.new_name, klass:o.new_info||''});
+      }
+      memSave(); return o; }
     case 'savePromoteWindow':{
       if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
       MEM.promote_win={flag:p.promote_open||'Y',open_at:p.promote_open_at||'',
@@ -2618,11 +2842,13 @@ function applyScope(){
   });
   /* กรรมการคัดเลือกเห็นเมนูเดียว — หน้ารับสมัคร & คัดเลือกกรรมการ */
   if(ME && ME.role==='selector'){
-    $$('#navAdmin .nv').forEach(b=>{ b.style.display = (b.dataset.p==='judgeapp')?'':'none'; });
+    $$('#navAdmin .nv').forEach(b=>{
+      b.style.display = (b.dataset.p==='judgeapp' || b.dataset.always==='1')?'':'none'; });
     const ow2=$('#navOwner'); if(ow2) ow2.style.display='none';
   }
-  $('#navDistrict').style.display =
-    (!g && (!ME || ME.role==='district_admin')) ? '' : 'none';
+  /* เมนูเฉพาะระดับเขต (เช่น กลุ่มโรงเรียน 20 กลุ่ม) */
+  $$('.nv[data-dist="1"]').forEach(b=>{
+    b.style.display = (!g && (!ME || ME.role==='district_admin')) ? '' : 'none'; });
   const own = $('#ownerNote');
   if(own) own.style.display = (ME && ME.role!=='district_admin') ? 'flex' : 'none';
   document.body.dataset.view=VIEW;
@@ -2637,6 +2863,7 @@ function applyScope(){
   const alo=$('#admLogout'); if(alo) alo.style.display = ME? '' : 'none';
   $('#whoami').textContent = ME? (ME.name+' · '+roleTh(ME.role)) : '';
   $('#authBtn').innerHTML = ME? '<i>🚪</i>ออกจากระบบ' : '<i>🔑</i>เข้าสู่ระบบ';
+  applySecState(); syncNavSections();
 }
 /** สิทธิ์ของบัญชีที่เข้าสู่ระบบอยู่ — ผู้ดูแลหลักผ่านทุกเมนู */
 function isOwner(){ return !!(ME && ME.own); }
@@ -2663,12 +2890,12 @@ function roleTh(r){ const t={district_admin:'ผู้ดูแลเขต',gro
 /* ============================ หน้าเว็บสาธารณะ / หลังบ้าน ============================ */
 const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการแข่งขัน'],['apply','สมัครกรรมการตัดสิน'],
   ['sched','ตารางแข่งขัน'],['results','ผลการแข่งขัน'],['medals','ตารางเหรียญ'],
-  ['cert','เกียรติบัตร'],['docs','เอกสารดาวน์โหลด']];
+  ['cert','เกียรติบัตร'],['subs','ขอเปลี่ยนตัว'],['docs','เอกสารดาวน์โหลด']];
 /* ทะเบียนโรงเรียนไม่อยู่ในเมนูสาธารณะ — เปิดดูได้เฉพาะฝั่งหลังบ้านของเขตและกลุ่ม */
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','entries','score','publish','promote','certadm','cards',
-  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins'];
+  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr'];
 /** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
 const PAGE_PERM={actedit:'actedit',entries:'entries',score:'score',publish:'publish',
   promote:'promote',judges:'judges',judgeapp:'judges',certadm:'certadm',cards:'cards',
@@ -2787,17 +3014,74 @@ function renderBanner(){
   $('#fTop').style.display = c.contact? '' : 'none';
 }
 /** เมนูสาธารณะ — แสดงเฉพาะข้อมูลที่เปิดเผยได้ เกียรติบัตรจะโผล่เมื่อเปิดระบบให้ดาวน์โหลดแล้ว */
+/* ---------- แถบเมนูหลังบ้านแบบจัดหมวด ----------
+   จัดกลุ่มเมนูตามขั้นตอนการทำงานจริง (คล้ายระบบของ สพฐ.) แต่พับเก็บได้และค้นหาได้
+   จำสถานะพับ/กางของแต่ละหมวดไว้ในเครื่องผู้ใช้ */
+const K_NAV='sillapa.nav.v1';
+function navState(){ try{ return JSON.parse(LS.getItem(K_NAV)||'{}')||{}; }catch(e){ return {}; } }
+function navStateSave(o){ try{ LS.setItem(K_NAV, JSON.stringify(o)); }catch(e){} }
+/** พับ/กางหมวดเมนู */
+function togSec(h){
+  const sec=h.closest('.ng'); if(!sec) return;
+  const cl=sec.classList.toggle('cl');
+  const st=navState(); st[sec.dataset.sec||'']=cl?1:0; navStateSave(st);
+}
+/** นำสถานะพับ/กางที่จำไว้มาใช้ */
+function applySecState(root){
+  const st=navState();
+  (root? [root] : $$('.ng[data-sec]')).forEach(sec=>{
+    if(!sec.dataset.sec) return;
+    sec.classList.toggle('cl', st[sec.dataset.sec]===1);
+  });
+}
+/** ซ่อนหัวข้อหมวดที่ไม่มีเมนูให้ใช้เลย และเน้นหมวดของหน้าที่เปิดอยู่ */
+function syncNavSections(){
+  $$('.ng[data-sec]').forEach(sec=>{
+    const btns=[...sec.querySelectorAll('.nv')];
+    const show=btns.some(b=> b.style.display!=='none' && !b.classList.contains('hide'));
+    sec.style.display = show? '' : 'none';
+    sec.classList.toggle('act', btns.some(b=>b.classList.contains('on')));
+  });
+}
+/** กางหมวดที่มีหน้าซึ่งกำลังเปิดอยู่ ให้ผู้ใช้เห็นว่าตัวเองอยู่ตรงไหน */
+function openActiveSec(){
+  const b=document.querySelector('.ng[data-sec] .nv.on'); if(!b) return;
+  const sec=b.closest('.ng'); if(sec && sec.classList.contains('cl')){
+    sec.classList.remove('cl');
+    const st=navState(); st[sec.dataset.sec||'']=0; navStateSave(st);
+  }
+}
+/** ค้นหาเมนู — พิมพ์คำไหนก็ได้ ระบบกรองปุ่มและกางหมวดที่เจอให้เอง */
+function navFilter(q, clear){
+  const box=$('#navFind'); const inp=$('#navQ');
+  if(clear && inp) inp.value='';
+  const t=String(clear?'':q||'').trim().toLowerCase();
+  if(box) box.classList.toggle('has', !!t);
+  $$('.ng[data-sec]').forEach(sec=>{
+    let hit=0;
+    sec.querySelectorAll('.nv').forEach(b=>{
+      const ok = !t || b.textContent.toLowerCase().indexOf(t)>=0;
+      b.classList.toggle('hide', !ok); if(ok) hit++;
+    });
+    if(t){ sec.classList.remove('cl'); sec.style.display = hit? '' : 'none'; }
+  });
+  if(!t){ applySecState(); syncNavSections(); }
+}
 function pubPages(){
-  return PUBLIC_PAGES.filter(x => x[0]!=='cert' ? true : isOpen('cert_open'));
+  return PUBLIC_PAGES.filter(x =>
+    x[0]==='cert' ? isOpen('cert_open') :
+    x[0]==='subs' ? subWin().open : true);
 }
 /** เมนู “ข้อมูลสาธารณะ” ในแถบข้าง = เมนูเดียวกับหน้าเว็บสาธารณะจริง (ตาม PUBLIC_PAGES)
     แก้รายการที่เดียวใน PUBLIC_PAGES แล้วตรงกันทั้งสองที่ */
-const PUB_ICON={home:'🏠',acts:'📋',apply:'⚖️',sched:'🗓️',results:'📣',medals:'🥇',cert:'🎖️',docs:'📄'};
+const PUB_ICON={home:'🏠',acts:'📋',apply:'⚖️',sched:'🗓️',results:'📣',medals:'🥇',cert:'🎖️',subs:'🔁',docs:'📄'};
 function renderSideNav(){
   const box=$('#navPublic'); if(!box) return;
-  box.innerHTML='<span>ข้อมูลสาธารณะ</span>'+pubPages().map(x=>
-    `<button class="nv ${PAGE===x[0]?'on':''}" data-p="${x[0]}" onclick="go('${x[0]}')">`+
-    `<i>${PUB_ICON[x[0]]||'•'}</i>${x[1]}</button>`).join('');
+  box.innerHTML='<span class="ngh" onclick="togSec(this)">ข้อมูลสาธารณะ<i class="cv">▾</i></span>'
+    +'<div class="ngb">'+pubPages().map(x=>
+      `<button class="nv ${PAGE===x[0]?'on':''}" data-p="${x[0]}" onclick="go('${x[0]}')">`+
+      `<i>${PUB_ICON[x[0]]||'•'}</i>${x[1]}</button>`).join('')+'</div>';
+  applySecState(box); syncNavSections();
 }
 function renderPubNav(){
   $('#pubNav').innerHTML =
@@ -2816,13 +3100,16 @@ function renderPubNav(){
   const gb=$('#pubGroupBtn');
   if(gb){
     gb.style.display = lock? 'none' : '';
-    gb.textContent = SCOPE==='ALL' ? '🏁 เข้าเว็บกลุ่มโรงเรียน' : '← กลับเว็บระดับเขต';
+    gb.textContent = SCOPE==='ALL' ? '🏁 ไปเว็บกลุ่มโรงเรียน' : '🏛️ กลับเว็บระดับเขต';
   }
   const w=$('#pubWho'), a=$('#pubAuth'), lo=$('#pubLogout');
   if(w) w.innerHTML = ME
     ? (lock? '🏁 <b>'+groupName(lock)+'</b> · ' : '')+ME.name+' · '+roleTh(ME.role)
     : '';
-  if(a) a.textContent = ME? '⚙️ ระบบหลังบ้าน' : 'เข้าสู่ระบบ';
+  /* บอกให้ชัดว่ากำลังจะเข้าระบบของ “เขต” หรือของ “กลุ่มโรงเรียน” ไหน */
+  if(a) a.innerHTML = ME? '⚙️ ระบบหลังบ้าน'
+    : (SCOPE==='ALL' ? '🔑 เข้าสู่ระบบ · <b>ระดับเขต</b>'
+                     : '🔑 เข้าสู่ระบบ · <b>'+groupName(SCOPE)+'</b>');
   if(lo) lo.style.display = ME? '' : 'none';
 }
 
@@ -3384,10 +3671,15 @@ function renderPerm(keepInput){
     const src = g? ((DB.groups||[]).find(x=>x.group_code===SCOPE)||{}) : (DB.config||{});
     $('#pm_card_note').value=src.card_open_note||'';
     $('#pm_print_note').value=src.print_open_note||'';
+    const w=subWin();
+    $('#sw_open').checked = w.flag==='Y';
+    $('#sw_note').value   = w.open_note||'';
+    dateSelSet('sw_from', w.open_at); dateSelSet('sw_to', w.close_at);
   }
   $('#pmCardState').innerHTML=permPill($('#pm_card').checked);
   $('#pmPrintState').innerHTML=permPill($('#pm_print').checked);
   $('#pmCertState').innerHTML=permPill(isOpen('cert_open'));
+  renderSubWinUI();
 }
 async function savePerm(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
@@ -3400,6 +3692,7 @@ async function savePerm(){
       card_open_note:$('#pm_card_note').value.trim(), print_open_note:$('#pm_print_note').value.trim()};
     if(SCOPE==='ALL') Object.assign(DB.config,patch);
     else { const gg=(DB.groups||[]).find(x=>x.group_code===SCOPE); if(gg) Object.assign(gg,patch); }
+    if(ME.role==='district_admin' && SCOPE==='ALL') await saveSubWin();
     renderPerm(); applyScope();
     alert('บันทึกแล้ว');
   }catch(e){ alert(e.message); }
@@ -3407,6 +3700,349 @@ async function savePerm(){
 
 function renderPrint(){
   $('#prtPerm').innerHTML=permNote('print_open','เอกสารการแข่งขัน');
+}
+
+/* ============================ ระบบขอเปลี่ยนตัวนักเรียน / ครูผู้ฝึกสอน ============================
+   แนวคิด: ตัดกระดาษออกทั้งกระบวนการ
+   โรงเรียนยื่นคำขอ → แนบหลักฐาน → ผอ.โรงเรียนเซ็นบนจอ → ประธานกลุ่ม/เขตอนุมัติ
+   อนุมัติแล้วระบบเปลี่ยนชื่อในทีมให้เอง และออกใบอนุญาตอิเล็กทรอนิกส์พร้อมรหัสตรวจสอบ
+   เขตเปิด-ปิดระบบได้ตามช่วงวันที่ เมื่อเปิดแล้วแท็บ “ขอเปลี่ยนตัว” จะโผล่ในเมนูสาธารณะเอง */
+
+/** เก็บแบบฟอร์มต้นฉบับไว้ เพราะการ์ดใบนี้ถูกใช้แสดงใบอนุญาตด้วย */
+const SUB_FORM_HTML=(document.querySelector('#smFormCard .cb')||{}).innerHTML||'';
+
+/** วันที่วันนี้แบบ พ.ศ. (รูปแบบเดียวกับที่เก็บในฐานข้อมูล) */
+function beToday(){ const d=new Date();
+  return (d.getFullYear()+543)+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+/** จำนวนวันจากวันนี้ถึงวันที่กำหนด (พ.ศ.) */
+function beDays(to){
+  const m=String(to||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return null;
+  const t=new Date(Number(m[1])-543, Number(m[2])-1, Number(m[3]));
+  const n=new Date(); n.setHours(0,0,0,0);
+  return Math.round((t-n)/86400000);
+}
+/** ช่วงเวลาเปิดให้ขอเปลี่ยนตัว — ตั้งค่าที่หน้า “เปิด-ปิดระบบ” โดยผู้ดูแลเขต */
+function subWin(){
+  const c=DB.config||{};
+  const flag=String(c.sub_open||'N').toUpperCase();
+  const from=dstr(c.sub_open_at)||'', to=dstr(c.sub_close_at)||'';
+  const note=c.sub_open_note||'', today=beToday();
+  let open=(flag==='Y'), why='';
+  if(!open) why=note||'ขณะนี้ยังไม่เปิดระบบขอเปลี่ยนตัว';
+  else if(from && today<from){ open=false; why='จะเปิดให้ยื่นคำขอวันที่ '+thDateLong(from); }
+  else if(to && today>to){ open=false; why='ปิดรับคำขอแล้วเมื่อ '+thDateLong(to); }
+  return {open, note:why, flag, open_at:from, close_at:to, open_note:note, today,
+          left: to? beDays(to) : null};
+}
+
+/* ---------- ช่องเซ็นลายมือชื่อบนจอ ---------- */
+const SIGP={};
+function sigInit(id){
+  const cv=$('#'+id); if(!cv || cv.dataset.on) return;
+  cv.dataset.on='1';
+  const ctx=cv.getContext('2d');
+  ctx.lineWidth=2.4; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#1A1410';
+  let draw=false;
+  const pt=e=>{ const r=cv.getBoundingClientRect(); const t=e.touches?e.touches[0]:e;
+    return [(t.clientX-r.left)*cv.width/r.width, (t.clientY-r.top)*cv.height/r.height]; };
+  const down=e=>{ e.preventDefault(); draw=true; SIGP[id]=1; const [x,y]=pt(e); ctx.beginPath(); ctx.moveTo(x,y); };
+  const move=e=>{ if(!draw) return; e.preventDefault(); const [x,y]=pt(e); ctx.lineTo(x,y); ctx.stroke(); };
+  const up  =()=>{ draw=false; };
+  cv.addEventListener('mousedown',down); cv.addEventListener('mousemove',move);
+  window.addEventListener('mouseup',up);
+  cv.addEventListener('touchstart',down,{passive:false});
+  cv.addEventListener('touchmove',move,{passive:false});
+  cv.addEventListener('touchend',up);
+}
+function sigClear(id){ const cv=$('#'+id); if(!cv) return;
+  cv.getContext('2d').clearRect(0,0,cv.width,cv.height); SIGP[id]=0; }
+function sigEmpty(id){ return !SIGP[id]; }
+function sigData(id){ const cv=$('#'+id); return cv? cv.toDataURL('image/png') : ''; }
+
+/* ---------- หน้าสาธารณะ ---------- */
+function renderSubsPublic(){
+  const w=subWin();
+  const left=(w.left===null||w.left===undefined)? null : w.left;
+  $('#subPubState').innerHTML = w.open
+    ? `<div class="note g" style="margin-bottom:14px"><span>🔓</span><div>
+        <b>ขณะนี้เปิดให้ยื่นคำขอเปลี่ยนตัวแล้ว</b>
+        ${w.open_at?' · ตั้งแต่ '+thDateLong(w.open_at):''}${w.close_at?' ถึง '+thDateLong(w.close_at):''}
+        ${left!==null? `<br><b style="color:var(--pri)">เหลือเวลาอีก ${left} วัน</b>`:''}
+        ${w.open_note? '<div class="hint" style="margin-top:6px">'+w.open_note+'</div>':''}
+        <div style="margin-top:10px">${ME
+          ? `<button class="btn" onclick="go('submgr')">ไปยื่นคำขอ →</button>`
+          : `<button class="btn" onclick="gotoAdmin()">เข้าสู่ระบบด้วยบัญชีโรงเรียนเพื่อยื่นคำขอ →</button>`}</div>
+       </div></div>`
+    : `<div class="note w" style="margin-bottom:14px"><span>🔒</span><div>
+        <b>ขณะนี้ยังไม่เปิดให้ยื่นคำขอเปลี่ยนตัว</b> — ${w.note||''}</div></div>`;
+  $('#subPubStat').innerHTML='<span class="hint">กำลังโหลด…</span>';
+  api('listSubs',{group:entryRound(), pub:1}).then(rows=>{
+    const n=rows.length, ok=rows.filter(r=>r.status==='อนุมัติ').length,
+          wait=rows.filter(r=>r.status==='รอพิจารณา').length,
+          no=rows.filter(r=>r.status==='ไม่อนุมัติ').length;
+    $('#subPubStat').innerHTML=`<div class="g4">
+      ${[['คำขอทั้งหมด',n],['อนุมัติแล้ว',ok],['รอพิจารณา',wait],['ไม่อนุมัติ',no]]
+        .map((x,i)=>`<div class="stat s${i+1}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('')}</div>
+      <p class="hint" style="margin-top:10px">ระบบไม่เปิดเผยรายชื่อนักเรียนในหน้าสาธารณะ
+        ผู้เกี่ยวข้องตรวจสอบรายคำขอได้จากเลขที่คำขอ</p>`;
+  }).catch(e=>{ $('#subPubStat').innerHTML='<span class="hint">'+e.message+'</span>'; });
+}
+/** ตรวจสอบคำขอจากเลขที่ — ใช้ได้ทั้งหน้าเว็บและสแกน QR หน้างาน */
+async function subLookup(){
+  const code=String(($('#subFind')||{}).value||'').trim().toUpperCase();
+  const out=$('#subFindOut'); if(!code){ out.innerHTML='<span class="hint">กรุณากรอกเลขที่คำขอ</span>'; return; }
+  out.innerHTML='<span class="hint">กำลังตรวจสอบ…</span>';
+  try{
+    const r=(await api('listSubs',{ref:code, pub:1}))[0];
+    out.innerHTML = r? subCertHTML(r)
+      : '<div class="note w"><span>❓</span><div>ไม่พบคำขอเลขที่ <b>'+code+'</b> ในระบบ</div></div>';
+  }catch(e){ out.innerHTML='<div class="note w"><span>⚠️</span><div>'+e.message+'</div></div>'; }
+}
+/** ใบอนุญาตเปลี่ยนตัวอิเล็กทรอนิกส์ (แทนเอกสาร DOC.5 แบบกระดาษ) */
+function subCertHTML(r){
+  const ok=r.status==='อนุมัติ';
+  const act=(DB.activities||[]).find(a=>a.act_id===r.act_id)||{};
+  const url=location.origin+location.pathname+'#?page=subs&ref='+encodeURIComponent(r.ref_code);
+  return `<div class="e5">
+    <div class="row" style="align-items:flex-start">
+      <div style="flex:1">
+        <h4>ใบอนุญาตเปลี่ยนตัว${r.kind==='ครูผู้ฝึกสอน'?'ครูผู้ฝึกสอน':'นักเรียน'} (อิเล็กทรอนิกส์)</h4>
+        <span class="hint">เลขที่คำขอ <b>${r.ref_code||'-'}</b></span>
+        <div style="margin-top:7px">${subPill(r.status)}</div>
+      </div>
+      <img class="subqr" alt="QR ตรวจสอบ" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}">
+    </div>
+    <div class="kv">
+      <span>โรงเรียน</span><b>${schoolName(r.school_smis)}</b>
+      <span>กลุ่มโรงเรียน</span><div>${groupName(r.group_code)}</div>
+      <span>รายการแข่งขัน</span><div>${act.act_name||r.act_id} <span class="hint">${act.level||''}</span></div>
+      <span>รายชื่อเดิม</span><div>${r.old_name||'-'}</div>
+      <span>เปลี่ยนเป็น</span><b>${r.new_name||'-'}</b>${r.new_info?' <span class="hint">('+r.new_info+')</span>':''}
+      <span>สาเหตุ</span><div>${r.reason_type||'-'}${r.reason?' — '+r.reason:''}</div>
+      <span>ผู้ลงนามของโรงเรียน</span><div>${r.sign_name||'-'} <span class="hint">${r.sign_pos||''}</span></div>
+      <span>ยื่นคำขอเมื่อ</span><div>${r.created_at||'-'}</div>
+      <span>ผลการพิจารณา</span><div>${ok?'<b style="color:var(--ok)">อนุมัติ</b>':r.status}
+        ${r.dec_at?' · '+r.dec_at:''}${r.dec_by?' · โดย '+r.dec_by:''}</div>
+      ${r.dec_note?`<span>หมายเหตุ</span><div>${r.dec_note}</div>`:''}
+    </div>
+    <p class="hint" style="margin-top:12px">เอกสารนี้ออกโดยระบบ ตรวจสอบความถูกต้องได้โดยสแกน QR
+      หรือกรอกเลขที่คำขอที่หน้า “ขอเปลี่ยนตัว” ของเว็บไซต์ — ไม่จำเป็นต้องใช้เอกสารกระดาษ</p>
+    <div class="noprint" style="margin-top:12px"><button class="btn g sm" onclick="window.print()">🖨️ พิมพ์เก็บแฟ้ม (ถ้าต้องการ)</button></div>
+  </div>`;
+}
+function subPill(st){
+  return st==='อนุมัติ'? '<span class="pill ok">อนุมัติแล้ว</span>'
+       : st==='ไม่อนุมัติ'? '<span class="pill b">ไม่อนุมัติ</span>'
+       : '<span class="pill w">รอพิจารณา</span>';
+}
+function schoolName(smis){
+  const s=(DB.schools||[]).find(x=>String(x.smis)===String(smis));
+  return s? cleanName(s.school_name) : String(smis||'-');
+}
+
+/* ---------- หลังบ้าน ---------- */
+let SUBS=[], SUB_ENT=[];
+function subIsSchool(){ return !!(ME && ME.role==='school'); }
+function subCanDecide(){ return !!(ME && (ME.role==='district_admin' || ME.role==='group_admin')); }
+function renderSubMgr(){
+  if(!ME) return;
+  const w=subWin();
+  $('#smSub').textContent = subIsSchool()
+    ? 'ยื่นคำขอเปลี่ยนตัวนักเรียนหรือครูผู้ฝึกสอนของโรงเรียน'
+    : 'พิจารณาคำขอเปลี่ยนตัวที่โรงเรียนยื่นเข้ามา';
+  $('#smListTitle').textContent = subIsSchool()? 'คำขอของโรงเรียน' : 'คำขอที่ยื่นเข้ามา';
+  const nb=$('#smNewBtn'); if(nb) nb.style.display = (subIsSchool() && w.open)? '' : 'none';
+  $('#smState').innerHTML = w.open
+    ? `<div class="note g" style="margin-bottom:12px"><span>🔓</span><div>
+        <b>เปิดให้ยื่นคำขอเปลี่ยนตัว</b>${w.open_at?' ตั้งแต่ '+thDateLong(w.open_at):''}${w.close_at?' ถึง '+thDateLong(w.close_at):''}
+        ${w.left!==null&&w.left!==undefined?` · <b style="color:var(--pri)">เหลืออีก ${w.left} วัน</b>`:''}</div></div>`
+    : `<div class="note w" style="margin-bottom:12px"><span>🔒</span><div>
+        <b>ยังไม่เปิดให้ยื่นคำขอ</b> — ${w.note||''}
+        ${ME.role==='district_admin'?' <button class="btn g sm" style="margin-left:8px" onclick="go(\'perm\')">ไปเปิดระบบ →</button>':''}</div></div>`;
+  loadSubs();
+}
+async function loadSubs(){
+  try{
+    SUBS = await api('listSubs',{group:entryRound()});
+    renderSubList();
+  }catch(e){ $('#smTbl').innerHTML='<tbody><tr><td style="padding:20px;color:var(--bad)">'+e.message+'</td></tr></tbody>'; }
+}
+function renderSubList(){
+  const f=($('#smFilter')||{}).value||'';
+  const rows=SUBS.filter(r=>!f||r.status===f);
+  tbl($('#smTbl'),['เลขที่','โรงเรียน','รายการแข่งขัน','เปลี่ยนจาก → เป็น','สาเหตุ','สถานะ','จัดการ'],
+    rows.map(r=>{
+      const act=(DB.activities||[]).find(a=>a.act_id===r.act_id)||{};
+      return `<tr>
+        <td><b>${r.ref_code||'-'}</b><div class="hint">${r.created_at||''}</div></td>
+        <td>${schoolName(r.school_smis)}</td>
+        <td>${act.act_name||r.act_id}<div class="hint">${act.level||''} · ${r.kind||'นักเรียน'}</div></td>
+        <td>${r.old_name||'-'} <span class="hint">→</span> <b>${r.new_name||'-'}</b></td>
+        <td>${r.reason_type||'-'}${r.doc_url?` · <a href="${imgSrc(r.doc_url)}" target="_blank" style="color:var(--pri)">ดูหลักฐาน</a>`:''}</td>
+        <td>${subPill(r.status)}</td>
+        <td><button class="btn g sm" onclick="subOpen('${r.ref_code}')">ดู / ${subCanDecide()&&r.status==='รอพิจารณา'?'พิจารณา':'ใบอนุญาต'}</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="7" style="padding:26px;text-align:center;color:var(--ink-3)">ยังไม่มีคำขอเปลี่ยนตัว</td></tr>');
+}
+/** เปิดดูคำขอ + แผงพิจารณาสำหรับผู้มีสิทธิ์ */
+function subOpen(ref){
+  const r=SUBS.find(x=>x.ref_code===ref); if(!r) return;
+  const box=$('#smFormCard'); box.style.display='';
+  $('#smFormTitle').textContent='คำขอเลขที่ '+r.ref_code;
+  const decide = subCanDecide() && r.status==='รอพิจารณา';
+  box.querySelector('.cb').innerHTML = subCertHTML(r)
+    + (r.doc_url? `<div style="margin-top:12px"><b>หลักฐานประกอบ</b><br>
+        <img class="subdoc" src="${imgSrc(r.doc_url)}" style="margin-top:7px"></div>`:'')
+    + (r.sign_url? `<div style="margin-top:12px"><b>ลายมือชื่อผู้ลงนาม</b><br>
+        <img src="${imgSrc(r.sign_url)}" style="max-width:300px;border-bottom:1px solid var(--line)"></div>`:'')
+    + (decide? `<div class="card" style="margin-top:14px;box-shadow:none;border:1px dashed var(--line)">
+        <div class="ch"><h3>ผลการพิจารณา</h3></div><div class="cb">
+        <div class="g2">
+          <div class="fld"><label>ชื่อ-สกุล ผู้พิจารณา</label><input id="dc_name" value="${(ME.name||'').replace(/"/g,'')}"></div>
+          <div class="fld"><label>ตำแหน่ง</label><input id="dc_pos" value="${ME.role==='group_admin'?'ประธานกลุ่มโรงเรียน':'ผู้อำนวยการสำนักงานเขตพื้นที่การศึกษา'}"></div>
+        </div>
+        <div class="fld"><label>หมายเหตุ / เหตุผลกรณีไม่อนุมัติ</label><input id="dc_note" placeholder="ไม่บังคับ"></div>
+        <label style="display:block;font-size:13px;color:var(--ink-3);margin-bottom:5px">ลงลายมือชื่อผู้พิจารณา</label>
+        <div class="sigbox"><canvas id="dc_sig" width="620" height="180"></canvas></div>
+        <div class="row" style="margin-top:7px"><button class="btn g sm" onclick="sigClear('dc_sig')">ล้างลายเซ็น</button></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn" onclick="subDecide('${r.ref_code}','อนุมัติ')">✅ อนุมัติ</button>
+          <button class="btn g" onclick="subDecide('${r.ref_code}','ไม่อนุมัติ')">✖️ ไม่อนุมัติ</button>
+          <span class="sp"></span><button class="btn g" onclick="subCloseForm()">ปิด</button></div>
+        </div></div>`
+      : `<div class="row" style="margin-top:14px"><button class="btn g" onclick="subCloseForm()">ปิด</button></div>`);
+  if(decide) setTimeout(()=>sigInit('dc_sig'),60);
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function subDecide(ref, status){
+  if(status==='ไม่อนุมัติ' && !String(($('#dc_note')||{}).value||'').trim())
+    return alert('กรณีไม่อนุมัติ กรุณาระบุเหตุผลในช่องหมายเหตุ');
+  if(sigEmpty('dc_sig') && !confirm('ยังไม่ได้ลงลายมือชื่อ ต้องการบันทึกผลการพิจารณาโดยไม่มีลายเซ็นหรือไม่')) return;
+  try{
+    let sig=''; if(!sigEmpty('dc_sig')) sig=await uploadImage(sigData('dc_sig'),'sign-'+ref);
+    await api('decideSub',{ref_code:ref, status:status,
+      dec_by:String(($('#dc_name')||{}).value||ME.name||''),
+      dec_pos:String(($('#dc_pos')||{}).value||''),
+      dec_note:String(($('#dc_note')||{}).value||'').trim(),
+      dec_sign:(sig&&sig.url)?sig.url:''});
+    alert(status==='อนุมัติ'
+      ? 'อนุมัติแล้ว — ระบบเปลี่ยนรายชื่อในทีมให้เรียบร้อย และออกใบอนุญาตอิเล็กทรอนิกส์แล้ว'
+      : 'บันทึกผลไม่อนุมัติแล้ว');
+    subCloseForm(); loadSubs();
+  }catch(e){ alert(e.message); }
+}
+
+/* ---------- แบบฟอร์มยื่นคำขอ (โรงเรียน) ---------- */
+function subCloseForm(){ const b=$('#smFormCard'); if(b) b.style.display='none'; }
+async function subNew(){
+  const w=subWin(); if(!w.open) return alert(w.note||'ขณะนี้ยังไม่เปิดให้ยื่นคำขอ');
+  const box=$('#smFormCard'); box.style.display='';
+  $('#smFormTitle').textContent='แบบคำขอเปลี่ยนตัว';
+  box.querySelector('.cb').innerHTML=SUB_FORM_HTML;
+  $('#sb_entry').innerHTML='<option value="">กำลังโหลดรายการ…</option>';
+  try{
+    const all=await api('listEntries',{group:entryRound()});
+    SUB_ENT=all.filter(e=>String(e.school_smis)===String(ME.scope));
+    $('#sb_entry').innerHTML = SUB_ENT.length
+      ? SUB_ENT.map(e=>{ const a=(DB.activities||[]).find(x=>x.act_id===e.act_id)||{};
+          return `<option value="${e.entry_id}">${a.act_name||e.act_id} · ${a.level||''}</option>`; }).join('')
+      : '<option value="">ยังไม่มีทีมที่สมัครไว้</option>';
+  }catch(e){ $('#sb_entry').innerHTML='<option value="">'+e.message+'</option>'; }
+  subPickEntry(); sigInit('sb_sig');
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+/** ชื่อเต็มของนักเรียน/ครู — รองรับทั้งรูปแบบของฐานข้อมูลจริงและโหมดตัวอย่าง */
+function subPersonName(x){
+  if(!x) return '';
+  if(x.first_name!==undefined)
+    return [x.prefix,x.first_name,x.last_name].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+  return [x.prefix,(x.name||x.full_name||'')].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+}
+/** เติมรายชื่อเดิมของทีมที่เลือก */
+function subPickEntry(){
+  const id=($('#sb_entry')||{}).value, kind=($('#sb_kind')||{}).value||'นักเรียน';
+  const e=SUB_ENT.find(x=>String(x.entry_id)===String(id));
+  const list = !e? [] : (kind==='นักเรียน'? (e.students||[]) : (e.coaches||[]));
+  const sel=$('#sb_old'); if(!sel) return;
+  sel.innerHTML = list.length
+    ? list.map(x=>{ const nm=subPersonName(x);
+        return `<option value="${String(x.id||nm).replace(/"/g,'')}" data-nm="${nm.replace(/"/g,'')}">${nm}${x.class_level?' · '+x.class_level:''}</option>`;
+      }).join('')
+    : '<option value="">— ทีมนี้ยังไม่มีรายชื่อในระบบ —</option>';
+}
+function subPickDoc(){
+  const btn=$('#sb_up'), msg=$('#sb_docmsg');
+  pickImage(1600, async(url,info)=>{
+    if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังอัปโหลด…'; }
+    if(msg) msg.textContent='กำลังอัปโหลดหลักฐาน '+info.kb+' KB …';
+    try{
+      const r=await uploadImage(url,'sub-doc');
+      $('#sb_doc').value=r.url; subDocPreview();
+      if(msg) msg.textContent='แนบแล้ว · '+info.w+'×'+info.h+' px · '+info.kb+' KB';
+    }catch(e){ if(msg) msg.textContent=''; alert('อัปโหลดไม่สำเร็จ: '+e.message); }
+    if(btn){ btn.disabled=false; btn.textContent='📎 แนบไฟล์ / ถ่ายรูป'; }
+  }, 900000);
+}
+function subDocPreview(){
+  const v=(($('#sb_doc')||{}).value||'').trim(), box=$('#sb_docprev'); if(!box) return;
+  box.innerHTML = v? `<img class="subdoc" src="${imgSrc(v)}"
+    onerror="this.outerHTML='<span class=&quot;hint&quot;>⚠️ ลิงก์นี้แสดงเป็นรูปไม่ได้</span>'">` : '';
+}
+/** ชื่อที่แสดงของคนเดิมที่เลือกไว้ */
+function subOldName(){
+  const sel=$('#sb_old'); if(!sel||sel.selectedIndex<0) return '';
+  const o=sel.options[sel.selectedIndex];
+  return (o && (o.dataset.nm || o.textContent)) || '';
+}
+async function subSubmit(){
+  const v=id=>String(($('#'+id)||{}).value||'').trim();
+  if(!v('sb_entry'))   return alert('กรุณาเลือกรายการแข่งขัน/ทีม');
+  if(!v('sb_new'))     return alert('กรุณากรอกชื่อ-สกุลของคนที่ขอเปลี่ยนเข้าแทน');
+  if(!v('sb_reason'))  return alert('กรุณากรอกเหตุผลประกอบการขอเปลี่ยนตัว');
+  if(!v('sb_signname'))return alert('กรุณากรอกชื่อผู้อำนวยการโรงเรียนผู้ลงนาม');
+  if(sigEmpty('sb_sig'))return alert('กรุณาให้ผู้อำนวยการโรงเรียนลงลายมือชื่อในกรอบก่อนส่งคำขอ');
+  const btnMsg=$('#sbMsg'); if(btnMsg) btnMsg.textContent='กำลังส่งคำขอ…';
+  try{
+    const sig=await uploadImage(sigData('sb_sig'),'sign-school');
+    const e=SUB_ENT.find(x=>String(x.entry_id)===String(v('sb_entry')))||{};
+    const saved=await api('saveSub',{sub:{
+      entry_id:v('sb_entry'), act_id:e.act_id||'', group_code:e.group_code||entryRound(),
+      school_smis:ME.scope, kind:v('sb_kind')||'นักเรียน',
+      old_id:v('sb_old'), old_name:subOldName(), new_name:v('sb_new'), new_info:v('sb_newinfo'),
+      reason_type:v('sb_reasontype'), reason:v('sb_reason'),
+      doc_url:v('sb_doc'), sign_url:(sig&&sig.url)?sig.url:'',
+      sign_name:v('sb_signname'), sign_pos:v('sb_signpos')}});
+    if(btnMsg) btnMsg.textContent='';
+    alert('ส่งคำขอเรียบร้อย\n\nเลขที่คำขอของท่านคือ '+(saved&&saved.ref_code||'')+
+          '\nติดตามผลได้ที่หน้านี้ หรือหน้า “ขอเปลี่ยนตัว” ของเว็บไซต์');
+    subCloseForm(); loadSubs();
+  }catch(err){ if(btnMsg) btnMsg.textContent=''; alert(err.message); }
+}
+
+/* ---------- การตั้งค่าเปิด-ปิดระบบ (หน้าเปิด-ปิดระบบ) ---------- */
+function renderSubWinUI(){
+  const dist=(ME && ME.role==='district_admin' && SCOPE==='ALL');
+  const w=subWin();
+  $('#pmSubEdit').style.display = dist? '' : 'none';
+  const ro=$('#pmSubRead'); ro.style.display = dist? 'none' : '';
+  if(!dist) ro.innerHTML=`<div class="note i"><span>ℹ️</span><div>
+    ช่วงเวลาขอเปลี่ยนตัวกำหนดโดยสำนักงานเขต — ขณะนี้ <b>${w.open?'เปิดรับคำขอ':'ยังไม่เปิด'}</b>
+    ${w.open_at?' · ตั้งแต่ '+thDateLong(w.open_at):''}${w.close_at?' ถึง '+thDateLong(w.close_at):''}</div></div>`;
+  const on = dist? $('#sw_open').checked : w.open;
+  $('#pmSubState').innerHTML = permPill(on);
+}
+async function saveSubWin(){
+  try{
+    await api('saveSubWindow',{
+      sub_open: $('#sw_open').checked?'Y':'N',
+      sub_open_at: dateSelVal('sw_from'),
+      sub_close_at: dateSelVal('sw_to'),
+      sub_open_note: $('#sw_note').value.trim()});
+    Object.assign(DB.config,{sub_open:$('#sw_open').checked?'Y':'N',
+      sub_open_at:dateSelVal('sw_from'), sub_close_at:dateSelVal('sw_to'),
+      sub_open_note:$('#sw_note').value.trim()});
+    renderSubWinUI(); applyScope(); renderSideNav(); renderPubNav();
+  }catch(e){ throw e; }
 }
 
 /* ============================ จัดการผู้ดูแล ============================ */
@@ -4129,6 +4765,7 @@ function go(p){
   const el=$('#p-'+p); if(el) el.classList.add('on');
   renderSideNav();
   $$('.nv').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
+  openActiveSec(); syncNavSections();
   const t={home:'หน้าหลัก',acts:'รายการแข่งขัน',sched:'ตารางแข่งขัน',results:'ผลการแข่งขัน',medals:'ตารางเหรียญ',
     schools:'ทะเบียนโรงเรียน',groups:'กลุ่มโรงเรียน',dash:'แดชบอร์ด',actedit:'จัดการรายการ & เกณฑ์',
     entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',
@@ -4136,7 +4773,8 @@ function go(p){
     site:'หน้าเว็บ & แบนเนอร์',newsmgr:'ประชาสัมพันธ์',cert:'เกียรติบัตร',certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',
     judges:'ทำเนียบกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกกรรมการ',apply:'สมัครกรรมการตัดสิน',
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
-    season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล'}[p]||p;
+    season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
+    subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
   closeMenu(); closeSide();
@@ -4159,7 +4797,8 @@ function renderPage(p){
     sched:renderSched, news:renderNews, docs:renderDocs, site:renderSite,
     newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
     judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
-    apply:renderApply, judgeapp:renderJudgeApp}[p]||(()=>{}))();
+    apply:renderApply, judgeapp:renderJudgeApp,
+    subs:renderSubsPublic, submgr:renderSubMgr}[p]||(()=>{}))();
 }
 
 function renderHome(){
@@ -5920,6 +6559,7 @@ function lgScopeChange(){
   if(DEMO()) $('#loginCtx').innerHTML+='<br><br><b>โหมดตัวอย่าง</b> — ลองด้วย <code>admin</code>/<code>admin</code> หรือ <code>admin-g01</code>/<code>admin</code>';
 }
 function openLogin(){ $('#app').style.display='none'; $('#loginView').style.display='block';
+  lgReset();                                   /* ล้างข้อความผิดพลาดของครั้งก่อน ไม่ให้ค้างหน้าจอ */
   const sel=$('#lgScope');
   if(sel){
     sel.innerHTML='<option value="ALL">ระดับเขต — '+((DB.config||{}).district_name||'สพป.อุดรธานี เขต 1')+'</option>'+
@@ -5931,7 +6571,17 @@ function openLogin(){ $('#app').style.display='none'; $('#loginView').style.disp
     : '🏁 กำลังเข้าสู่ระบบ<b>เว็บกลุ่ม '+groupName(SCOPE)+'</b><br>ภายใต้ สพป.อุดรธานี เขต 1 · <code>'+SCOPE+'</code>';
   if(DEMO()) $('#loginCtx').innerHTML+='<br><br><b>โหมดตัวอย่าง</b> — ลองด้วย <code>admin</code>/<code>admin</code> หรือ <code>admin-g01</code>/<code>admin</code>';
 }
-function closeLogin(){ $('#loginView').style.display='none'; $('#app').style.display='grid'; }
+function closeLogin(){ $('#loginView').style.display='none'; $('#app').style.display='grid'; lgReset(); }
+/** ล้างฟอร์มเข้าสู่ระบบให้สะอาดทุกครั้งที่เปิด — กันไม่ให้ข้อความ
+    “ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง” ของครั้งก่อนค้างอยู่จนเข้าใจผิดว่าเข้าระบบไม่ได้ */
+function lgReset(){
+  const e=$('#lgErr'); if(e){ e.style.display='none'; e.innerHTML=''; }
+  const u=$('#lgUser'), w=$('#lgPass');
+  if(u) u.value=''; if(w) w.value='';
+  setTimeout(()=>{ if(u) u.focus(); }, 60);
+}
+/** พิมพ์ใหม่เมื่อไร ให้ข้อความผิดพลาดหายไปทันที */
+function lgTyping(){ const e=$('#lgErr'); if(e && e.style.display!=='none'){ e.style.display='none'; e.innerHTML=''; } }
 async function doLogin(){
   try{
     const sc=$('#lgScope'); if(sc && sc.value) SCOPE=sc.value;     /* เลือกเว็บที่จะเข้าจากหน้าเข้าสู่ระบบ */
