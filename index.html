@@ -2388,11 +2388,12 @@ function demoApi(action,p){
       memSave(); return demoPromoteWin(); }
     case 'allCriteria': return MEM.criteria||[];
     case 'publicResults':{
-      const rows=MEM.results.map(r=>{ const e=MEM.entries.find(x=>x.entry_id===r.entry_id)||{};
+      let rows=MEM.results.map(r=>{ const e=MEM.entries.find(x=>x.entry_id===r.entry_id)||{};
         const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
         const a=MEM.activities.find(x=>x.act_id===r.act_id)||{};
         return {act_id:r.act_id,act_name:a.act_name,level:a.level,school:s.school_name,group_code:e.group_code,
                 from_group:e.from_group,total:r.total,medal:r.medal,rank:r.rank}; });
+      if(p.group) rows=rows.filter(r=>String(r.group_code)===String(p.group));   /* รอบของกลุ่ม หรือรอบระดับเขต */
       const t={}; rows.forEach(r=>{ if(!r.school) return;
         const x=t[r.school]||(t[r.school]={school:r.school,g:0,s:0,b:0});
         if(r.medal==='ทอง')x.g++; else if(r.medal==='เงิน')x.s++; else if(r.medal==='ทองแดง')x.b++; });
@@ -3812,7 +3813,7 @@ async function downloadBackup(){
 function csv(rows){ return '﻿'+rows.map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\n'); }
 async function exportResultsCsv(){
   try{
-    const r=await api('publicResults',{group:SCOPE==='ALL'?'':SCOPE});
+    const r=await api('publicResults',{group:entryRound()});
     const rows=[['รายการแข่งขัน','ระดับชั้น','โรงเรียน','กลุ่ม','คะแนน','เหรียญ','อันดับ','ประกาศเมื่อ']];
     (r.results||[]).forEach(x=>rows.push([x.act_name,x.level,cleanTxt(x.school||''),
       groupName(x.group_code||''),x.total,x.medal,x.rank,x.published_at||'']));
@@ -3822,7 +3823,7 @@ async function exportResultsCsv(){
 }
 async function exportMedalCsv(){
   try{
-    const r=await api('publicResults',{group:SCOPE==='ALL'?'':SCOPE});
+    const r=await api('publicResults',{group:entryRound()});
     const rows=[['อันดับ','โรงเรียน','ทอง','เงิน','ทองแดง','รวม']];
     (r.medals||[]).forEach((m,i)=>rows.push([i+1,cleanTxt(m.school),m.g,m.s,m.b,m.g+m.s+m.b]));
     if(rows.length===1) return alert('ยังไม่มีผลการแข่งขันที่ประกาศแล้ว');
@@ -4194,7 +4195,7 @@ function renderHome(){
         <td class="num">${Number(x.n_total).toLocaleString()}</td>
         <td>${x.offer}${x.is_expansion==='Y'?' <span class="pill i">ขยายโอกาส</span>':''}</td></tr>`).join(''));
   }
-  api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{
+  api('publicResults',{group:entryRound()}).then(r=>{
     window.__PUB=r;
     const b=$('#rankMethodTag'); if(b) b.textContent=medalSortLabel();
     tbl($('#homeMedals'),['อันดับ','โรงเรียน','ชนะเลิศ','รองชนะเลิศอันดับ 1','รองชนะเลิศอันดับ 2','ทอง','เงิน','ทองแดง'],
@@ -4315,7 +4316,7 @@ function renderGroups(){
 
 function renderDash(){
   const A=actsOf();
-  Promise.all([api('listEntries',{group:entryRound()}), api('publicResults',{group:SCOPE==='ALL'?'':SCOPE})])
+  Promise.all([api('listEntries',{group:entryRound()}), api('publicResults',{group:entryRound()})])
    .then(([ent,pub])=>{
     const pubActs=new Set(pub.results.map(r=>r.act_id));
     $('#dashSub').textContent=SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE);
@@ -4657,8 +4658,8 @@ function fillActSelects(){
   });
 }
 
-/** รอบของผู้สมัคร — เว็บเขตดูเฉพาะทีมตัวแทนที่โอนขึ้นมา (group_code = DISTRICT)
-    โรงเรียนสมัครแข่งขันได้ที่เว็บกลุ่มของตนเองเท่านั้น */
+/** รอบการแข่งขันของเว็บที่เปิดอยู่ — เว็บเขต = รอบระดับเขต (DISTRICT) ซึ่งมีเฉพาะทีมตัวแทนที่กลุ่มโอนขึ้นมา
+    เว็บกลุ่ม = รอบคัดเลือกของกลุ่มนั้น · ใช้ทั้งหน้าผู้สมัคร ให้คะแนน ผลการแข่งขัน และตารางเหรียญ */
 function entryRound(){ return SCOPE==='ALL' ? 'DISTRICT' : SCOPE; }
 function renderEntries(){
   const act=$('#entAct').value;
@@ -5672,7 +5673,7 @@ function medalRow(m,i){
 function renderResults(){
   $('#resSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':'รอบคัดเลือก · '+groupName(SCOPE));
   $('#resList').innerHTML='<div class="hint" style="padding:20px">กำลังโหลดผลการแข่งขัน…</div>';
-  api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{ window.__PUB=r; drawResults(); })
+  api('publicResults',{group:entryRound()}).then(r=>{ window.__PUB=r; drawResults(); })
     .catch(e=>{ $('#resList').innerHTML='<div class="note w"><span>⚠️</span><div>'+e.message+'</div></div>'; });
 }
 /** รายการที่ประกาศผลแล้ว → map act_id → จำนวนทีม */
@@ -5776,7 +5777,7 @@ function printPanel(id){
 }
 function renderMedals(){
   $('#medSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':'รอบคัดเลือก · '+groupName(SCOPE));
-  api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{ window.__PUB=r; drawMedals(); }).catch(()=>{});
+  api('publicResults',{group:entryRound()}).then(r=>{ window.__PUB=r; drawMedals(); }).catch(()=>{});
 }
 function drawMedals(){
   const r=window.__PUB||{medals:[],results:[]};
@@ -5864,7 +5865,7 @@ async function buildDoc(){
         ${JUDGE_SEATS.map(()=>'<td></td>').join('')}<td></td><td></td><td></td></tr>`).join('')}
       </tbody></table>${sign()}`;
   } else if(kind==='resultsheet'){
-    const pub=await api('publicResults',{group:SCOPE==='ALL'?'':SCOPE});
+    const pub=await api('publicResults',{group:entryRound()});
     const rows=pub.results.filter(r=>r.act_id===act.act_id).sort((a,b)=>a.rank-b.rank);
     body=`${dateLine}<table><thead><tr><th style="width:60px">อันดับ</th><th>โรงเรียน</th><th style="width:90px">คะแนน</th><th style="width:100px">เหรียญ</th></tr></thead><tbody>
       ${rows.map(r=>`<tr><td>${r.rank}</td><td>${r.school}</td><td>${r.total}</td><td>${r.medal}</td></tr>`).join('')}
@@ -5949,7 +5950,7 @@ function openScreen(k){
   $('#s-'+k).classList.add('on'); document.body.style.overflow='hidden';
   if(k==='live'){
     $('#liveSub').textContent=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' · ปีการศึกษา 2569';
-    api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{
+    api('publicResults',{group:entryRound()}).then(r=>{
       $('#liveBoard').innerHTML = r.medals.length? r.medals.slice(0,12).map((m,i)=>
         `<div class="lbr ${i<3?'t'+(i+1):''}"><span class="rk">${i+1}</span><span>${m.school}</span>
          <span class="c gc">${m.g}</span><span class="c sc">${m.s}</span><span class="c bc">${m.b}</span>
