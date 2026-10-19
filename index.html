@@ -1055,12 +1055,7 @@ body[data-view="admin"] .utilbar{display:none}
 
       <div class="card"><div class="ch"><h3>รายชื่อผู้ดูแล &amp; บัญชีผู้ใช้</h3><span class="sp"></span>
         <select id="ad_level" onchange="searchAccounts()"
-                style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
-          <option value="">ทุกระดับ</option>
-          <option value="district_admin">ระดับเขต</option>
-          <option value="group_admin">ระดับกลุ่มโรงเรียน</option>
-          <option value="school">ระดับโรงเรียน</option>
-          <option value="other">กรรมการ / เจ้าหน้าที่</option></select>
+                style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select>
         <select id="ac_group" onchange="searchAccounts()"
                 style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select>
         <input id="ad_q" placeholder="ค้นชื่อ / ชื่อผู้ใช้ / โรงเรียน…" oninput="adQDebounce()"
@@ -1070,7 +1065,8 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="cb" id="adTools" style="padding:14px 16px 4px">
           <div class="note i" style="margin-bottom:10px"><span>🔐</span><div>
             ระบบไม่แสดงรหัสผ่านเดิมเพื่อความปลอดภัย — ถ้าผู้ใช้ลืมรหัส ให้กด <b>รีเซ็ตรหัสผ่าน</b> ที่ท้ายแถวนั้น
-            ระบบจะออกรหัสใหม่และแสดงให้เห็นครั้งเดียว กรุณาคัดลอกส่งให้เจ้าตัวทันที</div></div>
+            ระบบจะออกรหัสใหม่และแสดงให้เห็นครั้งเดียว กรุณาคัดลอกส่งให้เจ้าตัวทันที
+            <div class="hint" id="adScopeNote" style="margin-top:6px"></div></div></div>
           <div class="row" style="margin-bottom:10px" id="adPassTools">
             <label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;cursor:pointer">
               <input type="checkbox" id="ac_showpass" onchange="searchAccounts()" style="width:18px;height:18px">
@@ -3274,6 +3270,7 @@ let ADMINS=[], ADEDIT=null;
 function renderAdmins(){
   const rq=$('#rqCard'); if(rq) rq.style.display = isOwner()? '' : 'none';
   const at=$('#adTools'); if(at) at.style.display = isOwner()? '' : 'none';
+  adBuildLevels();
   if(isOwner()){ searchAccounts(); loadResetRequests(); }
   $('#adSub').textContent = (ME&&ME.role==='group_admin')
     ? 'ผู้ดูแลของ '+groupName(ME.scope)
@@ -3291,6 +3288,27 @@ function permChips(a){
   const ks=String(a.perms||'').split(',').map(x=>x.trim()).filter(Boolean);
   if(!ks.length) return '<span class="hint">ดูอย่างเดียว</span>';
   return ks.map(k=>`<span class="pill" style="background:var(--line-2);color:var(--ink-2)">${PERM_LABEL[k]||k}</span>`).join(' ');
+}
+/** ตัวเลือก “ระดับ” ต่างกันตามผู้ใช้
+    · เขต — เห็นผู้ดูแลระดับเขตและผู้ดูแลหลักของแต่ละกลุ่ม
+    · กลุ่ม — ดูแลผู้ดูแลรองของกลุ่มและบัญชีโรงเรียนในกลุ่มตนเอง */
+function adBuildLevels(){
+  const sel=$('#ad_level'); if(!sel) return;
+  const grp = (ME && ME.role==='group_admin');
+  const opts = grp
+    ? [['','ทุกระดับในกลุ่ม'],['group_admin','ผู้ดูแลกลุ่มโรงเรียน'],['school','ระดับโรงเรียน']]
+    : [['','ระดับเขต + ผู้ดูแลหลักของกลุ่ม'],['district_admin','ระดับเขต'],
+       ['group_admin','ผู้ดูแลหลักระดับกลุ่มโรงเรียน']];
+  const keep=sel.value;
+  sel.innerHTML=opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');
+  if(opts.some(o=>o[0]===keep)) sel.value=keep;
+  const g=$('#ac_group'); if(g) g.style.display = grp? 'none':'';
+  const n=$('#adScopeNote');
+  if(n) n.innerHTML = grp
+    ? 'ผู้ดูแลกลุ่มเป็นผู้ดูแลผู้ดูแลรองของกลุ่มและบัญชีโรงเรียนในกลุ่มของตนเอง รวมถึงการรีเซ็ตรหัสผ่าน'
+    : '<b>หน้านี้แสดงเฉพาะผู้ดูแลระดับเขต และผู้ดูแลหลักของแต่ละกลุ่มโรงเรียน</b> — '
+      + 'ผู้ดูแลรองของกลุ่มและบัญชีโรงเรียน ให้จัดการในเว็บของกลุ่มโรงเรียนนั้น '
+      + 'ถ้ามีผู้ลืมรหัสผ่าน เขตช่วยได้จากคำขอรีเซ็ตรหัสผ่านด้านล่าง';
 }
 /** ตารางเดียว — ผู้ดูแลระดับเขต → ระดับกลุ่มโรงเรียน → ระดับโรงเรียน (และกรรมการ/เจ้าหน้าที่)
     พร้อมปุ่มแก้ไข ลบ และรีเซ็ตรหัสผ่านอยู่ในแถวเดียวกัน */
@@ -3311,6 +3329,14 @@ function drawAdmins(){
   });
   if(lv==='other') rows=rows.filter(x=>adOrder(x.role)===3);
   else if(lv) rows=rows.filter(x=>String(x.role)===lv);
+  /* เว็บระดับเขต: เห็นผู้ดูแลเขต + ผู้ดูแลหลักของกลุ่มเท่านั้น
+     ผู้ดูแลรองของกลุ่มและบัญชีโรงเรียน บริหารจัดการในเว็บของกลุ่มนั้น */
+  if(ME && ME.role==='district_admin') rows=rows.filter(x=>{
+    if(String(x.role)==='district_admin') return true;
+    if(String(x.role)!=='group_admin') return false;
+    const a=amap[String(x.username)];
+    return !a || a.is_owner==='Y';
+  });
   if(q) rows=rows.filter(x=>[x.name,x.username,x.where].join(' ').indexOf(q)>=0);
   rows.sort((a,b)=> adOrder(a.role)-adOrder(b.role)          /* เขต → กลุ่ม → โรงเรียน */
     || String(a.group_code||'').localeCompare(String(b.group_code||''))   /* เรียงกลุ่มตามรหัส g01…g20 */
@@ -4878,8 +4904,9 @@ async function searchAccounts(){
         (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
     const show=$('#ac_showpass')&&$('#ac_showpass').checked;
     const lv=($('#ad_level')&&$('#ad_level').value)||'';
+    const kind = (lv==='other') ? '' : lv;
     const r=await api('listAccounts',{q:(($('#ad_q')&&$('#ad_q').value)||'').trim(),
-      kind:(lv==='other'?'':lv), group_code:(gsel? gsel.value : ''), show_pass: show?'1':''});
+      kind:kind, group_code:(gsel? gsel.value : ''), show_pass: show?'1':''});
     ACC=r.items||[]; ACC_TOTAL=Number(r.total||ACC.length);
     const at=$('#adTools'); if(at) at.style.display = isOwner()? '' : 'none';
     const pt=$('#adPassTools'); if(pt) pt.style.display = (ME&&ME.role==='district_admin')? '' : 'none';
