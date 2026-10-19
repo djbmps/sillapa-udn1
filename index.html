@@ -589,7 +589,10 @@ body[data-view="admin"] .utilbar{display:none}
     <section class="page" id="p-entries">
       <div class="hd"><div><h2>ผู้สมัครแข่งขัน</h2><p id="entSub"></p></div><span class="sp"></span>
         <button class="btn g sm" onclick="go('print')">🖨️ พิมพ์ใบรายชื่อ</button>
-        <button class="btn" onclick="editEntry(null)">+ เพิ่มผู้สมัคร</button></div>
+        <button class="btn" id="entAddBtn" onclick="editEntry(null)">+ เพิ่มผู้สมัคร</button></div>
+      <div class="note i" id="entDistrictNote" style="display:none;margin-bottom:12px"><span>⬆️</span><div>
+        <b>ระดับเขตแสดงเฉพาะทีมตัวแทนที่กลุ่มโรงเรียนโอนขึ้นมา</b> —
+        โรงเรียนสมัครแข่งขันที่เว็บของกลุ่มตนเอง เมื่อกลุ่มประกาศผลและโอนตัวแทนแล้ว รายชื่อจะมาปรากฏที่นี่เอง</div></div>
       <div class="row" style="margin-bottom:12px">
         <select id="entAct" onchange="renderEntries()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
       </div>
@@ -3694,7 +3697,7 @@ async function exportMedalCsv(){
 }
 async function exportEntriesCsv(){
   try{
-    const r=await api('listEntries',{group:SCOPE==='ALL'?'':SCOPE});
+    const r=await api('listEntries',{group:entryRound()});
     const A=actsOf();
     const rows=[['รหัสผู้สมัคร','รายการแข่งขัน','ระดับชั้น','โรงเรียน','กลุ่ม','สถานะ','วันที่สมัคร']];
     (r||[]).forEach(e=>{ const a=A.find(x=>x.act_id===e.act_id)||{};
@@ -4178,13 +4181,14 @@ function renderGroups(){
 
 function renderDash(){
   const A=actsOf();
-  Promise.all([api('listEntries',{group:SCOPE==='ALL'?'':SCOPE}), api('publicResults',{group:SCOPE==='ALL'?'':SCOPE})])
+  Promise.all([api('listEntries',{group:entryRound()}), api('publicResults',{group:SCOPE==='ALL'?'':SCOPE})])
    .then(([ent,pub])=>{
     const pubActs=new Set(pub.results.map(r=>r.act_id));
     $('#dashSub').textContent=SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE);
     $('#dashStats').innerHTML=[
       ['รายการที่เปิดแข่ง',A.filter(a=>a.status==='เปิด').length,'จากทั้งหมด '+A.length],
-      ['ทีมที่สมัครแล้ว',ent.length,'นักเรียน '+ent.reduce((a,b)=>a+(b.students||[]).length,0)+' คน'],
+      [SCOPE==='ALL'?'ทีมตัวแทนเข้าเขต':'ทีมที่สมัครแล้ว',ent.length,
+        'นักเรียน '+ent.reduce((a,b)=>a+(b.students||[]).length,0)+' คน'],
       ['ประกาศผลแล้ว',pubActs.size,'จาก '+A.length+' รายการ'],
       ['โรงเรียนที่ส่งเข้าแข่ง',new Set(ent.map(e=>e.school_smis)).size,'']
     ].map(s=>`<div class="stat"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
@@ -4518,10 +4522,16 @@ function fillActSelects(){
   });
 }
 
+/** รอบของผู้สมัคร — เว็บเขตดูเฉพาะทีมตัวแทนที่โอนขึ้นมา (group_code = DISTRICT)
+    โรงเรียนสมัครแข่งขันได้ที่เว็บกลุ่มของตนเองเท่านั้น */
+function entryRound(){ return SCOPE==='ALL' ? 'DISTRICT' : SCOPE; }
 function renderEntries(){
   const act=$('#entAct').value;
-  $('#entSub').textContent=(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE));
-  api('listEntries',{group:SCOPE==='ALL'?'':SCOPE, act_id:act}).then(ent=>{
+  const dist=(SCOPE==='ALL');
+  $('#entSub').textContent = dist? 'ระดับเขต · เฉพาะทีมตัวแทนที่โอนมาจากกลุ่มโรงเรียน' : groupName(SCOPE);
+  const ab=$('#entAddBtn'); if(ab) ab.style.display = dist? 'none':'';
+  const nt=$('#entDistrictNote'); if(nt) nt.style.display = dist? 'flex':'none';
+  api('listEntries',{group:entryRound(), act_id:act}).then(ent=>{
     const S=schoolsOf('ALL');
     window.__ENT=ent;
     tbl($('#entTbl'),['ที่','โรงเรียน','นักเรียน','ครูผู้ฝึกสอน','ที่มา','สถานะ','จัดการ'],
@@ -4538,6 +4548,8 @@ function renderEntries(){
 }
 function editEntry(id){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  if(SCOPE==='ALL') return alert('การสมัครแข่งขันทำที่เว็บของกลุ่มโรงเรียนเท่านั้นค่ะ\n\n'
+    +'ระดับเขตจะได้รายชื่อจากการที่กลุ่มโอนทีมตัวแทนขึ้นมาหลังประกาศผลรอบคัดเลือก');
   const actId=$('#entAct').value;
   const act=(DB.activities||[]).find(a=>a.act_id===actId);
   if(!act) return alert('เลือกรายการแข่งขันก่อน');
@@ -4604,7 +4616,7 @@ function renderScore(){
   if(!DB.criteria){ ensureCrit().then(()=>renderScore()); return; }
   const crit=(DB.criteria||[]).filter(c=>c.act_id===actId).sort((a,b)=>a.order-b.order);
   if(!crit.length){ $('#scTbl').innerHTML='<tbody><tr><td style="padding:26px;text-align:center;color:var(--ink-3)">รายการนี้ยังไม่ได้ตั้งเกณฑ์การให้คะแนน — ไปที่ “จัดการรายการ &amp; เกณฑ์”</td></tr></tbody>'; return; }
-  api('listEntries',{group:SCOPE==='ALL'?'':SCOPE, act_id:actId}).then(ent=>{
+  api('listEntries',{group:entryRound(), act_id:actId}).then(ent=>{
     SC_ENT=ent; const S=schoolsOf('ALL');
     tbl($('#scTbl'),['ที่','ผู้เข้าแข่งขัน',...crit.map(c=>c.item_name+' ('+c.max_score+')'),'รวม'],
       ent.map((e,i)=>{ const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
@@ -5486,7 +5498,7 @@ function printDoc(kind){ go('print'); $('#prtDoc').value=kind; buildDoc(); }
 async function buildDoc(){
   if(printLock('print_open','เอกสารการแข่งขัน')) return;
   const actId=$('#prtAct').value, kind=$('#prtDoc').value;
-  const pack=await api('printPack',{group:SCOPE==='ALL'?'':SCOPE, act_id:actId});
+  const pack=await api('printPack',{group:entryRound(), act_id:actId});
   const act=pack.activities.find(a=>a.act_id===actId)||pack.activities[0]||{};
   const crit=pack.criteria.filter(c=>c.act_id===act.act_id).sort((a,b)=>a.order-b.order);
   const ent=pack.entries;
