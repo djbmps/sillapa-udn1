@@ -390,17 +390,10 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="mk" id="bMk">🏆</div>
       <div><h1 id="bTitle">ศิลปหัตถกรรมนักเรียน</h1><p id="bSub">สพป.อุดรธานี เขต 1</p></div>
     </div>
-    <div class="ng"><span>ข้อมูลสาธารณะ</span>
-      <button class="nv on" data-p="home"><i>🏠</i>หน้าหลัก</button>
-      <button class="nv" data-p="acts"><i>📋</i>รายการแข่งขัน</button>
-      <button class="nv" data-p="sched"><i>🗓️</i>ตารางแข่งขัน</button>
-      <button class="nv" data-p="results"><i>📣</i>ผลการแข่งขัน</button>
-      <button class="nv" data-p="medals"><i>🥇</i>ตารางเหรียญ</button>
-      <button class="nv" data-p="schools"><i>🏫</i>ทะเบียนโรงเรียน</button>
-      <button class="nv" data-p="apply"><i>⚖️</i>สมัครกรรมการตัดสิน</button>
-    </div>
+    <div class="ng" id="navPublic"><span>ข้อมูลสาธารณะ</span></div>
     <div class="ng" id="navAdmin"><span>งานของผู้ดูแล</span>
       <button class="nv" data-p="dash"><i>📊</i>แดชบอร์ด</button>
+      <button class="nv" data-p="schools"><i>🏫</i>ทะเบียนโรงเรียน</button>
       <button class="nv" data-p="actedit" data-role="district_admin" data-perm="actedit"><i>⚙️</i>จัดการรายการ &amp; เกณฑ์</button>
       <button class="nv" data-p="entries" data-perm="entries"><i>📝</i>ผู้สมัครแข่งขัน</button>
       <button class="nv" data-p="score" data-role="district_admin,group_admin,head_judge,judge" data-perm="score"><i>✍️</i>ให้คะแนน</button>
@@ -2723,6 +2716,15 @@ function renderBanner(){
 function pubPages(){
   return PUBLIC_PAGES.filter(x => x[0]!=='cert' ? true : isOpen('cert_open'));
 }
+/** เมนู “ข้อมูลสาธารณะ” ในแถบข้าง = เมนูเดียวกับหน้าเว็บสาธารณะจริง (ตาม PUBLIC_PAGES)
+    แก้รายการที่เดียวใน PUBLIC_PAGES แล้วตรงกันทั้งสองที่ */
+const PUB_ICON={home:'🏠',acts:'📋',apply:'⚖️',sched:'🗓️',results:'📣',medals:'🥇',cert:'🎖️',docs:'📄'};
+function renderSideNav(){
+  const box=$('#navPublic'); if(!box) return;
+  box.innerHTML='<span>ข้อมูลสาธารณะ</span>'+pubPages().map(x=>
+    `<button class="nv ${PAGE===x[0]?'on':''}" data-p="${x[0]}" onclick="go('${x[0]}')">`+
+    `<i>${PUB_ICON[x[0]]||'•'}</i>${x[1]}</button>`).join('');
+}
 function renderPubNav(){
   $('#pubNav').innerHTML =
     pubPages().map(x=>`<button class="pl ${PAGE===x[0]?'on':''}" onclick="go('${x[0]}')">${x[1]}</button>`).join('');
@@ -3987,6 +3989,7 @@ function go(p){
   if(p==='news') p='home';                         /* ข่าวประชาสัมพันธ์รวมอยู่ในหน้าแรกแล้ว */
   PAGE=p; $$('.page').forEach(x=>x.classList.remove('on'));
   const el=$('#p-'+p); if(el) el.classList.add('on');
+  renderSideNav();
   $$('.nv').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
   const t={home:'หน้าหลัก',acts:'รายการแข่งขัน',sched:'ตารางแข่งขัน',results:'ผลการแข่งขัน',medals:'ตารางเหรียญ',
     schools:'ทะเบียนโรงเรียน',groups:'กลุ่มโรงเรียน',dash:'แดชบอร์ด',actedit:'จัดการรายการ & เกณฑ์',
