@@ -882,9 +882,11 @@ body[data-view="admin"] .utilbar{display:none}
           <div class="fld" id="fld_event"><label>ชื่องาน (ใช้ในหัวเอกสารที่พิมพ์)</label><input id="st_event_name"></div>
           <div class="fld"><label>ข้อมูลติดต่อ (แสดงท้ายเว็บ)</label>
             <input id="st_contact" placeholder="กลุ่มส่งเสริมการจัดการศึกษา โทร. 0-4222-xxxx"></div>
+          <div class="fld" style="margin-bottom:4px"><label>วันที่จัดการแข่งขัน</label>
+            <div class="hint">ใช้แสดงบนหน้าเว็บสาธารณะ เช่น “แข่งขันระหว่างวันที่ 1 – 4 มีนาคม 2570”</div></div>
           <div class="grid g2" id="fld_dates">
-            <div class="fld"><label>วันเปิดรับสมัคร</label><div id="st_open_at_wrap"></div></div>
-            <div class="fld"><label>วันปิดรับสมัคร</label><div id="st_close_at_wrap"></div></div>
+            <div class="fld"><label>ตั้งแต่วันที่</label><div id="st_open_at_wrap"></div></div>
+            <div class="fld"><label>ถึงวันที่</label><div id="st_close_at_wrap"></div></div>
           </div>
           <div class="note i"><span>🔗</span><div id="siteScopeNote"></div></div>
         </div></div>
@@ -1193,8 +1195,8 @@ body[data-view="admin"] .utilbar{display:none}
           <div class="fld"><label>ชื่องาน (เว้นว่างระบบจะตั้งให้จากครั้งที่และปีการศึกษา)</label>
             <input id="ss_event" placeholder="งานศิลปหัตถกรรมนักเรียน ครั้งที่ 75 ปีการศึกษา 2570"></div>
           <div class="grid g3">
-            <div class="fld"><label>วันเปิดรับสมัคร</label><div id="ss_open_wrap"></div></div>
-            <div class="fld"><label>วันปิดรับสมัคร</label><div id="ss_close_wrap"></div></div>
+            <div class="fld"><label>วันที่จัดการแข่งขัน — ตั้งแต่วันที่</label><div id="ss_open_wrap"></div></div>
+            <div class="fld"><label>ถึงวันที่</label><div id="ss_close_wrap"></div></div>
             <div class="fld"><label>เส้นตายกลุ่มส่งตัวแทนเข้าเขต</label><div id="ss_deadline_wrap"></div></div>
           </div>
           <div class="fld"><label>รูปแบบเลขที่เกียรติบัตร</label>
@@ -2705,12 +2707,24 @@ function siteCfg(){
           banner_subtitle:g.banner_subtitle||('รอบคัดเลือกระดับกลุ่มโรงเรียน · '+(DB.config||{}).district_name),
           banner_note:g.tagline, contact:g.contact};
 }
+/** ช่วงวันจัดการแข่งขัน — “ · แข่งขันระหว่างวันที่ 1 – 4 มีนาคม 2570” */
+function eventDateLine(){
+  const c=DB.config||{}, a=dstr(c.open_at||''), b=dstr(c.close_at||'');
+  if(!a && !b) return '';
+  if(a && b){
+    const ma=a.match(/^(\d{4})-(\d{2})-(\d{2})$/), mb=b.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(ma && mb && ma[1]===mb[1] && ma[2]===mb[2])
+      return ' · แข่งขันระหว่างวันที่ '+Number(ma[3])+' – '+Number(mb[3])+' '+TH_MONTH[Number(mb[2])-1]+' '+mb[1];
+    return ' · แข่งขันระหว่างวันที่ '+thDateLong(a)+' ถึง '+thDateLong(b);
+  }
+  return ' · แข่งขันวันที่ '+thDateLong(a||b);
+}
 function renderBanner(){
   const c=siteCfg(), b=$('#banner');
   b.style.backgroundImage = c.banner_url? `url('${imgSrc(c.banner_url)}')` : '';
   $('#bKw').textContent = SCOPE==='ALL'? shortName() : 'รอบคัดเลือกระดับกลุ่มโรงเรียน';
   $('#bH1').textContent = c.banner_title || (SCOPE==='ALL'? shortName() : groupName(SCOPE));
-  $('#bP').textContent  = c.banner_subtitle || '';
+  $('#bP').textContent  = (c.banner_subtitle || '') + (SCOPE==='ALL'? eventDateLine() : '');
   const n=$('#bannerNote');
   n.style.display = c.banner_note? 'block':'none'; n.textContent = c.banner_note||'';
   $('#fName').textContent=eventName();
@@ -2815,7 +2829,7 @@ function renderSite(){
   ['banner_url','banner_title','banner_subtitle','banner_note','contact'].forEach(k=>{
     const el=$('#st_'+k); if(el) el.value=c[k]||'';
   });
-  bindUploader('bnDrop','st_banner_url','bnThumb','bnBar',1800,previewBanner);
+  bindUploader('bnDrop','st_banner_url','bnThumb','bnBar',1600,previewBanner);
   if($('#st_banner_url').value) showThumb('bnThumb',$('#st_banner_url').value,null,DEMO());
   else $('#bnThumb').style.display='none';
   $('#st_event_name').value=(DB.config||{}).event_name||'';
@@ -2842,10 +2856,18 @@ async function saveSite(){
   ['banner_url','banner_title','banner_subtitle','banner_note','contact'].forEach(k=>o[k]=$('#st_'+k).value.trim());
   if(SCOPE==='ALL'){ o.event_name=$('#st_event_name').value.trim();
     o.open_at=dateSelVal('st_open_at'); o.close_at=dateSelVal('st_close_at'); }
+  const btn=document.querySelector('#p-site .hd .btn');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังบันทึก…'; }
   try{ await api('saveSiteSettings',o);
-    await reloadBoot();
+    /* อัปเดตข้อมูลในเครื่องแทนการโหลดใหม่ทั้งระบบ — บันทึกเร็วขึ้นมาก */
+    if(SCOPE==='ALL'){ DB.config=Object.assign({}, DB.config||{}, o); delete DB.config.scope; }
+    else { const g=(DB.groups||[]).find(x=>x.group_code===SCOPE);
+      if(g) Object.assign(g,{banner_url:o.banner_url,banner_title:o.banner_title,
+        banner_subtitle:o.banner_subtitle,tagline:o.banner_note,contact:o.contact}); }
+    try{ if(!DEMO()) snapSave(DB, SCOPE==='ALL'?'':SCOPE); }catch(e2){}
     renderBanner(); alert('บันทึกแล้ว — หน้าเว็บสาธารณะเปลี่ยนทันที');
   }catch(e){ alert(e.message); }
+  if(btn){ btn.disabled=false; btn.textContent='บันทึก'; }
 }
 
 /* ---------- หลังบ้าน: จัดการข่าว & เอกสาร ---------- */
