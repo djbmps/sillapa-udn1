@@ -413,8 +413,8 @@ body[data-view="admin"] .utilbar{display:none}
   <div class="login">
     <div class="l">
       <span style="font-size:11px;letter-spacing:.14em;background:rgba(255,255,255,.18);padding:4px 12px;border-radius:999px;align-self:flex-start;font-weight:600" id="loginKw">งานศิลปหัตถกรรมนักเรียน</span>
-      <h2 id="loginTitle">ระบบจัดการแข่งขัน<br>ระดับกลุ่มโรงเรียน</h2>
-      <p>สพป.อุดรธานี เขต 1 · ปีการศึกษา 2569 — รับสมัคร จัดตาราง ให้คะแนน ประกาศผล และโอนตัวแทนเข้าระดับเขต</p>
+      <h2 id="loginTitle">ระบบจัดการแข่งขัน<br>งานศิลปหัตถกรรมนักเรียน</h2>
+      <p id="loginSub">สพป.อุดรธานี เขต 1 · ปีการศึกษา 2569 — รับสมัคร จัดตาราง ให้คะแนน ประกาศผล และโอนตัวแทนเข้าระดับเขต</p>
     </div>
     <div class="r">
       <div class="note i" id="loginCtx" style="margin-bottom:16px"></div>
@@ -6567,10 +6567,24 @@ function logoutNow(){
 }
 function lgScopeChange(){
   const v=$('#lgScope').value;
+  lgHero(v);
   $('#loginCtx').innerHTML = v==='ALL'
-    ? '🏛️ กำลังเข้าสู่ระบบ<b> ระดับเขตพื้นที่</b><br>สพป.อุดรธานี เขต 1'
-    : '🏁 กำลังเข้าสู่ระบบ<b>เว็บกลุ่ม '+groupName(v)+'</b><br>ภายใต้ สพป.อุดรธานี เขต 1 · <code>'+v+'</code>';
+    ? '🏛️ กำลังเข้าสู่ระบบ<b> ระดับเขตพื้นที่</b><br>'+districtName()
+    : '🏁 กำลังเข้าสู่ระบบ<b>เว็บกลุ่ม '+groupName(v)+'</b><br>ภายใต้ '+districtName()+' · <code>'+v+'</code>';
   if(DEMO()) $('#loginCtx').innerHTML+='<br><br><b>โหมดตัวอย่าง</b> — ลองด้วย <code>admin</code>/<code>admin</code> หรือ <code>admin-g01</code>/<code>admin</code>';
+}
+/** ข้อความฝั่งซ้ายของหน้าเข้าสู่ระบบ ต้องตรงกับเว็บที่เลือกไว้ในช่อง “เข้าสู่ระบบของ”
+    ไม่งั้นกดเข้าระบบเขตแล้วเห็นคำว่า “ระดับกลุ่มโรงเรียน” จะสับสน */
+function lgHero(v){
+  const dist = (v==='ALL');
+  const t=$('#loginTitle'), sub=$('#loginSub');
+  /* ใช้หน้าเข้าสู่ระบบหน้าเดียวกันทั้งเขตและกลุ่ม — หัวเรื่องจึงเป็นชื่องานกลาง ๆ
+     ส่วนบรรทัดรองและกล่องทางขวาเป็นตัวบอกว่ากำลังเข้าเว็บไหน */
+  if(t) t.innerHTML = 'ระบบจัดการแข่งขัน<br>งานศิลปหัตถกรรมนักเรียน';
+  if(sub) sub.textContent = dist
+    ? districtName()+' · ปีการศึกษา '+acadYear()+' — รับตัวแทนจากกลุ่มโรงเรียน จัดตาราง บันทึกคะแนนรวม และประกาศผลระดับเขต'
+    : (groupName(v)||'กลุ่มโรงเรียน')+' · '+districtName()+' · ปีการศึกษา '+acadYear()
+      +' — รับสมัคร จัดตาราง ให้คะแนน ประกาศผล และโอนตัวแทนเข้าระดับเขต';
 }
 function openLogin(){ $('#app').style.display='none'; $('#loginView').style.display='block';
   lgReset();                                   /* ล้างข้อความผิดพลาดของครั้งก่อน ไม่ให้ค้างหน้าจอ */
@@ -6580,8 +6594,9 @@ function openLogin(){ $('#app').style.display='none'; $('#loginView').style.disp
       (DB.groups||[]).map(g=>`<option value="${g.group_code}">เว็บกลุ่ม — ${g.group_name}</option>`).join('');
     sel.value=SCOPE; lgScopeChange(); return;
   }
+  lgHero(SCOPE);
   $('#loginCtx').innerHTML = SCOPE==='ALL'
-    ? '🏛️ กำลังเข้าสู่ระบบ<b> ระดับเขตพื้นที่</b><br>สพป.อุดรธานี เขต 1'
+    ? '🏛️ กำลังเข้าสู่ระบบ<b> ระดับเขตพื้นที่</b><br>'+districtName()
     : '🏁 กำลังเข้าสู่ระบบ<b>เว็บกลุ่ม '+groupName(SCOPE)+'</b><br>ภายใต้ สพป.อุดรธานี เขต 1 · <code>'+SCOPE+'</code>';
   if(DEMO()) $('#loginCtx').innerHTML+='<br><br><b>โหมดตัวอย่าง</b> — ลองด้วย <code>admin</code>/<code>admin</code> หรือ <code>admin-g01</code>/<code>admin</code>';
 }
