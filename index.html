@@ -161,6 +161,10 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#141210 0%,#4
 .pfoot{background:var(--black);color:#9C8F84;margin-top:40px;padding:26px 18px;font-size:13px}
 .pfoot .in{max-width:1180px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
 .pfoot b{color:#fff}
+.pfoot .dev{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:12.5px;color:#8E8278}
+.pfoot .dev a{color:#C6BCB3;text-decoration:underline}
+.sdev{padding:14px 12px 20px;font-size:11.5px;color:#7E736A;line-height:1.7;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
+.sdev b{color:#A99D93;font-weight:600}
 body[data-view="admin"] .pfoot{display:none}
 .newscard{display:flex;gap:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff;
   box-shadow:var(--sh);margin-bottom:11px;cursor:pointer;transition:.15s}
@@ -419,7 +423,7 @@ body[data-view="admin"] .utilbar{display:none}
     </div>
     <div class="ng"><span>จอฉายหน้างาน</span>
       <button class="nv" onclick="openScreen('live')"><i>📺</i>จอผลสด</button>
-      <button class="nv" onclick="openScreen('queue')"><i>⏱️</i>จอคิว NOW / NEXT</button>
+      <button class="nv" onclick="openScreen('queue')"><i>⏱️</i>จอคิวตารางแข่งขัน</button>
     </div>
     <div class="ng"><span>ออกจากหลังบ้าน</span>
       <button class="nv" onclick="setView('public')"><i>🌐</i>ไปหน้าเว็บสาธารณะ</button>
@@ -428,6 +432,9 @@ body[data-view="admin"] .utilbar{display:none}
       <button class="nv" id="authBtn" onclick="toggleAuth()"><i>🔑</i>เข้าสู่ระบบ</button>
       <button class="nv" data-p="setup" data-role="district_admin" data-anon="1"><i>🔧</i>ตั้งค่าเชื่อมฐานข้อมูล</button>
     </div>
+    <div class="sdev">พัฒนาโดย <b>ศน.ดวงใจ บุญมีประเสริฐ</b><br>
+      ศึกษานิเทศก์ สพป.อุดรธานี เขต 1<br>
+      <a href="mailto:djbmps@gmail.com" style="color:#8E8278;text-decoration:underline">djbmps@gmail.com</a></div>
   </aside>
 
   <main class="main">
@@ -454,8 +461,8 @@ body[data-view="admin"] .utilbar{display:none}
 
     <div class="livebar noprint">
       <span class="dt"></span>
-      <div><b>จอแสดงผลหน้างาน (LIVE)</b><small>ตารางเหรียญผลสด และคิวการแข่งขันรายสนาม เหมาะสำหรับฉายจอใหญ่</small></div>
-      <div class="a"><button onclick="openScreen('live')">จอผลสด →</button><button onclick="openScreen('queue')">จอคิว →</button></div>
+      <div><b>จอแสดงผลหน้างาน (LIVE)</b><small>ตารางเหรียญผลสด และคิวตารางแข่งขันรายสนาม เหมาะสำหรับฉายจอใหญ่</small></div>
+      <div class="a"><button onclick="openScreen('live')">จอผลสด →</button><button onclick="openScreen('queue')">จอคิวตารางแข่งขัน →</button></div>
     </div>
 
     <!-- ---------- หน้าหลัก ---------- -->
@@ -1318,6 +1325,11 @@ body[data-view="admin"] .utilbar{display:none}
     <span id="fSub">สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1</span></div>
   <span style="flex:1"></span>
   <div id="fContact"></div>
+</div>
+<div class="in dev">
+  <div>พัฒนาโดย <b>ศน.ดวงใจ บุญมีประเสริฐ</b> ศึกษานิเทศก์ สพป.อุดรธานี เขต 1</div>
+  <span style="flex:1"></span>
+  <a href="mailto:djbmps@gmail.com">djbmps@gmail.com</a>
 </div></footer>
 
 <!-- ================= จอฉาย ================= -->
