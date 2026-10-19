@@ -161,7 +161,7 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#141210 0%,#4
 .pfoot{background:var(--black);color:#9C8F84;margin-top:40px;padding:26px 18px;font-size:13px}
 .pfoot .in{max-width:1180px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
 .pfoot b{color:#fff}
-.pfoot .dev{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:12.5px;color:#8E8278}
+.pfoot .dev{font-size:12.5px;color:#8E8278}
 .pfoot .dev a{color:#C6BCB3;text-decoration:underline}
 .sdev{padding:14px 12px 20px;font-size:11.5px;color:#7E736A;line-height:1.7;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
 .sdev b{color:#A99D93;font-weight:600}
@@ -1320,9 +1320,8 @@ body[data-view="admin"] .utilbar{display:none}
     </section>
   </main>
 </div>
-<footer class="pfoot"><div class="in">
-  <div><b id="fName">งานศิลปหัตถกรรมนักเรียน</b><br>
-    <span id="fSub">สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1</span></div>
+<footer class="pfoot"><div class="in" id="fTop" style="display:none">
+  <div><b id="fName"></b><br><span id="fSub"></span></div>
   <span style="flex:1"></span>
   <div id="fContact"></div>
 </div>
@@ -2636,6 +2635,8 @@ function renderBanner(){
   $('#fName').textContent=eventName();
   $('#fSub').textContent=districtName();
   $('#fContact').innerHTML=c.contact? c.contact : '';
+  /* แถวบนของส่วนท้ายแสดงเฉพาะเมื่อมีข้อมูลติดต่อของเขต — ไม่งั้นซ่อนไว้ ไม่ให้ชื่องานซ้ำกับด้านบน */
+  $('#fTop').style.display = c.contact? '' : 'none';
 }
 /** เมนูสาธารณะ — แสดงเฉพาะข้อมูลที่เปิดเผยได้ เกียรติบัตรจะโผล่เมื่อเปิดระบบให้ดาวน์โหลดแล้ว */
 function pubPages(){
