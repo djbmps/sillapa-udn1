@@ -406,6 +406,25 @@ body[data-view="admin"] .utilbar{display:none}
 .sheetdoc .sign{display:flex;flex-wrap:wrap;justify-content:space-around;row-gap:34px;margin-top:40px;font-size:13px;text-align:center}
 .sheetdoc .sign div{width:31%}
 .sheetdoc .ln{border-bottom:1px dotted #333;height:22px;margin-bottom:5px}
+.sheetdoc .dochd{display:flex;gap:14px;align-items:flex-start;border-bottom:1px solid #000;padding-bottom:8px}
+.sheetdoc .dochd .dt{flex:1;font-size:13.5px;line-height:1.6}
+.sheetdoc .dochd .dtag{border:1px solid #b00;color:#b00;font-weight:700;font-size:12px;padding:3px 10px;border-radius:4px;white-space:nowrap}
+.sheetdoc .dsub{display:flex;justify-content:space-between;font-size:12.5px;margin-top:5px;color:#222}
+.sheetdoc .dline{font-size:14.5px;margin-top:9px}
+.sheetdoc table.sm{font-size:11.5px}
+.sheetdoc table.sm th,.sheetdoc table.sm td{padding:4px 5px}
+.sheetdoc .tiny{font-size:10.5px;color:#333}
+.sheetdoc .num{text-align:center}
+.sheetdoc .dfoot{margin-top:26px;font-size:13px}
+.sheetdoc ol{font-size:13px}
+.prtdoc{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
+  border-radius:11px;cursor:pointer;background:#fff;transition:border-color .15s,background .15s}
+.prtdoc:hover{border-color:var(--pri);background:#FFFBF6}
+.prtdoc input{width:19px;height:19px;margin-top:2px;flex:none}
+.prtdoc span{display:block;line-height:1.45}
+.prtdoc b{display:block;font-size:14px}
+.prtdoc i{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:2px}
+.prtdoc:has(input:checked){border-color:var(--pri);background:#FFF6EC}
 @media print{
   body{background:#fff}
   .side,.top,.noprint,.livebar,.strip,#pubHead,.pfoot{display:none!important}
@@ -958,21 +977,36 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- พิมพ์เอกสาร ---------- -->
     <section class="page" id="p-print">
-      <div class="hd"><div><h2>พิมพ์เอกสารการแข่งขัน</h2><p>เลือกเอกสาร → กดพิมพ์ (Ctrl/⌘+P) หรือบันทึกเป็น PDF · ใบให้คะแนนกระดาษใช้กรณีเน็ตล่มหน้างาน</p></div></div>
+      <div class="hd"><div><h2>พิมพ์เอกสารการแข่งขัน</h2>
+        <p>เลือกรายการแข่งขัน → ติ๊กเอกสารที่ต้องการ → พิมพ์ทั้งชุดใส่ซองให้คณะกรรมการตัดสินได้เลย</p></div></div>
       <div id="prtPerm" style="margin-bottom:12px"></div>
-      <div class="row" style="margin-bottom:14px" id="printCtl">
-        <select id="prtAct" style="flex:1;min-width:280px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
-        <select id="prtDoc" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff">
-          <option value="entrylist">ใบรายชื่อผู้เข้าแข่งขัน</option>
-          <option value="scoresheet">ใบให้คะแนนกระดาษ (รายกรรมการ)</option>
-          <option value="summary">ใบสรุปคะแนนรวมของรายการ</option>
-          <option value="resultsheet">ใบประกาศผลการแข่งขัน</option>
-          <option value="judgesign">ใบเซ็นชื่อคณะกรรมการ</option>
-          <option value="attend">ใบเซ็นชื่อผู้เข้าแข่งขัน</option>
-          <option value="schedule">ตารางการแข่งขันรายสนาม</option>
-        </select>
-        <button class="btn g" onclick="buildDoc()">แสดงตัวอย่าง</button>
+
+      <div class="card noprint" style="margin-bottom:14px"><div class="ch"><h3>1 · เลือกรายการแข่งขัน</h3></div>
+        <div class="cb">
+          <div class="g2">
+            <div class="fld"><label>หมวดหมู่ (กลุ่มสาระ)</label>
+              <select id="prtCat" onchange="prtFillActs()"></select></div>
+            <div class="fld"><label>รายการแข่งขัน</label>
+              <select id="prtAct"></select></div>
+          </div>
+          <label style="display:flex;gap:9px;align-items:center;font-weight:600;font-size:14.5px;cursor:pointer;margin-top:2px">
+            <input type="checkbox" id="prtAllAct" style="width:18px;height:18px">
+            พิมพ์ <b>ทุกรายการในหมวดหมู่นี้</b> ต่อกันทีเดียว (แยกซองละรายการ)</label>
+        </div></div>
+
+      <div class="card noprint" style="margin-bottom:14px"><div class="ch"><h3>2 · เลือกเอกสารที่จะพิมพ์</h3>
+        <span class="sp"></span>
+        <button class="btn g sm" onclick="prtPreset('std')">ชุดมาตรฐาน (ใส่ซอง)</button>
+        <button class="btn g sm" onclick="prtPreset('all')">เลือกทั้งหมด</button>
+        <button class="btn g sm" onclick="prtPreset('none')">ล้าง</button></div>
+        <div class="cb"><div id="prtDocs" class="grid g2"></div>
+          <p class="hint" style="margin-top:10px">ชุดมาตรฐานที่เจ้าหน้าที่ใส่ซองให้กรรมการ = ใบปะหน้าซอง + DOC.1 + DOC.2 + DOC.3 + DOC.4</p>
+        </div></div>
+
+      <div class="row noprint" style="margin-bottom:14px">
+        <button class="btn" onclick="printDocs()">📄 สร้างเอกสาร</button>
         <button class="btn d" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
+        <span class="sp"></span><span class="hint" id="prtInfo"></span>
       </div>
       <div id="docArea" style="overflow:auto"></div>
     </section>
@@ -3721,9 +3755,6 @@ async function savePerm(){
   }catch(e){ alert(e.message); }
 }
 
-function renderPrint(){
-  $('#prtPerm').innerHTML=permNote('print_open','เอกสารการแข่งขัน');
-}
 
 /* ============================ ระบบขอเปลี่ยนตัวนักเรียน / ครูผู้ฝึกสอน ============================
    แนวคิด: ตัดกระดาษออกทั้งกระบวนการ
@@ -6481,76 +6512,259 @@ function clearApi(){ API=''; LS.removeItem(K.api); boot().then(()=>renderSetup()
 /** คณะกรรมการตัดสินกิจกรรมละ 5 คน — ใช้ร่วมกันทุกแบบฟอร์มที่ต้องลงลายมือชื่อ */
 const JUDGE_SEATS=['ประธานกรรมการ','กรรมการ','กรรมการ','กรรมการ','กรรมการและเลขานุการ'];
 function printDoc(kind){ go('print'); $('#prtDoc').value=kind; buildDoc(); }
-async function buildDoc(){
-  if(printLock('print_open','เอกสารการแข่งขัน')) return;
-  const actId=$('#prtAct').value, kind=$('#prtDoc').value;
-  const pack=await api('printPack',{group:entryRound(), act_id:actId});
-  const act=pack.activities.find(a=>a.act_id===actId)||pack.activities[0]||{};
-  const crit=pack.criteria.filter(c=>c.act_id===act.act_id).sort((a,b)=>a.order-b.order);
-  const ent=pack.entries;
-  const head=`<h1>${eventName()}</h1>
-    <h2>${SCOPE==='ALL'?'ระดับเขตพื้นที่การศึกษา · '+districtName():'รอบคัดเลือกระดับกลุ่มโรงเรียน · '+groupName(SCOPE)}</h2>
-    <div class="meta"><b>${act.act_name||''}</b> · ระดับชั้น ${act.level||''} · ${act.category||''}</div>`;
-  const dots='(............................................)';
-  /* คณะกรรมการตัดสินกิจกรรมละ 5 คน — คนแรกเป็นประธาน คนสุดท้ายเป็นกรรมการและเลขานุการ */
-  const sign=()=>`<div class="sign">${JUDGE_SEATS.map(r=>
-      `<div><div class="ln"></div>${dots}<br>${r}</div>`).join('')}</div>`;
-  /* วันที่/เวลา/สนามแข่งขันของรายการนี้ (ถ้ายังไม่จัดตาราง เว้นช่องให้กรอกมือ) */
-  const sch=(pack.schedule||[]).find(x=>String(x.act_id)===String(act.act_id))||{};
-  const dateLine=`<div class="meta">วันที่แข่งขัน <b>${sch.date? thDateLong(sch.date) : '..............................'}</b>`
-    + ` · เวลา ${sch.start_time||'..................'} น.`
-    + ` · สนามแข่งขัน ${sch.venue_id||'..............................'}</div>`;
-  let body='';
-  if(kind==='entrylist'){
-    body=`<table><thead><tr><th style="width:44px">ที่</th><th>โรงเรียน</th><th>นักเรียน</th><th>ครูผู้ฝึกสอน</th></tr></thead><tbody>
-      ${ent.map((e,i)=>`<tr><td>${i+1}</td><td>${e.school_name}</td>
-        <td>${(e.students||[]).map(s=>s.prefix+s.first_name+' '+s.last_name).join('<br>')}</td>
-        <td>${(e.coaches||[]).map(c=>c.prefix+c.name).join('<br>')}</td></tr>`).join('')}
-      </tbody></table>${sign()}`;
-  } else if(kind==='scoresheet'){
-    const total=crit.reduce((a,b)=>a+Number(b.max_score),0);
-    body=`<div class="meta" style="margin-top:8px">ใบให้คะแนน (กระดาษ) · กรรมการคนที่ ......... ชื่อ .................................................</div>
-      <table><thead><tr><th style="width:40px">ที่</th><th>ผู้เข้าแข่งขัน</th>
-      ${crit.map(c=>`<th style="width:70px">${c.item_name}<br>(${c.max_score})</th>`).join('')}
-      <th style="width:70px">รวม<br>(${total})</th></tr></thead><tbody>
-      ${ent.map((e,i)=>`<tr><td>${i+1}</td><td>${SEED_CONFIG.blind_judging==='TRUE'?'หมายเลข '+String(i+1).padStart(2,'0'):e.school_name}</td>
-        ${crit.map(()=>'<td></td>').join('')}<td></td></tr>`).join('')}
-      ${ent.length<12?Array.from({length:12-ent.length},()=>`<tr><td></td><td></td>${crit.map(()=>'<td></td>').join('')}<td></td></tr>`).join(''):''}
-      </tbody></table>
-      <p style="font-size:12px;margin-top:10px">เกณฑ์เหรียญ: ร้อยละ 80 ขึ้นไป = ทอง · 70–79.99 = เงิน · 60–69.99 = ทองแดง · ต่ำกว่า 60 = เข้าร่วม (คะแนนเท่ากันได้เหรียญเท่ากัน)</p>
-      ${sign()}`;
-  } else if(kind==='summary'){
-    body=`${dateLine}<table><thead><tr><th style="width:40px">ที่</th><th>โรงเรียน</th>
-      ${JUDGE_SEATS.map((r,i)=>`<th style="width:62px">กรรมการ ${i+1}</th>`).join('')}
-      <th style="width:62px">เฉลี่ย</th><th style="width:70px">เหรียญ</th><th style="width:60px">อันดับ</th></tr></thead><tbody>
-      ${ent.map((e,i)=>`<tr><td>${i+1}</td><td>${e.school_name}</td>
-        ${JUDGE_SEATS.map(()=>'<td></td>').join('')}<td></td><td></td><td></td></tr>`).join('')}
-      </tbody></table>${sign()}`;
-  } else if(kind==='resultsheet'){
-    const pub=await api('publicResults',{group:entryRound()});
-    const rows=pub.results.filter(r=>r.act_id===act.act_id).sort((a,b)=>a.rank-b.rank);
-    body=`${dateLine}<table><thead><tr><th style="width:60px">อันดับ</th><th>โรงเรียน</th><th style="width:90px">คะแนน</th><th style="width:100px">เหรียญ</th></tr></thead><tbody>
-      ${rows.map(r=>`<tr><td>${r.rank}</td><td>${r.school}</td><td>${r.total}</td><td>${r.medal}</td></tr>`).join('')}
-      </tbody></table>${sign()}`;
-  } else if(kind==='judgesign'){
-    body=`${dateLine}<table><thead><tr><th style="width:40px">ที่</th><th>ชื่อ-สกุล</th>
-      <th style="width:150px">ตำแหน่งในคณะกรรมการ</th><th>ตำแหน่ง / หน่วยงาน</th>
-      <th style="width:130px">ลายมือชื่อ</th><th style="width:70px">เวลา</th></tr></thead><tbody>
-      ${JUDGE_SEATS.map((r,i)=>`<tr><td>${i+1}</td><td></td><td>${r}</td><td></td><td></td><td></td></tr>`).join('')}
-      </tbody></table>`;
-  } else if(kind==='attend'){
-    body=`${dateLine}<table><thead><tr><th style="width:40px">ที่</th><th>โรงเรียน</th><th>ชื่อนักเรียน</th><th style="width:130px">ลายมือชื่อ</th><th style="width:70px">เวลา</th></tr></thead><tbody>
-      ${ent.flatMap((e,i)=>(e.students||[{}]).map(s=>`<tr><td>${i+1}</td><td>${e.school_name}</td>
-        <td>${s.prefix?s.prefix+s.first_name+' '+s.last_name:''}</td><td></td><td></td></tr>`)).join('')}
-      </tbody></table>${sign()}`;
-  } else if(kind==='schedule'){
-    body=`<table><thead><tr><th>สนาม</th><th>วันที่</th><th>เวลา</th><th>รายการแข่งขัน</th><th>ระดับชั้น</th><th>ทีม</th></tr></thead><tbody>
-      ${(pack.schedule||[]).map(s=>`<tr><td>${s.venue_id||''}</td><td>${dstr(s.date)}</td><td>${s.start_time||''}</td>
-        <td>${(pack.activities.find(a=>a.act_id===s.act_id)||{}).act_name||''}</td><td></td><td></td></tr>`).join('')
-        || `<tr><td colspan="6" style="text-align:center">ยังไม่มีตารางแข่งขัน</td></tr>`}
-      </tbody></table>`;
+/* ============================ พิมพ์เอกสารการแข่งขัน ============================
+   เจ้าหน้าที่พิมพ์ "ทั้งชุด" ของแต่ละรายการแข่งขัน แล้วใส่ซองส่งให้คณะกรรมการตัดสิน
+   เลือกได้ว่าจะพิมพ์ทุกฉบับ หรือเลือกเฉพาะบางฉบับ และพิมพ์ทีเดียวทั้งหมวดหมู่ก็ได้ */
+const PRT_DOCS=[
+  ['cover','ใบปะหน้าซอง','ชื่อกิจกรรม วัน เวลา สนามแข่งขัน และคำชี้แจงสำหรับกรรมการ',1],
+  ['doc1','DOC.1 ลงทะเบียนนักเรียน','รายชื่อนักเรียนผู้เข้าแข่งขัน พร้อมช่องลงชื่อตัวบรรจง',1],
+  ['doc2','DOC.2 ลงทะเบียนครูผู้ฝึกสอน','รายชื่อครูผู้ฝึกสอน พร้อมช่องลงชื่อตัวบรรจง',1],
+  ['doc3','DOC.3 ลงทะเบียนกรรมการตัดสิน','เวลามา–เวลากลับ และลายมือชื่อกรรมการ',1],
+  ['doc4','DOC.4 แบบบันทึกคะแนน','ช่องคะแนนรายเกณฑ์ คะแนนรวม และลายมือชื่อกรรมการ',1],
+  ['doc5','DOC.5 แก้ไขชื่อ–สกุล / เปลี่ยนตัว','ใช้เมื่อชื่อไม่ตรง หรือขอเปลี่ยนตัวหน้างาน',0],
+  ['doc6','DOC.6 ใบประกาศผลการแข่งขัน','อันดับ คะแนน และเหรียญรางวัล',0],
+  ['attend','ใบเซ็นชื่อผู้เข้าแข่งขัน','เช็กชื่อนักเรียนหน้างาน',0],
+  ['judgescore','ใบให้คะแนนรายกรรมการ','กรรมการแต่ละคนให้คะแนนแยกใบ',0]
+];
+const PRT_STD=['cover','doc1','doc2','doc3','doc4'];
+
+function renderPrint(){
+  $('#prtPerm').innerHTML=permNote('print_open','เอกสารการแข่งขัน');
+  const box=$('#prtDocs');
+  if(box && !box.dataset.on){
+    box.dataset.on='1';
+    box.innerHTML=PRT_DOCS.map(d=>`
+      <label class="prtdoc"><input type="checkbox" value="${d[0]}" ${d[3]?'checked':''}>
+        <span><b>${d[1]}</b><i>${d[2]}</i></span></label>`).join('');
   }
-  $('#docArea').innerHTML=`<div class="sheetdoc${kind==='scoresheet'||kind==='summary'?' land':''}">${head}${body}</div>`;
+  const cat=$('#prtCat');
+  if(cat){
+    const cats=[...new Set(actsOf().map(a=>a.category).filter(Boolean))];
+    const cur=cat.value;
+    cat.innerHTML=cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+    if(cur && cats.indexOf(cur)>=0) cat.value=cur;
+    prtFillActs();
+  }
+}
+/** เติมรายการแข่งขันของหมวดหมู่ที่เลือก */
+function prtFillActs(){
+  const cat=($('#prtCat')||{}).value||'', sel=$('#prtAct'); if(!sel) return;
+  const list=actsOf().filter(a=>!cat||a.category===cat);
+  sel.innerHTML=list.map(a=>`<option value="${a.act_id}">${a.act_name} · ${a.level||''}</option>`).join('')
+    || '<option value="">— ไม่มีรายการในหมวดหมู่นี้ —</option>';
+  const inf=$('#prtInfo'); if(inf) inf.textContent=cat? (cat+' · '+list.length+' รายการ') : '';
+}
+function prtPreset(kind){
+  $$('#prtDocs input[type=checkbox]').forEach(c=>{
+    c.checked = kind==='all' ? true : kind==='none' ? false : PRT_STD.indexOf(c.value)>=0;
+  });
+}
+function prtPicked(){ return $$('#prtDocs input[type=checkbox]:checked').map(c=>c.value); }
+
+/* ---------- ส่วนประกอบของเอกสาร ---------- */
+const PRT_DOTS='(............................................)';
+/** ช่วงวันแข่งขันแบบไม่มีจุดนำหน้า — ใช้บนหัวเอกสาร */
+function prtDateLine(){ return String(eventDateLine()||'').replace(/^\s*·\s*/,''); }
+function prtHead(act, tag){
+  return `<div class="dochd"><div class="dt">
+      <b>${eventName()}</b><br>
+      ${SCOPE==='ALL'? districtName() : groupName(SCOPE)+' · รอบคัดเลือกระดับกลุ่มโรงเรียน'}<br>
+      ${prtDateLine()}
+    </div><div class="dtag">${tag||''}</div></div>
+    <div class="dsub"><span>${act.category? 'หมวดหมู่ : '+act.category : ''}</span>
+      <span>รหัสกิจกรรม : ${act.act_id||''}</span></div>`;
+}
+function prtSchedLine(act, pack){
+  const sch=(pack.schedule||[]).find(x=>String(x.act_id)===String(act.act_id))||{};
+  const ven=(pack.venues||[]).find(v=>String(v.venue_id)===String(sch.venue_id))||{};
+  return {date: sch.date? thDateLong(sch.date):'', time: sch.start_time||'',
+          venue: ven.name? (ven.name+(ven.room?' ห้อง '+ven.room:'')) : (sch.venue_id||'')};
+}
+function prtSignRow(n){
+  return `<div class="sign">${Array.from({length:n||3},()=>
+    `<div><div class="ln"></div>${PRT_DOTS}<br>เบอร์โทร ................................</div>`).join('')}</div>`;
+}
+function prtJudges(act, pack){
+  const ids=(pack.assign||[]).filter(a=>String(a.act_id)===String(act.act_id));
+  return ids.map(a=>{
+    const j=(pack.judges||[]).find(x=>String(x.judge_id)===String(a.judge_id))||{};
+    return {name:[j.prefix,j.name].filter(Boolean).join(''), org:j.org||'', role:a.role||'กรรมการ'};
+  });
+}
+
+/** สร้างเอกสาร 1 ฉบับ */
+function prtSheet(kind, act, pack, pub){
+  const ent=(pack.entries||[]).filter(e=>String(e.act_id)===String(act.act_id));
+  const crit=(pack.criteria||[]).filter(c=>c.act_id===act.act_id).sort((a,b)=>a.order-b.order);
+  const sc=prtSchedLine(act, pack);
+  const title=`${act.act_name||''} ${act.level||''}`;
+  const stuName=s=>[s.prefix,s.first_name,s.last_name].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+  const coachName=c=>[c.prefix,c.name].filter(Boolean).join('').trim();
+  const blanks=(n,cols)=>Array.from({length:Math.max(0,n)},()=>'<tr>'+'<td></td>'.repeat(cols)+'</tr>').join('');
+  let body='';
+
+  if(kind==='cover'){
+    return `<div class="sheetdoc">
+      <h1>เอกสารการแข่งขัน</h1>
+      <div class="meta">${eventName()}<br>${districtName()}<br>${prtDateLine()}</div>
+      <hr style="margin:16px 0;border:0;border-top:1px dashed #666">
+      <div style="text-align:center;line-height:1.9">
+        <div style="font-size:18px"><b>หมวดหมู่ :</b> ${act.category||''}</div>
+        <div style="font-size:18px"><b>รหัสกิจกรรม :</b> ${act.act_id||''}</div>
+        <div style="font-size:19px;font-weight:700">กิจกรรม ${title}</div>
+        <div style="font-size:17px">แข่งขันวันที่ <b>${sc.date||'.............................'}</b></div>
+        <div style="font-size:17px">เวลา ${sc.time||'...............'} น. เป็นต้นไป</div>
+        <div style="font-size:17px">ณ ${sc.venue||'.............................................'}</div>
+        <div style="font-size:16px;margin-top:6px">จำนวนทีมที่เข้าแข่งขัน <b>${ent.length}</b> ทีม</div>
+      </div>
+      <div style="margin-top:18px;font-size:13.5px;line-height:1.75">
+        <b>คำชี้แจง</b>
+        <ol style="padding-left:20px;margin:8px 0 0">
+          <li><b>เอกสารภายในซองประกอบด้วย</b> แบบลงทะเบียนนักเรียน (DOC.1) · แบบลงทะเบียนครูผู้ฝึกสอน (DOC.2) ·
+              แบบลงทะเบียนกรรมการตัดสิน (DOC.3) · แบบบันทึกคะแนน (DOC.4) · แบบแก้ไขชื่อ-สกุล/เปลี่ยนตัวนักเรียน (DOC.5)
+              และเกณฑ์การแข่งขัน/เอกสารอื่น ๆ (ถ้ามี)</li>
+          <li><b>นักเรียนลงทะเบียนเข้าแข่งขัน (DOC.1)</b> ให้ตรวจสอบชื่อ-สกุล ถ้าไม่ถูกต้องให้ขีดฆ่าแล้วแก้ไข
+              และเขียนชื่อตนเองด้วยตัวบรรจง พร้อมบันทึกการแก้ไขลงใน DOC.5</li>
+          <li><b>ครูผู้ฝึกสอนลงทะเบียน (DOC.2)</b> ให้เขียนชื่อตนเองด้วยตัวบรรจง และตรวจสอบความถูกต้องเช่นเดียวกับข้อ 2</li>
+          <li><b>กรรมการตัดสินลงทะเบียน (DOC.3)</b> ลงเวลามา–เวลากลับ และลงลายมือชื่อทุกคน</li>
+          <li><b>ตัดสินและบันทึกคะแนนลงใน DOC.4</b> คะแนนเต็ม ${crit.reduce((a,b)=>a+Number(b.max_score||0),0)||100} คะแนน
+              และกรรมการทุกคนลงลายมือชื่อรับรองผลคะแนน</li>
+          <li><b>นำเอกสารทั้งหมดใส่ซองตามเดิม</b> นำส่งผู้รับผิดชอบ เพื่อบันทึกคะแนนและรายงานผลการแข่งขันต่อไป</li>
+        </ol>
+      </div></div>`;
+  }
+
+  if(kind==='doc1'){
+    body=`<div class="dline">แบบลงทะเบียนนักเรียน <b>${title}</b></div>
+      <table><thead><tr><th style="width:40px">ลำดับ</th><th>โรงเรียน</th><th style="width:120px">สังกัด</th>
+        <th>ผู้เข้าแข่งขัน</th><th style="width:150px">ลงชื่อตัวบรรจง</th></tr></thead><tbody>
+      ${ent.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${cleanName(e.school_name||e.school_smis)}</td>
+        <td>${districtName()}</td>
+        <td>${(e.students||[]).map((s,k)=>(k+1)+'. '+stuName(s)).join('<br>')||''}</td><td></td></tr>`).join('')}
+      ${blanks(ent.length?2:12,5)}</tbody></table>
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+    return `<div class="sheetdoc">${prtHead(act,'DOC.1')}${body}</div>`;
+  }
+
+  if(kind==='doc2'){
+    body=`<div class="dline">แบบลงทะเบียนครูผู้ฝึกสอน <b>${title}</b></div>
+      <table><thead><tr><th style="width:40px">ลำดับ</th><th>โรงเรียน</th><th style="width:120px">สังกัด</th>
+        <th>ครูผู้ฝึกสอน</th><th style="width:150px">ลงชื่อตัวบรรจง</th></tr></thead><tbody>
+      ${ent.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${cleanName(e.school_name||e.school_smis)}</td>
+        <td>${districtName()}</td>
+        <td>${(e.coaches||[]).map((c,k)=>(k+1)+'. '+coachName(c)).join('<br>')||''}</td><td></td></tr>`).join('')}
+      ${blanks(ent.length?2:12,5)}</tbody></table>
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+    return `<div class="sheetdoc">${prtHead(act,'DOC.2')}${body}</div>`;
+  }
+
+  if(kind==='doc3'){
+    const js=prtJudges(act,pack);
+    const rows=js.length? js : JUDGE_SEATS.map(r=>({name:'',org:'',role:r}));
+    body=`<div class="dline">เอกสารการลงเวลาปฏิบัติราชการของกรรมการตัดสินการแข่งขัน <b>${title}</b></div>
+      <table class="sm"><thead><tr><th style="width:36px">ลำดับ</th><th>ชื่อ-สกุล</th><th>สังกัด</th>
+        <th style="width:110px">ตำแหน่ง</th><th style="width:62px">เวลามา</th><th style="width:96px">ลายเซ็น</th>
+        <th style="width:62px">เวลากลับ</th><th style="width:96px">ลายเซ็น</th><th style="width:120px">ลงชื่อตัวบรรจง</th></tr></thead><tbody>
+      ${rows.map((j,i)=>`<tr><td class="num">${i+1}</td><td>${j.name}</td><td>${j.org}</td><td>${j.role}</td>
+        <td></td><td></td><td></td><td></td><td></td></tr>`).join('')}
+      ${blanks(Math.max(0,8-rows.length),9)}</tbody></table>`;
+    return `<div class="sheetdoc">${prtHead(act,'DOC.3')}${body}</div>`;
+  }
+
+  if(kind==='doc4'){
+    const full=crit.reduce((a,b)=>a+Number(b.max_score||0),0)||100;
+    body=`<div class="dline">แบบบันทึกคะแนน <b>${title}</b></div>
+      <table class="sm"><thead>
+        <tr><th rowspan="2" style="width:44px">ลำดับที่</th><th rowspan="2">โรงเรียน</th><th rowspan="2" style="width:130px">สังกัด</th>
+          <th colspan="${Math.max(1,crit.length)}">เกณฑ์</th>
+          <th rowspan="2" style="width:62px">รวม<br>${full.toFixed(2)}</th><th rowspan="2" style="width:76px">หมายเหตุ</th></tr>
+        <tr>${crit.length? crit.map(c=>`<th style="width:52px">${c.item_name||''}<br><span class="tiny">(${Number(c.max_score||0).toFixed(2)})</span></th>`).join('')
+             : '<th style="width:52px">คะแนน</th>'}</tr></thead><tbody>
+      ${ent.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${cleanName(e.school_name||e.school_smis)}</td>
+        <td>${districtName()}</td>${'<td></td>'.repeat(Math.max(1,crit.length))}<td></td><td></td></tr>`).join('')}
+      ${blanks(ent.length?2:14, 5+Math.max(1,crit.length))}</tbody></table>
+      <p class="tiny" style="margin-top:8px">เกณฑ์เหรียญ: ร้อยละ 80 ขึ้นไป = ทอง · 70–79.99 = เงิน · 60–69.99 = ทองแดง · ต่ำกว่า 60 = เข้าร่วม
+        · ทีมที่ไม่มาแข่งขันให้บันทึกว่า <b>ไม่เข้าร่วมการแข่งขัน</b></p>
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}${prtSignRow(2)}</div>`;
+    return `<div class="sheetdoc">${prtHead(act,'DOC.4')}${body}</div>`;
+  }
+
+  if(kind==='doc5'){
+    body=`<div class="dline">แบบแก้ไขชื่อ–สกุล / เปลี่ยนตัวนักเรียนและครูผู้ฝึกสอน <b>${title}</b></div>
+      <table class="sm"><thead><tr><th style="width:36px">ที่</th><th>โรงเรียน</th>
+        <th>ชื่อ–สกุล เดิม</th><th>แก้ไขเป็น / เปลี่ยนตัวเป็น</th><th style="width:110px">เหตุผล</th>
+        <th style="width:120px">ลายมือชื่อ ผอ.</th></tr></thead><tbody>${blanks(12,6)}</tbody></table>
+      <p class="tiny" style="margin-top:8px">* การเปลี่ยนตัวต้องได้รับอนุมัติจากประธานกลุ่มโรงเรียนหรือสำนักงานเขตพื้นที่การศึกษา
+        และสามารถยื่นคำขอออนไลน์ได้ที่หน้า “ขอเปลี่ยนตัว” ของเว็บไซต์</p>
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+    return `<div class="sheetdoc">${prtHead(act,'DOC.5')}${body}</div>`;
+  }
+
+  if(kind==='doc6'){
+    const rows=((pub&&pub.results)||[]).filter(r=>String(r.act_id)===String(act.act_id))
+      .sort((a,b)=>Number(a.rank)-Number(b.rank));
+    body=`<div class="dline">ผลการแข่งขัน <b>${title}</b></div>
+      <table><thead><tr><th style="width:60px">อันดับ</th><th>โรงเรียน</th>
+        <th style="width:90px">คะแนน</th><th style="width:110px">เหรียญ</th><th style="width:130px">หมายเหตุ</th></tr></thead><tbody>
+      ${rows.length? rows.map(r=>`<tr><td class="num">${r.rank}</td><td>${cleanName(r.school||'')}</td>
+          <td class="num">${r.total}</td><td>${r.medal||''}</td><td>${rankWord(r.rank)||''}</td></tr>`).join('')
+        : blanks(12,5)}</tbody></table>
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+    return `<div class="sheetdoc">${prtHead(act,'DOC.6')}${body}</div>`;
+  }
+
+  if(kind==='attend'){
+    body=`<div class="dline">ใบเซ็นชื่อผู้เข้าแข่งขัน <b>${title}</b></div>
+      <div class="meta">วันที่แข่งขัน <b>${sc.date||'..........................'}</b> · เวลา ${sc.time||'............'} น.
+        · สนามแข่งขัน ${sc.venue||'..............................'}</div>
+      <table><thead><tr><th style="width:36px">ที่</th><th>โรงเรียน</th><th>ชื่อนักเรียน</th>
+        <th style="width:130px">ลายมือชื่อ</th><th style="width:70px">เวลา</th></tr></thead><tbody>
+      ${ent.flatMap((e,i)=>((e.students||[{}]).map(st=>`<tr><td class="num">${i+1}</td>
+         <td>${cleanName(e.school_name||e.school_smis)}</td><td>${st.first_name?stuName(st):''}</td>
+         <td></td><td></td></tr>`))).join('') || blanks(14,5)}
+      </tbody></table><div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+    return `<div class="sheetdoc">${prtHead(act,'ลงเวลา')}${body}</div>`;
+  }
+
+  if(kind==='judgescore'){
+    const full=crit.reduce((a,b)=>a+Number(b.max_score||0),0)||100;
+    body=`<div class="dline">ใบให้คะแนนรายกรรมการ <b>${title}</b></div>
+      <div class="meta">กรรมการคนที่ ............ ชื่อ–สกุล ........................................................................</div>
+      <table class="sm"><thead><tr><th style="width:36px">ที่</th><th>ผู้เข้าแข่งขัน</th>
+        ${crit.length? crit.map(c=>`<th style="width:56px">${c.item_name||''}<br><span class="tiny">(${c.max_score})</span></th>`).join('')
+          : '<th style="width:56px">คะแนน</th>'}
+        <th style="width:60px">รวม<br><span class="tiny">(${full})</span></th></tr></thead><tbody>
+      ${ent.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${cleanName(e.school_name||e.school_smis)}</td>
+        ${'<td></td>'.repeat(Math.max(1,crit.length))}<td></td></tr>`).join('')}
+      ${blanks(ent.length?2:14, 3+Math.max(1,crit.length))}</tbody></table>
+      <div class="dfoot">${prtSignRow(1)}</div>`;
+    return `<div class="sheetdoc">${prtHead(act,'ใบให้คะแนน')}${body}</div>`;
+  }
+  return '';
+}
+
+/** สร้างเอกสารทั้งชุดตามที่เลือกไว้ */
+async function printDocs(){
+  if(printLock('print_open','เอกสารการแข่งขัน')) return;
+  const picked=prtPicked();
+  if(!picked.length) return alert('กรุณาเลือกเอกสารอย่างน้อย 1 ฉบับ');
+  const area=$('#docArea'); area.innerHTML='<div class="note i"><span>⏳</span><div>กำลังสร้างเอกสาร…</div></div>';
+  try{
+    const cat=($('#prtCat')||{}).value||'';
+    const all=($('#prtAllAct')||{}).checked;
+    const one=($('#prtAct')||{}).value||'';
+    const pack=await api('printPack',{group:entryRound(), act_id: all? '' : one});
+    let acts=(pack.activities||[]);
+    acts = all ? acts.filter(a=>!cat || a.category===cat) : acts.filter(a=>String(a.act_id)===String(one));
+    if(!acts.length){ area.innerHTML='<div class="note w"><span>📭</span><div>ไม่พบรายการแข่งขันที่เลือก</div></div>'; return; }
+    let pub=null;
+    if(picked.indexOf('doc6')>=0) pub=await api('publicResults',{group:entryRound()}).catch(()=>null);
+    const out=[];
+    acts.forEach(a=>{ picked.forEach(k=>{ const h=prtSheet(k,a,pack,pub); if(h) out.push(h); }); });
+    area.innerHTML=out.join('');
+    const inf=$('#prtInfo');
+    if(inf) inf.textContent = acts.length+' รายการ × '+picked.length+' ฉบับ = '+out.length+' แผ่น (อย่างน้อย)';
+  }catch(e){ area.innerHTML='<div class="note w"><span>⚠️</span><div>'+e.message+'</div></div>'; }
 }
 
 /* ---------- CSV ---------- */
