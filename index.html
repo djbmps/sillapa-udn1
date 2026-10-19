@@ -334,6 +334,9 @@ body[data-view="admin"] .utilbar{display:none}
     </div>
     <div class="r">
       <div class="note i" id="loginCtx" style="margin-bottom:16px"></div>
+      <div class="fld"><label>เข้าสู่ระบบของ</label>
+        <select id="lgScope" onchange="lgScopeChange()"></select>
+        <div class="hint" style="margin-top:5px">ผู้ดูแลกลุ่มและโรงเรียนเลือกกลุ่มของตนเอง · ระบบจะพาเข้าเว็บกลุ่มนั้นให้อัตโนมัติ</div></div>
       <div class="fld"><label>ชื่อผู้ใช้</label><input id="lgUser" placeholder="เช่น admin-g01 หรือ sc0001"></div>
       <div class="fld"><label>รหัสผ่าน</label><input id="lgPass" type="password" placeholder="รหัสที่ได้รับจากผู้ดูแล"></div>
       <button class="btn" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">เข้าสู่ระบบ</button>
@@ -362,9 +365,8 @@ body[data-view="admin"] .utilbar{display:none}
   <div class="utilbar"><div class="in">
     <span class="lbl" id="utilTitle">งานศิลปหัตถกรรมนักเรียน · ปีการศึกษา</span>
     <span style="flex:1"></span>
-    <span class="lbl" id="pubScopeLbl">เลือกเว็บ</span>
-    <select id="scopeSelPub" onchange="setScope(this.value)"></select>
     <span class="who" id="pubWho"></span>
+    <button class="btn g" id="pubGroupBtn" onclick="pubGroupBtnClick()">🏁 เข้าเว็บกลุ่มโรงเรียน</button>
     <button class="btn" id="pubAuth" onclick="gotoAdmin()">เข้าสู่ระบบ</button>
     <button class="btn g" id="pubLogout" style="display:none" onclick="logoutNow()">ออกจากระบบ</button>
   </div></div>
@@ -476,7 +478,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div id="homeNewsWrap" style="margin-top:20px;display:none">
         <div style="display:flex;align-items:center;gap:10px;margin:0 0 12px">
           <h3 style="font-size:17px">ข่าวประชาสัมพันธ์</h3><span class="sp" style="flex:1"></span>
-          <button class="btn g sm" onclick="go('news')">ดูทั้งหมด →</button></div>
+          <span class="hint" id="homeNewsCount"></span></div>
         <div id="homeNews"></div>
       </div>
       <div class="grid g2" style="margin-top:16px">
@@ -2569,7 +2571,7 @@ function roleTh(r){ const t={district_admin:'ผู้ดูแลเขต',gro
 
 
 /* ============================ หน้าเว็บสาธารณะ / หลังบ้าน ============================ */
-const PUBLIC_PAGES=[['home','หน้าแรก'],['news','ข่าวประชาสัมพันธ์'],['acts','รายการแข่งขัน'],['apply','สมัครกรรมการตัดสิน'],
+const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการแข่งขัน'],['apply','สมัครกรรมการตัดสิน'],
   ['sched','ตารางแข่งขัน'],['results','ผลการแข่งขัน'],['medals','ตารางเหรียญ'],
   ['cert','เกียรติบัตร'],['docs','เอกสารดาวน์โหลด']];
 /* ทะเบียนโรงเรียนไม่อยู่ในเมนูสาธารณะ — เปิดดูได้เฉพาะฝั่งหลังบ้านของเขตและกลุ่ม */
@@ -2610,6 +2612,38 @@ function setView(v){
   applyScope(); go(PAGE);
 }
 function gotoAdmin(){ ME? setView('admin') : openLogin(); }
+
+/* ---------- เข้าเว็บกลุ่มโรงเรียนจากหน้าสาธารณะ ----------
+   เว็บระดับเขตแสดงภาพรวมทั้งเขต · กดปุ่มนี้เพื่อเข้าเว็บของกลุ่มโรงเรียน
+   เว็บกลุ่มมีทั้งหน้าสาธารณะของกลุ่ม และปุ่มเข้าสู่ระบบหลังบ้านของกลุ่มเอง            */
+function pubGroupBtnClick(){ SCOPE==='ALL'? openGroupPicker() : switchSite('ALL'); }
+function openGroupPicker(){
+  const gs=(DB.groups||[]);
+  openModal('เข้าเว็บกลุ่มโรงเรียน',
+    `<div class="note i" style="margin-bottom:12px"><span>🏁</span><div>
+       เลือกกลุ่มโรงเรียนที่ต้องการเข้าชม — เว็บกลุ่มจะแสดงรายการแข่งขัน ตารางแข่ง และผลการแข่งขันรอบคัดเลือกของกลุ่มนั้น
+       <div class="hint" style="margin-top:4px">ผู้ดูแลกลุ่มและโรงเรียนเข้าสู่ระบบหลังบ้านได้จากเว็บกลุ่มโดยตรง</div></div></div>
+     <input id="gpQ" placeholder="ค้นหากลุ่มโรงเรียน หรือ อำเภอ" oninput="gpFilter()"
+            style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:12px">
+     <div id="gpList" class="grid g2" style="gap:10px;max-height:58vh;overflow:auto">
+       ${gs.map(g=>`<button class="btn g" data-q="${String(g.group_name+' '+(g.amphoe||'')).replace(/"/g,'')}"
+          onclick="pickGroup('${g.group_code}')" style="justify-content:flex-start;text-align:left;padding:12px 14px;height:auto">
+          <div><b>${g.group_name}</b><div class="hint" style="margin-top:2px">${g.amphoe||''} · ${g.schools||0} โรงเรียน</div></div>
+        </button>`).join('')}
+     </div>`, ()=>false);
+  const ok=$('#mOk'); if(ok) ok.style.display='none';
+}
+function gpFilter(){
+  const q=$('#gpQ').value.trim();
+  $$('#gpList button').forEach(b=>{ b.style.display = (!q || String(b.dataset.q).indexOf(q)>=0)? '' : 'none'; });
+}
+function pickGroup(code){ closeModal(); switchSite(code); }
+async function switchSite(code){
+  setScope(code);
+  try{ await reloadBoot(); }catch(e){}
+  renderAll(); go('home');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 function toggleMenu(){ $('#pnav').classList.toggle('open'); }
 function closeMenu(){ $('#pnav').classList.remove('open'); }
 function toggleSide(){
@@ -2656,6 +2690,11 @@ function renderPubNav(){
         (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
       sel.value=SCOPE;
     }
+  }
+  const gb=$('#pubGroupBtn');
+  if(gb){
+    gb.style.display = lock? 'none' : '';
+    gb.textContent = SCOPE==='ALL' ? '🏁 เข้าเว็บกลุ่มโรงเรียน' : '← กลับเว็บระดับเขต';
   }
   const w=$('#pubWho'), a=$('#pubAuth'), lo=$('#pubLogout');
   if(w) w.innerHTML = ME
@@ -3832,6 +3871,7 @@ function go(p){
   if(isAdminPage(p) && VIEW!=='admin'){ VIEW='admin'; LS.setItem(K.view,'admin');
     document.body.dataset.view='admin'; }
   if(p==='schools' && VIEW==='public') p='home';   /* ทะเบียนโรงเรียนเป็นหน้าหลังบ้าน */
+  if(p==='news') p='home';                         /* ข่าวประชาสัมพันธ์รวมอยู่ในหน้าแรกแล้ว */
   PAGE=p; $$('.page').forEach(x=>x.classList.remove('on'));
   const el=$('#p-'+p); if(el) el.classList.add('on');
   $$('.nv').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
@@ -3910,8 +3950,9 @@ function renderHome(){
     /* ไม่มีข่าว: ผู้ชมทั่วไปไม่ต้องเห็นกล่องว่าง ส่วนผู้ดูแลเห็นทางลัดไปเพิ่มข่าว */
     if(!rows.length && !canPost){ if(wrap) wrap.style.display='none'; return; }
     if(wrap) wrap.style.display='block';
+    const cnt=$('#homeNewsCount'); if(cnt) cnt.textContent = rows.length? rows.length+' เรื่อง' : '';
     $('#homeNews').innerHTML = rows.length
-      ? rows.slice(0,3).map((n,i)=>newsCard(n,i)).join('')
+      ? rows.map((n,i)=>newsCard(n,i)).join('')
       : `<div class="note i"><span>📭</span><div>ยังไม่มีข่าวประชาสัมพันธ์ — ข่าวที่เพิ่มจะขึ้นตรงนี้เป็นอันดับแรกของหน้าแรก
          <div style="margin-top:9px"><button class="btn sm" onclick="go('newsmgr')">📣 ไปเพิ่มข่าว</button></div></div></div>`;
   }).catch(()=>{ const w=$('#homeNewsWrap'); if(w) w.style.display='none'; });
@@ -5305,7 +5346,20 @@ function logoutNow(){
   PAGE='home'; setView('public');
   buildScopeSel(); boot();
 }
+function lgScopeChange(){
+  const v=$('#lgScope').value;
+  $('#loginCtx').innerHTML = v==='ALL'
+    ? '🏛️ กำลังเข้าสู่ระบบ<b> ระดับเขตพื้นที่</b><br>สพป.อุดรธานี เขต 1'
+    : '🏁 กำลังเข้าสู่ระบบ<b>เว็บกลุ่ม '+groupName(v)+'</b><br>ภายใต้ สพป.อุดรธานี เขต 1 · <code>'+v+'</code>';
+  if(DEMO()) $('#loginCtx').innerHTML+='<br><br><b>โหมดตัวอย่าง</b> — ลองด้วย <code>admin</code>/<code>admin</code> หรือ <code>admin-g01</code>/<code>admin</code>';
+}
 function openLogin(){ $('#app').style.display='none'; $('#loginView').style.display='block';
+  const sel=$('#lgScope');
+  if(sel){
+    sel.innerHTML='<option value="ALL">ระดับเขต — '+((DB.config||{}).district_name||'สพป.อุดรธานี เขต 1')+'</option>'+
+      (DB.groups||[]).map(g=>`<option value="${g.group_code}">เว็บกลุ่ม — ${g.group_name}</option>`).join('');
+    sel.value=SCOPE; lgScopeChange(); return;
+  }
   $('#loginCtx').innerHTML = SCOPE==='ALL'
     ? '🏛️ กำลังเข้าสู่ระบบ<b> ระดับเขตพื้นที่</b><br>สพป.อุดรธานี เขต 1'
     : '🏁 กำลังเข้าสู่ระบบ<b>เว็บกลุ่ม '+groupName(SCOPE)+'</b><br>ภายใต้ สพป.อุดรธานี เขต 1 · <code>'+SCOPE+'</code>';
@@ -5314,12 +5368,14 @@ function openLogin(){ $('#app').style.display='none'; $('#loginView').style.disp
 function closeLogin(){ $('#loginView').style.display='none'; $('#app').style.display='grid'; }
 async function doLogin(){
   try{
+    const sc=$('#lgScope'); if(sc && sc.value) SCOPE=sc.value;     /* เลือกเว็บที่จะเข้าจากหน้าเข้าสู่ระบบ */
     const r=await api('login',{username:$('#lgUser').value.trim(), password:$('#lgPass').value.trim()});
     TOKEN=r.token; ME=r.user; LS.setItem(K.token,TOKEN); LS.setItem(K.me,JSON.stringify(ME));
     const lk=lockedScope(); if(lk) SCOPE=lk;
     LS.setItem(K.scope,SCOPE);
+    await reloadBoot();                     /* โหลดข้อมูลของเว็บที่เลือกไว้ */
     closeLogin(); VIEW='admin'; LS.setItem(K.view,'admin');
-    applyScope(); renderAll(); go(ME.role==='selector'?'judgeapp':'dash');
+    buildScopeSel(); applyScope(); renderAll(); go(ME.role==='selector'?'judgeapp':'dash');
   }catch(e){ $('#lgErr').style.display='flex'; $('#lgErr').innerHTML='<span>⚠️</span><div>'+e.message+'</div>'; }
 }
 
