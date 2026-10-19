@@ -481,15 +481,45 @@ body[data-view="admin"] .utilbar{display:none}
           <span class="hint" id="homeNewsCount"></span></div>
         <div id="homeNews"></div>
       </div>
-      <div class="grid g2" style="margin-top:16px">
-        <div class="card"><div class="ch"><h3>กลุ่มโรงเรียนในเขต</h3><span class="sp"></span><button class="btn g sm" id="homeGroupsMore">ดูทั้งหมด</button></div>
+      <div class="grid g2" style="margin-top:16px" id="homeGrid2">
+        <div class="card" id="homeGroupCard"><div class="ch"><h3>กลุ่มโรงเรียนในเขต</h3><span class="sp"></span><button class="btn g sm" id="homeGroupsMore">ดูทั้งหมด</button></div>
           <div class="cb" style="padding:0;max-height:340px;overflow:auto"><table id="homeGroups"></table></div></div>
-        <div class="card"><div class="ch"><h3>ตารางเหรียญ</h3><span class="sp"></span><span class="pill i" id="rankMethodTag">เรียงตามลำดับเหรียญ</span></div>
+        <div class="card"><div class="ch"><h3>ตารางเหรียญ</h3><span class="sp"></span>
+          <button class="btn g sm" id="rankMethodTag" onclick="toggleMedalSort()">เรียงลำดับ</button></div>
           <div class="cb" style="padding:0;max-height:340px;overflow:auto"><table id="homeMedals"></table></div></div>
       </div>
     </section>
 
     <!-- ---------- รายการแข่งขัน ---------- -->
+    <!-- ---------- ผลการแข่งขัน (สาธารณะ) ---------- -->
+    <section class="page" id="p-results">
+      <div class="hd"><div><h2>ผลการแข่งขัน</h2><p id="resSub"></p></div></div>
+      <div class="card"><div class="ch"><h3>ผลที่ประกาศแล้ว</h3><span class="sp"></span>
+        <input id="resQ" placeholder="ค้นหารายการ / โรงเรียน" oninput="drawResults()"
+               style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;min-width:220px">
+        <select id="resMedal" onchange="drawResults()" style="padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff">
+          <option value="">ทุกเหรียญ</option><option>ทอง</option><option>เงิน</option><option>ทองแดง</option><option>เข้าร่วม</option></select>
+        <span class="hint" id="resCount"></span></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="resTbl"></table></div></div>
+    </section>
+
+    <!-- ---------- ตารางเหรียญ (สาธารณะ) ---------- -->
+    <section class="page" id="p-medals">
+      <div class="hd"><div><h2>ตารางเหรียญ</h2><p id="medSub"></p></div></div>
+      <div class="card"><div class="ch"><h3>สรุปเหรียญรางวัลรายโรงเรียน</h3><span class="sp"></span>
+        <button class="btn g sm" id="medSortBtn" onclick="toggleMedalSort()">เรียงลำดับ</button>
+        <span class="hint" id="medCount"></span></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="medTbl"></table></div></div>
+    </section>
+
+    <!-- ---------- ตารางแข่งขัน (สาธารณะ) ---------- -->
+    <section class="page" id="p-sched">
+      <div class="hd"><div><h2>ตารางแข่งขัน</h2><p id="schSub"></p></div></div>
+      <div class="card"><div class="ch"><h3>คิวการแข่งขันรายสนาม</h3><span class="sp"></span>
+        <span class="hint" id="schCount"></span></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="schTbl"></table></div></div>
+    </section>
+
     <section class="page" id="p-acts">
       <div class="hd"><div><h2>รายการแข่งขัน</h2><p id="actsSub"></p></div></div>
       <div class="note i" style="margin-bottom:12px"><span>🔗</span><div>
@@ -3938,6 +3968,11 @@ function renderHome(){
        ['โรงเรียนขยายโอกาส',S.filter(x=>x.is_expansion==='Y').length,'ลงรายการ ม.1-3 ได้'],
        ['รายการแข่งขัน',A.length,'เปิดแข่ง '+A.filter(a=>a.status==='เปิด').length+' รายการ']];
   $('#homeStats').innerHTML=stats.map(s=>`<div class="stat"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
+  /* เว็บระดับเขตไม่ต้องมีตารางกลุ่มโรงเรียนในหน้าแรก — ใช้ปุ่ม “เข้าเว็บกลุ่มโรงเรียน” บนแถบบนแทน
+     ส่วนเว็บของกลุ่มยังแสดง “โรงเรียนสมาชิก” ไว้เหมือนเดิม */
+  const gcard=$('#homeGroupCard'), grid2=$('#homeGrid2'), hideG = (SCOPE==='ALL');
+  if(gcard) gcard.style.display = hideG? 'none' : '';
+  if(grid2) grid2.style.gridTemplateColumns = hideG? '1fr' : '';
   const hg=$('#homeGroups').closest('.card').querySelector('h3');
   const hm=$('#homeGroupsMore');
   if(hm) hm.onclick=()=>go(SCOPE==='ALL'?'groups':'schools');
@@ -3955,12 +3990,10 @@ function renderHome(){
         <td>${x.offer}${x.is_expansion==='Y'?' <span class="pill i">ขยายโอกาส</span>':''}</td></tr>`).join(''));
   }
   api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{
-    tbl($('#homeMedals'),['อันดับ','โรงเรียน','ทอง','เงิน','ทองแดง'],
-      r.medals.slice(0,8).map((m,i)=>`<tr><td><span class="medal ${i<3?'m'+(i+1):''}"
-        style="${i>2?'background:#EFE7E0;color:#6B5F55':''}">${i+1}</span></td><td>${m.school}</td>
-        <td class="num" style="color:var(--m-g);font-weight:700">${m.g}</td>
-        <td class="num" style="color:var(--m-s);font-weight:700">${m.s}</td>
-        <td class="num" style="color:var(--m-b);font-weight:700">${m.b}</td></tr>`).join(''));
+    window.__PUB=r;
+    const b=$('#rankMethodTag'); if(b) b.textContent=medalSortLabel();
+    tbl($('#homeMedals'),['อันดับ','โรงเรียน','ชนะเลิศ','ทอง','เงิน','ทองแดง'],
+      medalTally(r).slice(0,8).map((m,i)=>medalRow(m,i)).join(''));
   }).catch(()=>{});
   api('listNews',{scope:SCOPE==='ALL'?'':SCOPE}).then(rows=>{
     window.__NEWS=rows;
@@ -5257,9 +5290,84 @@ async function delSelector(id,name){
 }
 
 /* ---------- ผล / เหรียญ / ตาราง ---------- */
-function renderResults(){}
-function renderMedals(){}
-function renderSched(){}
+/* ============================ ผลการแข่งขัน · ตารางเหรียญ · ตารางแข่งขัน (หน้าสาธารณะ) ============================ */
+/** เรียงตารางเหรียญได้ 2 แบบ — ตามจำนวน "ชนะเลิศ (อันดับ 1 เหรียญทอง)" หรือตามจำนวนเหรียญทอง */
+let MEDAL_SORT = (function(){ try{ return LS.getItem('sillapa.medalsort')||'win'; }catch(e){ return 'win'; } })();
+function medalSortLabel(){ return MEDAL_SORT==='win' ? '🏆 เรียงตามชนะเลิศ' : '🥇 เรียงตามเหรียญทอง'; }
+function toggleMedalSort(){
+  MEDAL_SORT = (MEDAL_SORT==='win') ? 'gold' : 'win';
+  try{ LS.setItem('sillapa.medalsort', MEDAL_SORT); }catch(e){}
+  if(window.__PUB){
+    const b=$('#rankMethodTag'); if(b) b.textContent=medalSortLabel();
+    const t=$('#homeMedals'); if(t) tbl(t,['อันดับ','โรงเรียน','ชนะเลิศ','ทอง','เงิน','ทองแดง'],
+      medalTally(window.__PUB).slice(0,8).map((m,i)=>medalRow(m,i)).join(''));
+  }
+  if(PAGE==='medals') drawMedals();
+}
+/** รวมเหรียญรายโรงเรียน + นับจำนวนรายการที่ชนะเลิศ แล้วเรียงตามโหมดที่เลือก */
+function medalTally(r){
+  const t={};
+  (r.medals||[]).forEach(m=>{ t[m.school]={school:m.school,g:Number(m.g)||0,s:Number(m.s)||0,b:Number(m.b)||0,win:0}; });
+  (r.results||[]).forEach(x=>{
+    if(!x.school) return;
+    const k=t[x.school]||(t[x.school]={school:x.school,g:0,s:0,b:0,win:0});
+    if(Number(x.rank)===1 && x.medal==='ทอง') k.win++;
+  });
+  const rows=Object.keys(t).map(k=>t[k]);
+  rows.sort(MEDAL_SORT==='win'
+    ? (a,b)=> b.win-a.win || b.g-a.g || b.s-a.s || b.b-a.b
+    : (a,b)=> b.g-a.g || b.s-a.s || b.b-a.b || b.win-a.win);
+  return rows;
+}
+function medalRow(m,i){
+  return `<tr><td><span class="medal ${i<3?'m'+(i+1):''}"
+      style="${i>2?'background:#EFE7E0;color:#6B5F55':''}">${i+1}</span></td>
+    <td>${cleanName(m.school)}</td>
+    <td class="num"><b>${m.win}</b></td>
+    <td class="num" style="color:var(--m-g);font-weight:700">${m.g}</td>
+    <td class="num" style="color:var(--m-s);font-weight:700">${m.s}</td>
+    <td class="num" style="color:var(--m-b);font-weight:700">${m.b}</td></tr>`;
+}
+
+function renderResults(){
+  $('#resSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':'รอบคัดเลือก · '+groupName(SCOPE));
+  api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{ window.__PUB=r; drawResults(); }).catch(()=>{});
+}
+function drawResults(){
+  const r=window.__PUB||{results:[]};
+  const q=($('#resQ')&&$('#resQ').value.trim())||'', md=($('#resMedal')&&$('#resMedal').value)||'';
+  let rows=(r.results||[]).filter(x=>(!md||x.medal===md) &&
+    (!q || String(x.act_name||'').indexOf(q)>=0 || String(x.school||'').indexOf(q)>=0));
+  rows.sort((a,b)=> String(a.act_name||'').localeCompare(String(b.act_name||''),'th') || Number(a.rank)-Number(b.rank));
+  $('#resCount').textContent = rows.length+' รายการ';
+  tbl($('#resTbl'),['รายการแข่งขัน','ระดับชั้น','โรงเรียน','คะแนน','เหรียญ','อันดับ'],
+    rows.map(x=>`<tr><td><b>${x.act_name||''}</b></td><td>${x.level||''}</td>
+      <td>${cleanName(x.school||'')}${x.from_group?' <span class="hint">· จาก '+groupName(x.from_group)+'</span>':''}</td>
+      <td class="num">${x.total||''}</td>
+      <td><span class="pill ${x.medal==='ทอง'?'ok':x.medal==='เงิน'?'i':'w'}">${x.medal||''}</span></td>
+      <td class="num">${x.rank||''}</td></tr>`).join(''));
+}
+function renderMedals(){
+  $('#medSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':'รอบคัดเลือก · '+groupName(SCOPE));
+  api('publicResults',{group:SCOPE==='ALL'?'':SCOPE}).then(r=>{ window.__PUB=r; drawMedals(); }).catch(()=>{});
+}
+function drawMedals(){
+  const r=window.__PUB||{medals:[],results:[]};
+  const rows=medalTally(r);
+  const b=$('#medSortBtn'); if(b) b.textContent=medalSortLabel();
+  const c=$('#medCount'); if(c) c.textContent = rows.length? rows.length+' โรงเรียน' : '';
+  tbl($('#medTbl'),['อันดับ','โรงเรียน','ชนะเลิศ','ทอง','เงิน','ทองแดง'],
+    rows.map((m,i)=>medalRow(m,i)).join(''));
+}
+function renderSched(){
+  $('#schSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':groupName(SCOPE));
+  api('queue',{group:SCOPE==='ALL'?'':SCOPE}).then(q=>{
+    $('#schCount').textContent = q.length? q.length+' รายการ' : '';
+    tbl($('#schTbl'),['รายการแข่งขัน','วันที่','เวลา','สนามแข่งขัน','สถานะ'],
+      q.map(x=>`<tr><td><b>${x.act||''}</b></td><td>${dstr(x.date)}</td><td>${x.start||''}</td>
+        <td>${x.venue||''}</td><td>${x.status||''}</td></tr>`).join(''));
+  }).catch(()=>{ tbl($('#schTbl'),['รายการแข่งขัน','วันที่','เวลา','สนามแข่งขัน','สถานะ'],''); });
+}
 
 /* ---------- ตั้งค่า ---------- */
 function renderSetup(){
