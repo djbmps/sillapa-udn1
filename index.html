@@ -2211,10 +2211,21 @@ function demoApi(action,p){
       MEM.criteria.filter(c=>c.act_id===p.act_id).forEach((it,i)=>MEM.criteria.push(
         {crit_id:'C'+Date.now()+i+'d',act_id:copy.act_id,order:i+1,item_name:it.item_name,max_score:it.max_score}));
       memSave(); return copy; }
+    case 'entryStats':{
+      let e=MEM.entries.slice();
+      if(p.group) e=e.filter(x=>x.group_code===p.group);
+      const ids={}; e.forEach(x=>ids[x.entry_id]=1);
+      return {teams:e.length,
+        students:MEM.students.filter(x=>ids[x.entry_id]).length,
+        coaches:MEM.coaches.filter(x=>ids[x.entry_id]).length,
+        activities:new Set(e.map(x=>x.act_id)).size,
+        schools:new Set(e.map(x=>String(x.school_smis))).size,
+        byAct:e.reduce((m,x)=>{ m[x.act_id]=(m[x.act_id]||0)+1; return m; },{})}; }
     case 'listEntries':{
       let e=MEM.entries.slice();
       if(p.group) e=e.filter(x=>x.group_code===p.group);
       if(p.act_id) e=e.filter(x=>x.act_id===p.act_id);
+      if(p.smis) e=e.filter(x=>String(x.school_smis)===String(p.smis));
       return e.map(x=>Object.assign({},x,{students:MEM.students.filter(s=>s.entry_id===x.entry_id),
                                           coaches:MEM.coaches.filter(c=>c.entry_id===x.entry_id)})); }
     case 'saveEntry':{
@@ -2795,7 +2806,7 @@ async function checkRev(force){
     else if(rv && rv!==REV){
       REV=rv;
       DB.criteria=null;                     /* เกณฑ์เปลี่ยน → โหลดใหม่เมื่อเปิดหน้าที่ต้องใช้ */
-      await refreshBoot(SCOPE==='ALL'?'':SCOPE);
+      await refreshBoot(SCOPE==='ALL'?'':SCOPE, true);
       revToast();
     }
   }catch(e){}
@@ -2820,10 +2831,17 @@ function startRevWatch(){
 }
 
 /** ดึงข้อมูลใหม่เงียบ ๆ แล้ววาดซ้ำถ้ามีอะไรเปลี่ยน */
-async function refreshBoot(sc){
+async function refreshBoot(sc, force){
   try{
+    /* ถามแค่ "เลขเวอร์ชันข้อมูล" ก่อน (คำขอเล็กมาก) ถ้ายังเท่าเดิมก็ไม่ต้องดึงข้อมูลทั้งก้อนซ้ำ
+       ช่วยให้เปิดหน้าเว็บครั้งต่อ ๆ ไปเร็วขึ้นมาก เพราะข้อมูลหลักแทบไม่เปลี่ยนระหว่างวัน */
+    if(!force && REV){
+      const r = await api('rev',{});
+      const rv = String((r&&r.rev)||'');
+      if(rv && rv===REV) return;
+    }
     const fresh = await api('bootstrap',{group:sc});
-    const same = JSON.stringify(fresh)===JSON.stringify(DB);
+    const same = String(fresh.rev||'')===String(DB.rev||'') ;
     DB = fresh; REV = String(DB.rev||REV); snapSave(DB, sc);
     if(!same){ buildScopeSel(); applyScope(); renderAll(); }
   }catch(e){}
@@ -3995,7 +4013,7 @@ async function subNew(){
   box.querySelector('.cb').innerHTML=SUB_FORM_HTML;
   $('#sb_entry').innerHTML='<option value="">กำลังโหลดรายการ…</option>';
   try{
-    const all=await api('listEntries',{group:entryRound()});
+    const all=await api('listEntries',{group:entryRound(), smis:ME.scope});
     SUB_ENT=all.filter(e=>String(e.school_smis)===String(ME.scope));
     $('#sb_entry').innerHTML = SUB_ENT.length
       ? SUB_ENT.map(e=>{ const a=(DB.activities||[]).find(x=>x.act_id===e.act_id)||{};
@@ -5009,19 +5027,19 @@ function renderGroups(){
 
 function renderDash(){
   const A=actsOf();
-  Promise.all([api('listEntries',{group:entryRound()}), api('publicResults',{group:entryRound()})])
+  Promise.all([api('entryStats',{group:entryRound()}), api('publicResults',{group:entryRound()})])
    .then(([ent,pub])=>{
     const pubActs=new Set(pub.results.map(r=>r.act_id));
     $('#dashSub').textContent=SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE);
     $('#dashStats').innerHTML=[
       ['รายการที่เปิดแข่ง',A.filter(a=>a.status==='เปิด').length,'จากทั้งหมด '+A.length],
-      [SCOPE==='ALL'?'ทีมตัวแทนเข้าเขต':'ทีมที่สมัครแล้ว',ent.length,
-        'นักเรียน '+ent.reduce((a,b)=>a+(b.students||[]).length,0)+' คน'],
+      [SCOPE==='ALL'?'ทีมตัวแทนเข้าเขต':'ทีมที่สมัครแล้ว',ent.teams,
+        'นักเรียน '+ent.students+' คน'],
       ['ประกาศผลแล้ว',pubActs.size,'จาก '+A.length+' รายการ'],
-      ['โรงเรียนที่ส่งเข้าแข่ง',new Set(ent.map(e=>e.school_smis)).size,'']
+      ['โรงเรียนที่ส่งเข้าแข่ง',ent.schools,'']
     ].map((s,i)=>`<div class="stat s${(i%4)+1}"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
     tbl($('#dashTbl'),['รายการแข่งขัน','ระดับชั้น','ทีมที่สมัคร','เกณฑ์','สถานะ'],
-      A.map(a=>{ const n=ent.filter(e=>e.act_id===a.act_id).length;
+      A.map(a=>{ const n=(ent.byAct||{})[a.act_id]||0;
         const nc=critCount(a.act_id);
         return `<tr><td><b>${a.act_name}</b></td><td>${a.level}</td><td class="num">${n}</td>
           <td>${nc?'<span class="pill ok">'+nc+' หัวข้อ</span>':'<span class="pill b">ยังไม่มีเกณฑ์</span>'}</td>
