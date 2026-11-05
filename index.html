@@ -10,16 +10,17 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#151210; --ink-2:#4C433C; --ink-3:#8A7E75;
-  --line:#E8E2DC; --line-2:#F2EDE8; --bg:#F7F4F1; --card:#fff;
-  --pri:#E2620E; --pri-2:#BF4F08; --pri-soft:#FDEFE3;
-  --black:#141210;
-  --ok:#1B7A56; --ok-soft:#E5F4EE; --warn:#96660A; --warn-soft:#FBF1DA;
+  /* ชุดสีหลัก — น้ำเงินสดใสบนพื้นฟ้าอ่อน การ์ดสีขาว และป้ายสีสันสดใส */
+  --ink:#111A2E; --ink-2:#44506B; --ink-3:#7A879F;
+  --line:#D7E0F1; --line-2:#EBF0FA; --bg:#E9EEF8; --card:#fff;
+  --pri:#2656C9; --pri-2:#12306E; --pri-soft:#E6EDFC;
+  --black:#12306E;
+  --ok:#1B7A56; --ok-soft:#E3F5EC; --warn:#9A6A08; --warn-soft:#FBF2DC;
   --bad:#B3261E; --bad-soft:#FCEBE9;
-  --m-g:#D6A63C; --m-s:#9AA6B4; --m-b:#B4713B;
-  --c1:#B45309; --c1s:#FBEBD7; --c2:#1B7A56; --c2s:#E5F4EE;
-  --c3:#1D4ED8; --c3s:#E6ECFB; --c4:#8C3A8E; --c4s:#F4E6F5;
-  --r:12px; --sh:0 1px 2px rgba(21,18,16,.06),0 6px 20px rgba(21,18,16,.05);
+  --m-g:#D6A63C; --m-s:#97A5B8; --m-b:#B4713B;
+  --c1:#D9730D; --c1s:#FDEEDC; --c2:#1E9A5F; --c2s:#E2F6EC;
+  --c3:#2656C9; --c3s:#E6EDFC; --c4:#7C5CD6; --c4s:#EFEAFB;
+  --r:12px; --sh:0 1px 2px rgba(16,33,74,.07),0 6px 20px rgba(16,33,74,.07);
 }
 body[data-scope="group"]{--pri:#9C3A12;--pri-2:#7E2E0C;--pri-soft:#F8EBE3}
 *{box-sizing:border-box}
@@ -31,22 +32,22 @@ button{cursor:pointer;border:0;background:none;color:inherit}
 h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .shell{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
 .shell>*{min-width:0}
-.side{background:var(--black);color:#C6BCB3;height:100vh;position:sticky;top:0;overflow-y:auto;padding-bottom:26px}
+.side{background:var(--black);color:#C3D2EC;height:100vh;position:sticky;top:0;overflow-y:auto;padding-bottom:26px}
 .brand{display:flex;gap:11px;align-items:center;padding:18px 16px 15px;border-bottom:1px solid rgba(255,255,255,.09)}
-.brand .mk{width:38px;height:38px;border-radius:10px;background:linear-gradient(140deg,#F58021,#C2410C);display:grid;place-items:center;font-size:19px;flex:none}
+.brand .mk{width:38px;height:38px;border-radius:10px;background:linear-gradient(140deg,#4F8DF7,#1E40AF);display:grid;place-items:center;font-size:19px;flex:none}
 .brand h1{font-size:14px;color:#fff}
-.brand p{margin:2px 0 0;font-size:11px;color:#9C8F84}
+.brand p{margin:2px 0 0;font-size:11px;color:#9DAFCE}
 .ng{padding:13px 11px 0}
-.ng>span{display:block;padding:0 8px 6px;font-size:10.5px;letter-spacing:.05em;color:#8A7C70;font-weight:600}
-.nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;font-size:13.5px;color:#C6BCB3;width:100%;text-align:left}
+.ng>span{display:block;padding:0 8px 6px;font-size:10.5px;letter-spacing:.05em;color:#8CA0C4;font-weight:600}
+.nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;font-size:13.5px;color:#C3D2EC;width:100%;text-align:left}
 .nv:hover{background:rgba(255,255,255,.07);color:#fff}
-.nv.on{background:rgba(226,98,14,.2);color:#FFB779;font-weight:600;box-shadow:inset 3px 0 0 var(--pri)}
+.nv.on{background:rgba(38,86,201,.2);color:#A8C6FF;font-weight:600;box-shadow:inset 3px 0 0 var(--pri)}
 .nv i{width:18px;text-align:center;font-style:normal;font-size:14px}
 /* แถบเมนูหลังบ้านแบบจัดหมวด — พับเก็บได้ และมีช่องค้นหาเมนู */
 .ngb{display:flex;flex-direction:column;gap:1px}
 .ng>span.ngh{display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;
   user-select:none;border-radius:8px;margin:0 0 4px;padding:5px 8px;transition:color .15s,background .15s}
-.ng>span.ngh:hover{background:rgba(255,255,255,.05);color:#C6BCB3}
+.ng>span.ngh:hover{background:rgba(255,255,255,.05);color:#C3D2EC}
 .ng>span.ngh .cv{font-style:normal;font-size:9px;opacity:.55;transition:transform .18s}
 .ng.cl>.ngb{display:none}
 .ng.cl>span.ngh .cv{transform:rotate(-90deg)}
@@ -55,9 +56,9 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .navfind input{width:100%;padding:7px 26px 7px 27px;border-radius:9px;font-family:inherit;font-size:12.5px;
   border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#E8E0D9}
 .navfind input:focus{outline:none;border-color:rgba(245,128,33,.6);background:rgba(255,255,255,.1)}
-.navfind input::placeholder{color:#8A7C70}
+.navfind input::placeholder{color:#8CA0C4}
 .navfind:before{content:"🔍";position:absolute;left:20px;top:19px;font-size:10.5px;opacity:.65;pointer-events:none}
-.navx{position:absolute;right:19px;top:17px;color:#8A7C70;font-size:12px;display:none;line-height:1}
+.navx{position:absolute;right:19px;top:17px;color:#8CA0C4;font-size:12px;display:none;line-height:1}
 .navfind.has .navx{display:block}
 .nv.hide{display:none!important}
 /* ช่องรหัสผ่าน — ปุ่มเปิด-ปิดตาเพื่อดูรหัสที่พิมพ์ */
@@ -71,7 +72,7 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .steps{margin:0;padding-left:20px;line-height:1.85;font-size:14px}
 .steps li{margin-bottom:8px}
 .steps b{color:var(--ink)}
-.sigbox{border:1px solid var(--line);border-radius:11px;background:#FFFDF8;overflow:hidden;
+.sigbox{border:1px solid var(--line);border-radius:11px;background:#FAFCFF;overflow:hidden;
   background-image:linear-gradient(90deg,transparent 0 calc(100% - 1px),rgba(0,0,0,.05) 0)}
 .sigbox canvas{display:block;width:100%;height:180px;touch-action:none;cursor:crosshair}
 .subdoc{max-width:360px;border-radius:10px;border:1px solid var(--line)}
@@ -103,7 +104,7 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .pill.ok{background:var(--ok-soft);color:var(--ok);box-shadow:inset 0 0 0 1px rgba(27,122,86,.18)}
 .pill.w{background:var(--warn-soft);color:var(--warn);box-shadow:inset 0 0 0 1px rgba(150,102,10,.18)}
 .pill.b{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 1px rgba(179,38,30,.18)}
-.pill.i{background:var(--pri-soft);color:var(--pri);box-shadow:inset 0 0 0 1px rgba(226,98,14,.18)}
+.pill.i{background:var(--pri-soft);color:var(--pri);box-shadow:inset 0 0 0 1px rgba(38,86,201,.18)}
 .pill.n{background:var(--c3s);color:var(--c3);box-shadow:inset 0 0 0 1px rgba(29,78,216,.16)}
 .blink{animation:blk 1.15s ease-in-out infinite}@keyframes blk{50%{opacity:.25}}
 .actrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;
@@ -121,7 +122,7 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .rlink{display:flex;gap:10px;align-items:center;padding:9px 11px;cursor:pointer;width:100%;
   font:inherit;color:inherit;text-align:left;background:#fff;border:1px solid var(--line);border-radius:10px;
   transition:border-color .15s, box-shadow .15s, transform .15s}
-.rlink:hover{border-color:var(--pri);box-shadow:0 2px 10px rgba(226,98,14,.12);transform:translateY(-1px)}
+.rlink:hover{border-color:var(--pri);box-shadow:0 2px 10px rgba(38,86,201,.12);transform:translateY(-1px)}
 .rlink.on{border-color:#F3C6A8;background:linear-gradient(90deg,#FFF6EE,#fff 60%)}
 .rlink .code{flex:none;min-width:40px;height:26px;border-radius:7px;background:var(--line-2);color:var(--ink-2);
   display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -178,15 +179,15 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .hero h2{font-size:26px;margin:7px 0 6px;max-width:660px}
 .hero p{margin:0;color:#EBD9CB;font-size:13.5px;max-width:600px}
 .hero::after{content:'🏆';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:110px;opacity:.09}
-.livebar{display:flex;align-items:center;gap:12px;background:#141210;color:#E8DED5;border-radius:12px;padding:12px 15px;margin-bottom:12px}
+.livebar{display:flex;align-items:center;gap:12px;background:#0D2252;color:#D5E0F5;border-radius:12px;padding:12px 15px;margin-bottom:12px}
 .livebar .dt{width:9px;height:9px;border-radius:50%;background:#4ADE80;animation:bl 1.5s infinite}
 @keyframes bl{50%{opacity:.25}}
 .livebar b{display:block;color:#fff;font-size:13.5px}
-.livebar small{color:#A99787;font-size:12px}
+.livebar small{color:#9FB3D8;font-size:12px}
 .livebar .a{margin-left:auto;display:flex;gap:8px}
 .livebar .a button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:9px;font-size:12.5px;font-weight:600}
 .livebar .a button:hover{background:var(--pri);border-color:var(--pri)}
-.strip{display:flex;align-items:center;gap:10px;background:var(--black);color:#E4C4A9;font-size:12.5px;padding:9px 15px;border-radius:11px;margin-bottom:12px}
+.strip{display:flex;align-items:center;gap:10px;background:var(--black);color:#C3D2EC;font-size:12.5px;padding:9px 15px;border-radius:11px;margin-bottom:12px}
 .strip b{color:#fff}
 .strip .bk{margin-left:auto;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);color:#fff;padding:4px 12px;border-radius:999px;font-size:12px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
@@ -210,16 +211,16 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .lbr .c{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 .gc{color:#F0C863}.sc{color:#C6D0DB}.bc{color:#D2925C}
 .login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
-.login .l{position:relative;overflow:hidden;background:linear-gradient(150deg,#151210,#4A2812 55%,#B8520C);
+.login .l{position:relative;overflow:hidden;background:linear-gradient(150deg,#0A1A40,#163A8A 55%,#2656C9);
   color:#fff;padding:40px;display:flex;flex-direction:column;justify-content:center}
 /* ภาพเงาเด็ก ๆ ทำกิจกรรม — วางไว้ครึ่งล่าง ไม่ให้ทับข้อความ */
 .login .l::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56%;
-  background:url("banner.webp") center bottom/cover no-repeat;
+  background:url("banner-blue.webp") center bottom/cover no-repeat;
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%);
           mask-image:linear-gradient(180deg,transparent,#000 22%);pointer-events:none}
 .login .l>*{position:relative;z-index:1}
 .login .l h2{font-size:30px;margin:14px 0 10px;max-width:380px;text-shadow:0 2px 14px rgba(0,0,0,.45)}
-.login .l p{color:#EDD9C8;max-width:400px;margin:0;text-shadow:0 1px 10px rgba(0,0,0,.45)}
+.login .l p{color:#D6E2F7;max-width:400px;margin:0;text-shadow:0 1px 10px rgba(0,0,0,.45)}
 .login .r{display:flex;flex-direction:column;justify-content:center;padding:40px;max-width:460px;margin:0 auto;width:100%}
 @media(max-width:1000px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.g4,.g3,.g2{grid-template-columns:1fr}.login{grid-template-columns:1fr}.login .l{display:none}}
 
@@ -244,19 +245,19 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#141210 0%,#4
   background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);padding:4px 12px;border-radius:999px}
 .banner h1{font-size:30px;margin:10px 0 5px;text-shadow:0 2px 14px rgba(0,0,0,.45)}
 .banner p{margin:0;color:#EFDCCC;font-size:14.5px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
-.pnav{background:var(--black);color:#C6BCB3;position:sticky;top:0;z-index:40;box-shadow:0 2px 10px rgba(20,18,16,.18)}
+.pnav{background:var(--black);color:#C3D2EC;position:sticky;top:0;z-index:40;box-shadow:0 2px 10px rgba(11,31,77,.22)}
 .pnav-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:2px;padding:0 18px;flex-wrap:wrap}
-.pnav button.pl{padding:12px 12px;font-size:13.5px;color:#C6BCB3;white-space:nowrap;border-bottom:3px solid transparent}
+.pnav button.pl{padding:12px 12px;font-size:13.5px;color:#C3D2EC;white-space:nowrap;border-bottom:3px solid transparent}
 .pnav button.pl:hover{color:#fff;background:rgba(255,255,255,.06)}
-.pnav button.pl.on{color:#FFB779;border-bottom-color:var(--pri);font-weight:600}
+.pnav button.pl.on{color:#A8C6FF;border-bottom-color:var(--pri);font-weight:600}
 
 
 .pnote{background:var(--warn-soft);color:#7A5205;font-size:13px;padding:9px 18px;text-align:center;border-bottom:1px solid #EFDFB6}
-.pfoot{background:var(--black);color:#9C8F84;margin-top:40px;padding:26px 18px;font-size:13px}
+.pfoot{background:var(--black);color:#9DAFCE;margin-top:40px;padding:26px 18px;font-size:13px}
 .pfoot .in{max-width:1180px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
 .pfoot b{color:#fff}
 .pfoot .dev{font-size:12.5px;color:#8E8278}
-.pfoot .dev a{color:#C6BCB3;text-decoration:underline}
+.pfoot .dev a{color:#C3D2EC;text-decoration:underline}
 .sdev{padding:14px 12px 20px;font-size:11.5px;color:#7E736A;line-height:1.7;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
 .sdev b{color:#A99D93;font-weight:600}
 body[data-view="admin"] .pfoot{display:none}
@@ -298,7 +299,7 @@ body[data-view="admin"] .pfoot{display:none}
     border-bottom:1px solid rgba(255,255,255,.08);border-left:3px solid transparent}
   .pnav.open button.pl{display:block}
   .pnav button.pl.on{border-bottom-color:rgba(255,255,255,.08);border-left-color:var(--pri);
-    background:rgba(226,98,14,.14)}
+    background:rgba(38,86,201,.14)}
   .utilbar .in{padding:7px 14px;gap:7px}
   .utilbar .lbl:first-child,.utilbar .who{display:none}
   .utilbar select{flex:1;max-width:none}
@@ -340,7 +341,7 @@ body[data-view="admin"] .pfoot{display:none}
   .sideveil.on{display:block}
 }
 /* ---------- แถบเครื่องมือด้านบนสุด ---------- */
-.utilbar{background:#241F1B;color:#B9ADA3;font-size:12.5px;border-bottom:1px solid #342C25}
+.utilbar{background:#0D2252;color:#AEC0E0;font-size:12.5px;border-bottom:1px solid #1B3A77}
 .utilbar .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:7px 18px;flex-wrap:wrap}
 .utilbar .lbl{color:#8D8177}
 .utilbar select{background:#332B25;color:#EFE5DC;border:1px solid #4A3F36;border-radius:8px;
@@ -363,7 +364,7 @@ body[data-view="admin"] .utilbar{display:none}
 .idc .ph{position:absolute;left:50%;transform:translateX(-50%);border-radius:3mm;overflow:hidden;
   border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.18);background:#EFE6DC}
 .idc .ph img{width:100%;height:100%;object-fit:cover;display:block}
-.idc .ph .none{display:grid;place-items:center;height:100%;color:#9C8F84;font-size:11px;text-align:center;padding:4px}
+.idc .ph .none{display:grid;place-items:center;height:100%;color:#9DAFCE;font-size:11px;text-align:center;padding:4px}
 .idc .l{position:absolute;left:0;right:0;text-align:center;padding:0 7mm}
 .idc .l.nm{font-size:15px;font-weight:700}
 .idc .l.dt{font-size:11.5px;color:#4C433C}
@@ -419,12 +420,30 @@ body[data-view="admin"] .utilbar{display:none}
 .sheetdoc ol{font-size:13px}
 .prtdoc{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
   border-radius:11px;cursor:pointer;background:#fff;transition:border-color .15s,background .15s}
-.prtdoc:hover{border-color:var(--pri);background:#FFFBF6}
+.prtdoc:hover{border-color:var(--pri);background:#F4F8FF}
 .prtdoc input{width:19px;height:19px;margin-top:2px;flex:none}
 .prtdoc span{display:block;line-height:1.45}
 .prtdoc b{display:block;font-size:14px}
 .prtdoc i{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:2px}
-.prtdoc:has(input:checked){border-color:var(--pri);background:#FFF6EC}
+.prtdoc:has(input:checked){border-color:var(--pri);background:#E9F0FE}
+/* การ์ดกลุ่มโรงเรียน — แต่ละกลุ่มมีสีประจำกลุ่มของตัวเอง */
+.gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.gcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
+  box-shadow:var(--sh);display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.gcard:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(16,33,74,.14)}
+.gcard .gh{background:var(--gc,#2656C9);color:#fff;padding:14px 15px 13px;position:relative}
+.gcard .gh .gcode{font-size:11px;letter-spacing:.08em;opacity:.85;font-weight:600}
+.gcard .gh h4{margin:3px 0 0;font-size:15.5px;font-weight:700;line-height:1.35}
+.gcard .gh .gam{font-size:12px;opacity:.9;margin-top:3px}
+.gcard .gb{padding:12px 15px;display:flex;flex-direction:column;gap:9px;flex:1}
+.gcard .gstat{display:flex;gap:14px;font-size:13px;color:var(--ink-2)}
+.gcard .gstat b{color:var(--ink);font-variant-numeric:tabular-nums}
+.gcard .gfoot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px}
+.gcard .gbtn{flex:1;background:var(--gc,#2656C9);color:#fff;border-radius:9px;padding:8px 10px;
+  font-size:13px;font-weight:600;text-align:center;cursor:pointer}
+.gcard .gbtn:hover{filter:brightness(1.1)}
+.gdot{width:11px;height:11px;border-radius:50%;background:var(--gc,#2656C9);flex:none;display:inline-block}
+#gpList .btn.g{border-left:5px solid var(--gc,#2656C9)}
 @media print{
   body{background:#fff}
   .side,.top,.noprint,.livebar,.strip,#pubHead,.pfoot{display:none!important}
@@ -466,7 +485,7 @@ body[data-view="admin"] .utilbar{display:none}
       <p class="hint" style="margin-top:14px">
         <a href="#" onclick="toggleForgot();return false" style="color:var(--pri);font-weight:700">ลืมรหัสผ่าน? ขอให้เขตรีเซ็ตให้</a></p>
 
-      <div id="forgotBox" style="display:none;margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#FFFDF9">
+      <div id="forgotBox" style="display:none;margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#F8FBFF">
         <b style="font-size:14.5px">ขอให้สำนักงานเขตรีเซ็ตรหัสผ่าน</b>
         <div class="hint" style="margin:4px 0 10px">กรอกชื่อผู้ใช้ที่ลืมรหัส และช่องทางติดต่อกลับ เขตจะรีเซ็ตให้แล้วแจ้งรหัสใหม่</div>
         <div class="fld"><label>ชื่อผู้ใช้ *</label><input id="fgUser" placeholder="เช่น admin-g06 หรือ sc0001"></div>
@@ -588,7 +607,7 @@ body[data-view="admin"] .utilbar{display:none}
       <span class="sp"></span>
       <span class="tag" id="modeTag"></span>
       <select id="scopeSel" onchange="setScope(this.value)" style="padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px"></select>
-      <span id="scopeChip" style="display:none;padding:6px 12px;border-radius:9px;background:var(--brand,#E2620E);
+      <span id="scopeChip" style="display:none;padding:6px 12px;border-radius:9px;background:var(--brand,#2656C9);
             color:#fff;font-size:13px;font-weight:700;white-space:nowrap"></span>
       <span id="whoami" class="hint" style="max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
       <button class="btn g" id="admLogout" style="display:none;padding:5px 12px;font-size:12.5px"
@@ -704,7 +723,9 @@ body[data-view="admin"] .utilbar{display:none}
     <section class="page" id="p-groups">
       <div class="hd"><div><h2>กลุ่มโรงเรียน</h2><p>20 กลุ่ม · เปิดเว็บของกลุ่มให้จัดแข่งเอง แล้วติดตามความคืบหน้าทุกกลุ่มจากที่เดียว</p></div>
         <span class="sp"></span><button class="btn g sm" onclick="exportCsv('groups')">⬇ CSV</button></div>
-      <div class="card"><div class="cb" style="padding:0;overflow:auto"><table id="grpTbl"></table></div></div>
+      <div id="grpCards" class="gcards"></div>
+      <div class="card" style="margin-top:16px"><div class="ch"><h3>ตารางสรุปทุกกลุ่ม</h3></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="grpTbl"></table></div></div>
     </section>
 
     <!-- ---------- แดชบอร์ด ---------- -->
@@ -2899,6 +2920,7 @@ function applyScope(){
   $('#bTitle').textContent = g? groupName(SCOPE) : 'ศิลปหัตถกรรมนักเรียน ครั้งที่ '+edition();
   $('#bSub').textContent   = g? 'เว็บกลุ่มโรงเรียน · รอบคัดเลือก' : districtName()+' · '+acadYear();
   $('#bMk').textContent    = g? '🏁':'🏆';
+  $('#bMk').style.background = g? groupColor(SCOPE) : '';
   $('#hKw').textContent    = g? 'รอบคัดเลือกระดับกลุ่มโรงเรียน' : shortName();
   $('#hTitle').textContent = g? groupName(SCOPE) : 'ระดับเขตพื้นที่การศึกษา · '+districtName();
   $('#scopeSel').value=SCOPE;
@@ -2933,7 +2955,9 @@ function applyScope(){
   $('#modeTag').textContent = DEMO()?'โหมดตัวอย่าง (ยังไม่เชื่อม Google Sheets)':'เชื่อม Google Sheets แล้ว';
   const lockA=lockedScope(), chip=$('#scopeChip'), sl=$('#scopeSel');
   if(chip && sl){
-    if(lockA){ sl.style.display='none'; chip.style.display=''; chip.textContent='🏁 '+groupName(lockA); }
+    if(lockA){ sl.style.display='none'; chip.style.display='';
+      chip.textContent='🏁 '+groupName(lockA);
+      chip.style.background=groupColor(lockA); }
     else { sl.style.display=''; chip.style.display='none'; }
   }
   const alo=$('#admLogout'); if(alo) alo.style.display = ME? '' : 'none';
@@ -3026,7 +3050,7 @@ function openGroupPicker(){
      <input id="gpQ" placeholder="ค้นหากลุ่มโรงเรียน หรือ อำเภอ" oninput="gpFilter()"
             style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:12px">
      <div id="gpList" class="grid g2" style="gap:10px;max-height:58vh;overflow:auto">
-       ${gs.map(g=>`<button class="btn g" data-q="${String(g.group_name+' '+(g.amphoe||'')).replace(/"/g,'')}"
+       ${gs.map(g=>`<button class="btn g" style="--gc:${groupColor(g.group_code)}" data-q="${String(g.group_name+' '+(g.amphoe||'')).replace(/"/g,'')}"
           onclick="pickGroup('${g.group_code}')" style="justify-content:flex-start;text-align:left;padding:12px 14px;height:auto">
           <div><b>${g.group_name}</b><div class="hint" style="margin-top:2px">${g.amphoe||''} · ${g.schools||0} โรงเรียน</div></div>
         </button>`).join('')}
@@ -3073,7 +3097,7 @@ function eventDateLine(){
 }
 /** ภาพแบนเนอร์เริ่มต้นของระบบ — เงาร่างเด็ก ๆ ทำกิจกรรม (ฟ้อนรำ · ร้องเพลง · วาดภาพ · ชกมวย · เขียนหนังสือ)
     ฝังมากับไฟล์หน้าเว็บ จึงแสดงได้เสมอแม้ยังไม่ได้อัปโหลดภาพของตนเอง */
-const DEFAULT_BANNER = 'banner.webp';
+const DEFAULT_BANNER = 'banner-blue.webp';
 function renderBanner(){
   const c=siteCfg(), b=$('#banner');
   b.style.backgroundImage = `url("${c.banner_url? imgSrc(c.banner_url) : DEFAULT_BANNER}")`;
@@ -3090,6 +3114,21 @@ function renderBanner(){
   $('#fTop').style.display = c.contact? '' : 'none';
 }
 /** เมนูสาธารณะ — แสดงเฉพาะข้อมูลที่เปิดเผยได้ เกียรติบัตรจะโผล่เมื่อเปิดระบบให้ดาวน์โหลดแล้ว */
+/* ---------- สีประจำกลุ่มโรงเรียน ----------
+   20 กลุ่ม 20 สี ไล่รอบวงล้อสีให้กลุ่มที่อยู่ติดกันไม่ซ้ำกัน
+   ทุกสีผ่านเกณฑ์ความชัดของตัวอักษรสีขาว (WCAG AA) */
+const GROUP_COLORS=[
+  '#BC422F','#AB632B','#8B6F23','#73761E','#5F7E20','#458321','#278321','#218337','#218355','#218372',
+  '#237D8B','#2D79B4','#2F54BC','#342FBC','#5E2FBC','#882FBC','#B22FBC','#BC2F9B','#BC2F71','#BC2F46'];
+function groupColor(code){
+  if(!code || code==='ALL' || code==='DISTRICT') return '#2656C9';
+  const list=(DB.groups||[]);
+  let i=list.findIndex(g=>String(g.group_code)===String(code));
+  if(i<0){ let h=0; const t=String(code);
+    for(let k=0;k<t.length;k++) h=(h*31+t.charCodeAt(k))>>>0; i=h; }
+  return GROUP_COLORS[i%GROUP_COLORS.length];
+}
+
 /* ---------- แถบเมนูหลังบ้านแบบจัดหมวด ----------
    จัดกลุ่มเมนูตามขั้นตอนการทำงานจริง (คล้ายระบบของ สพฐ.) แต่พับเก็บได้และค้นหาได้
    จำสถานะพับ/กางของแต่ละหมวดไว้ในเครื่องผู้ใช้ */
@@ -3813,7 +3852,7 @@ function sigInit(id){
   const cv=$('#'+id); if(!cv || cv.dataset.on) return;
   cv.dataset.on='1';
   const ctx=cv.getContext('2d');
-  ctx.lineWidth=2.4; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#1A1410';
+  ctx.lineWidth=2.4; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#0F172A';
   let draw=false;
   const pt=e=>{ const r=cv.getBoundingClientRect(); const t=e.touches?e.touches[0]:e;
     return [(t.clientX-r.left)*cv.width/r.width, (t.clientY-r.top)*cv.height/r.height]; };
@@ -5016,8 +5055,25 @@ function renderSchools(){
 }
 
 function renderGroups(){
-  tbl($('#grpTbl'),['รหัส','กลุ่มโรงเรียน','อำเภอ','โรงเรียน','นักเรียน','ขยายโอกาส','เว็บกลุ่ม','โควตา',''],
-    DB.groups.map(g=>`<tr><td class="num">${g.group_code}</td><td><b>${g.group_name}</b></td><td>${g.amphoe}</td>
+  const box=$('#grpCards');
+  if(box) box.innerHTML=(DB.groups||[]).map(g=>{
+    const c=groupColor(g.group_code);
+    return `<div class="gcard" style="--gc:${c}">
+      <div class="gh"><div class="gcode">${g.group_code}</div>
+        <h4>${g.group_name}</h4>
+        <div class="gam">อำเภอ${g.amphoe||''}</div></div>
+      <div class="gb">
+        <div class="gstat"><span>โรงเรียน <b>${g.schools||0}</b></span>
+          <span>นักเรียน <b>${Number(g.students||0).toLocaleString()}</b></span></div>
+        <div class="gstat"><span>ขยายโอกาส <b>${g.expansion_schools||0}</b></span>
+          <span>โควตา <b>${g.quota_default||1}</b></span></div>
+        <div>${g.site_open==='Y'?'<span class="pill ok">เปิดเว็บแล้ว</span>':'<span class="pill w">ยังไม่เปิดเว็บ</span>'}</div>
+        <div class="gfoot"><div class="gbtn" onclick="setScope('${g.group_code}')">เข้าเว็บกลุ่ม →</div></div>
+      </div></div>`;
+  }).join('');
+  tbl($('#grpTbl'),['','รหัส','กลุ่มโรงเรียน','อำเภอ','โรงเรียน','นักเรียน','ขยายโอกาส','เว็บกลุ่ม','โควตา',''],
+    DB.groups.map(g=>`<tr><td><span class="gdot" style="--gc:${groupColor(g.group_code)}"></span></td>
+      <td class="num">${g.group_code}</td><td><b>${g.group_name}</b></td><td>${g.amphoe}</td>
       <td class="num">${g.schools}</td><td class="num">${Number(g.students).toLocaleString()}</td>
       <td class="num">${g.expansion_schools}</td>
       <td>${g.site_open==='Y'?'<span class="pill ok">เปิดแล้ว</span>':'<span class="pill w">ยังไม่เปิด</span>'}</td>
@@ -6036,7 +6092,7 @@ function allCats(){ return [...new Set((DB.activities||[]).map(a=>a.category).fi
 function apPickRow(i){
   const cats=allCats();
   return `<div class="row" style="margin-bottom:8px;align-items:flex-end">
-    <div style="width:34px;height:34px;border-radius:50%;background:var(--brand,#E2620E);color:#fff;
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--brand,#2656C9);color:#fff;
          display:flex;align-items:center;justify-content:center;font-weight:800">${i}</div>
     <div class="fld" style="margin:0;min-width:190px"><label>กลุ่มสาระ อันดับ ${i}</label>
       <select id="ap_c${i}" onchange="apFillActs(${i})"
