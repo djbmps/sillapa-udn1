@@ -427,21 +427,37 @@ body[data-view="admin"] .utilbar{display:none}
 .prtdoc i{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:2px}
 .prtdoc:has(input:checked){border-color:var(--pri);background:#E9F0FE}
 /* การ์ดกลุ่มโรงเรียน — แต่ละกลุ่มมีสีประจำกลุ่มของตัวเอง */
-.gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.gcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
-  box-shadow:var(--sh);display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
-.gcard:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(16,33,74,.14)}
-.gcard .gh{background:var(--gc,#2656C9);color:#fff;padding:14px 15px 13px;position:relative}
-.gcard .gh .gcode{font-size:11px;letter-spacing:.08em;opacity:.85;font-weight:600}
-.gcard .gh h4{margin:3px 0 0;font-size:15.5px;font-weight:700;line-height:1.35}
-.gcard .gh .gam{font-size:12px;opacity:.9;margin-top:3px}
-.gcard .gb{padding:12px 15px;display:flex;flex-direction:column;gap:9px;flex:1}
-.gcard .gstat{display:flex;gap:14px;font-size:13px;color:var(--ink-2)}
-.gcard .gstat b{color:var(--ink);font-variant-numeric:tabular-nums}
-.gcard .gfoot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px}
-.gcard .gbtn{flex:1;background:var(--gc,#2656C9);color:#fff;border-radius:9px;padding:8px 10px;
-  font-size:13px;font-weight:600;text-align:center;cursor:pointer}
-.gcard .gbtn:hover{filter:brightness(1.1)}
+.gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:14px}
+.gcard{position:relative;overflow:hidden;border-radius:14px;color:#fff;isolation:isolate;
+  background-color:var(--gc,#2656C9);
+  background-image:linear-gradient(155deg,rgba(255,255,255,.17),rgba(0,0,0,.20));
+  box-shadow:0 1px 2px rgba(16,33,74,.10),0 8px 22px rgba(16,33,74,.14);
+  display:flex;flex-direction:column;padding:15px 16px 14px;transition:transform .15s,box-shadow .15s}
+.gcard:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(16,33,74,.24)}
+.gcard>*{position:relative;z-index:1}
+.gcard .gwm{position:absolute;right:-20px;bottom:-26px;width:138px;height:138px;
+  opacity:.15;z-index:0;pointer-events:none}
+.gcard .gwm svg{width:100%;height:100%;stroke:#fff}
+.gcard .gtop{display:flex;align-items:center;gap:9px}
+.gcard .gicon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;flex:none}
+.gcard .gicon svg{width:20px;height:20px;stroke:#fff}
+.gcard .gcode{font-size:11px;letter-spacing:.09em;font-weight:700;opacity:.85;text-transform:uppercase}
+.gcard h4{margin:10px 0 0;font-size:16px;font-weight:700;line-height:1.3}
+.gcard .gam{font-size:12.5px;opacity:.88;margin-top:2px}
+.gcard .gstat{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:12px;font-size:12px;opacity:.92}
+.gcard .gstat b{display:block;font-size:16.5px;font-weight:700;opacity:1;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.15}
+.gcard .gpill{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  font-size:11.5px;font-weight:600;background:rgba(255,255,255,.2);border-radius:999px;
+  padding:4px 11px;margin-top:12px}
+.gcard .gpill i{width:7px;height:7px;border-radius:50%;background:#fff;flex:none;
+  box-shadow:0 0 0 3px rgba(255,255,255,.25)}
+.gcard .gpill.off i{background:rgba(255,255,255,.45);box-shadow:none}
+.gcard .gfoot{margin-top:auto;padding-top:13px}
+.gcard .gbtn{background:#fff;color:var(--gc,#2656C9);border-radius:10px;padding:9px 10px;
+  font-size:13px;font-weight:700;text-align:center;cursor:pointer;transition:transform .12s}
+.gcard .gbtn:hover{transform:translateY(-1px)}
 .gdot{width:11px;height:11px;border-radius:50%;background:var(--gc,#2656C9);flex:none;display:inline-block}
 #gpList .btn.g{border-left:5px solid var(--gc,#2656C9)}
 @media print{
@@ -3128,6 +3144,8 @@ function groupColor(code){
     for(let k=0;k<t.length;k++) h=(h*31+t.charCodeAt(k))>>>0; i=h; }
   return GROUP_COLORS[i%GROUP_COLORS.length];
 }
+/* ไอคอนอาคารเรียนบนการ์ดกลุ่มโรงเรียน (วาดด้วยเส้น ไม่ใช่รูปภาพ จึงคมทุกขนาดจอ) */
+const GICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 7.6v2.2h18V7.6L12 3Z"/><path d="M5.2 9.8V19M18.8 9.8V19M9.4 19v-5.2h5.2V19"/><path d="M2.6 19h18.8"/></svg>';
 
 /* ---------- แถบเมนูหลังบ้านแบบจัดหมวด ----------
    จัดกลุ่มเมนูตามขั้นตอนการทำงานจริง (คล้ายระบบของ สพฐ.) แต่พับเก็บได้และค้นหาได้
@@ -5058,18 +5076,21 @@ function renderGroups(){
   const box=$('#grpCards');
   if(box) box.innerHTML=(DB.groups||[]).map(g=>{
     const c=groupColor(g.group_code);
+    const open=g.site_open==='Y';
     return `<div class="gcard" style="--gc:${c}">
-      <div class="gh"><div class="gcode">${g.group_code}</div>
-        <h4>${g.group_name}</h4>
-        <div class="gam">อำเภอ${g.amphoe||''}</div></div>
-      <div class="gb">
-        <div class="gstat"><span>โรงเรียน <b>${g.schools||0}</b></span>
-          <span>นักเรียน <b>${Number(g.students||0).toLocaleString()}</b></span></div>
-        <div class="gstat"><span>ขยายโอกาส <b>${g.expansion_schools||0}</b></span>
-          <span>โควตา <b>${g.quota_default||1}</b></span></div>
-        <div>${g.site_open==='Y'?'<span class="pill ok">เปิดเว็บแล้ว</span>':'<span class="pill w">ยังไม่เปิดเว็บ</span>'}</div>
-        <div class="gfoot"><div class="gbtn" onclick="setScope('${g.group_code}')">เข้าเว็บกลุ่ม →</div></div>
-      </div></div>`;
+      <div class="gwm">${GICON}</div>
+      <div class="gtop"><div class="gicon">${GICON}</div><div class="gcode">${g.group_code}</div></div>
+      <h4>${g.group_name}</h4>
+      <div class="gam">อำเภอ${g.amphoe||''}</div>
+      <div class="gstat">
+        <span><b>${g.schools||0}</b>โรงเรียน</span>
+        <span><b>${Number(g.students||0).toLocaleString()}</b>นักเรียน</span>
+        <span><b>${g.expansion_schools||0}</b>ขยายโอกาส</span>
+        <span><b>${g.quota_default||1}</b>โควตา/รายการ</span>
+      </div>
+      <div class="gpill${open?'':' off'}"><i></i>${open?'เปิดเว็บแล้ว':'ยังไม่เปิดเว็บ'}</div>
+      <div class="gfoot"><div class="gbtn" onclick="setScope('${g.group_code}')">เข้าเว็บกลุ่ม →</div></div>
+    </div>`;
   }).join('');
   tbl($('#grpTbl'),['','รหัส','กลุ่มโรงเรียน','อำเภอ','โรงเรียน','นักเรียน','ขยายโอกาส','เว็บกลุ่ม','โควตา',''],
     DB.groups.map(g=>`<tr><td><span class="gdot" style="--gc:${groupColor(g.group_code)}"></span></td>
