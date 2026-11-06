@@ -459,6 +459,34 @@ body[data-view="admin"] .utilbar{display:none}
   font-size:13px;font-weight:700;text-align:center;cursor:pointer;transition:transform .12s}
 .gcard .gbtn:hover{transform:translateY(-1px)}
 .gdot{width:11px;height:11px;border-radius:50%;background:var(--gc,#2656C9);flex:none;display:inline-block}
+/* การ์ดเกณฑ์การแข่งขันรายกลุ่มสาระ */
+.rcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px}
+.rcard{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--gc,#2656C9);
+  border-radius:12px;box-shadow:var(--sh);padding:15px 16px 14px;display:flex;flex-direction:column}
+.rcard .ricon{width:38px;height:38px;border-radius:11px;background:var(--gc,#2656C9);
+  display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+.rcard .ricon svg{width:21px;height:21px}
+.rcard.na .ricon svg{stroke:var(--ink-3)}
+.rcard h4{margin:0;font-size:15.5px;font-weight:700;line-height:1.3;color:var(--ink)}
+.rcard .rmeta{font-size:12.5px;color:var(--ink-3);margin-top:4px;line-height:1.55}
+.rcard .rbtns{display:flex;gap:8px;margin-top:13px;padding-top:0}
+.rcard .rbtns>*{flex:1;text-align:center}
+.rcard .rna{margin-top:13px;font-size:12.5px;color:var(--ink-3);background:var(--line-2);
+  border-radius:9px;padding:9px;text-align:center}
+.rcard.na{border-left-color:var(--line);box-shadow:none;background:#FBFCFE}
+.rcard.na .ricon{background:var(--line);color:var(--ink-3)}
+.rbook{background:linear-gradient(135deg,var(--pri-2),var(--pri));color:#fff;border-radius:14px;
+  padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  box-shadow:0 8px 24px rgba(16,33,74,.18)}
+.rbook .bk{font-size:34px;line-height:1;flex:none}
+.rbook h3{margin:0;font-size:17px;font-weight:700}
+.rbook p{margin:3px 0 0;font-size:13px;opacity:.9}
+.rbook .sp{flex:1}
+.rbook .btn{background:#fff;color:var(--pri-2);border:0;font-weight:700}
+.rbook .btn.o{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5)}
+.pdfbox{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--line-2)}
+.pdfbox iframe{display:block;width:100%;height:68vh;border:0;background:#fff}
+@media(max-width:700px){.pdfbox iframe{height:58vh}}
 #gpList .btn.g{border-left:5px solid var(--gc,#2656C9)}
 @media print{
   body{background:#fff}
@@ -563,6 +591,7 @@ body[data-view="admin"] .utilbar{display:none}
         <button class="nv" data-p="schools"><i>🏫</i>ทะเบียนโรงเรียน</button>
         <button class="nv" data-p="groups" data-dist="1"><i>🏘️</i>กลุ่มโรงเรียน 20 กลุ่ม</button>
         <button class="nv" data-p="actedit" data-role="district_admin" data-perm="actedit"><i>📋</i>จัดการรายการ &amp; เกณฑ์</button>
+        <button class="nv" data-p="rulesmgr" data-role="district_admin" data-perm="actedit"><i>📘</i>ไฟล์เกณฑ์รายกลุ่มสาระ</button>
         <button class="nv" data-p="site" data-role="district_admin,group_admin" data-perm="site"><i>🖼️</i>หน้าเว็บ &amp; แบนเนอร์</button>
         <button class="nv" data-p="newsmgr" data-role="district_admin,group_admin" data-perm="newsmgr"><i>📣</i>ประชาสัมพันธ์</button>
       </div></div>
@@ -1058,6 +1087,27 @@ body[data-view="admin"] .utilbar{display:none}
     <section class="page" id="p-docs">
       <div class="hd"><div><h2>เอกสารดาวน์โหลด</h2><p>ระเบียบ เกณฑ์การแข่งขัน หนังสือราชการ และแบบฟอร์ม</p></div></div>
       <div id="docList"></div>
+    </section>
+
+    <!-- ---------- เกณฑ์การแข่งขันรายกลุ่มสาระ (สาธารณะ) ---------- -->
+    <section class="page" id="p-rules">
+      <div class="hd"><div><h2>เกณฑ์การแข่งขัน</h2>
+        <p>เปิดดูทีละกลุ่มสาระได้ทันทีในหน้าเว็บ หรือดาวน์โหลดเก็บไว้ จะเอาเฉพาะสาระที่ต้องการหรือทั้งเล่มก็ได้</p></div></div>
+      <div id="ruleBook"></div>
+      <div id="ruleCards" class="rcards"></div>
+      <div id="ruleNone"></div>
+    </section>
+
+    <!-- ---------- ไฟล์เกณฑ์รายกลุ่มสาระ (หลังบ้าน) ---------- -->
+    <section class="page" id="p-rulesmgr">
+      <div class="hd"><div><h2>ไฟล์เกณฑ์รายกลุ่มสาระ</h2>
+        <p>อัปโหลดไฟล์ PDF ทีละกลุ่มสาระ และไฟล์รวมทั้งเล่ม — อัปเสร็จหน้าเว็บสาธารณะขึ้นให้ทันที</p></div>
+        <span class="sp"></span>
+        <button class="btn" onclick="editRuleDoc('ALL')">📚 ไฟล์ทั้งเล่ม</button></div>
+      <div class="note i" style="margin-bottom:12px"><span>📘</span><div>
+        <b>หนึ่งกลุ่มสาระ = หนึ่งไฟล์</b> อัปไฟล์ใหม่ทับของเดิมได้เลย ระบบเก็บเฉพาะไฟล์ล่าสุด ·
+        อัปโหลดเข้าระบบได้ไม่เกิน 20 MB ถ้าไฟล์ใหญ่กว่านั้นให้อัปขึ้น Google Drive เองแล้ววางลิงก์แทน</div></div>
+      <div class="card"><div class="cb" style="padding:0;overflow:auto;max-height:72vh"><table id="rmTbl"></table></div></div>
     </section>
 
     <!-- ---------- ตั้งค่าหน้าเว็บ & แบนเนอร์ (หลังบ้าน) ---------- -->
@@ -1840,6 +1890,7 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveStaff:'certadm',deleteStaff:'certadm',saveCertTemplate:'certadm',saveCertConfig:'certadm',
   saveCardTemplate:'cards',savePersonPhoto:'cards',saveNews:'newsmgr',deleteNews:'newsmgr',
   saveDocument:'newsmgr',deleteDocument:'newsmgr',saveSiteSettings:'site',savePermConfig:'perm',
+  saveCriteriaDoc:'actedit',deleteCriteriaDoc:'actedit',
   printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',promoteBatch:'promote',
   saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
   deleteJudgeApplication:'judges'};
@@ -2206,6 +2257,21 @@ function demoApi(action,p){
       memSave(); return d; }
     case 'deleteDocument':{
       MEM.docs=(MEM.docs||[]).filter(d=>d.id!==p.id); memSave(); return true; }
+    case 'criteriaDocs':{
+      return {docs:(MEM.critdocs||[]).slice(), cats:[...new Set((MEM.activities||[]).map(a=>a.category).filter(Boolean))]}; }
+    case 'uploadDoc':
+      throw new Error('โหมดตัวอย่างยังไม่เชื่อม Google Drive — ใช้ช่อง “หรือวางลิงก์ไฟล์เอง” แทนได้ค่ะ');
+    case 'saveCriteriaDoc':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.critdocs=MEM.critdocs||[]; const d=Object.assign({},p.doc);
+      if(!d.category) throw new Error('กรุณาเลือกกลุ่มสาระ');
+      if(!d.url) throw new Error('กรุณาอัปโหลดไฟล์ หรือวางลิงก์ไฟล์');
+      d.updated_at=nowStr(); d.updated_by=ME.name;
+      const old=MEM.critdocs.find(x=>x.category===d.category);
+      if(old) Object.assign(old,d); else { d.doc_id='CD'+String(MEM.critdocs.length+1).padStart(3,'0'); MEM.critdocs.push(d); }
+      memSave(); return d; }
+    case 'deleteCriteriaDoc':{
+      MEM.critdocs=(MEM.critdocs||[]).filter(d=>d.doc_id!==p.doc_id); memSave(); return true; }
     case 'saveSiteSettings':{
       if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.site=MEM.site||{};
@@ -2798,7 +2864,7 @@ async function boot(){
     try{ buildScopeSel(); applyScope(); renderAll(); syncUrl(); go(PAGE); }catch(e){}
     REV = String(DB.rev||'');
     setTimeout(()=>{ refreshBoot(sc); }, 50);            /* 2) อัปเดตเบื้องหลัง */
-    startRevWatch();
+    startRevWatch(); kickCritDocs();
     return;
   }
   try{
@@ -2815,7 +2881,7 @@ async function boot(){
     DB = await api('bootstrap',{group:SCOPE}); if(!DEMO()) snapSave(DB, SCOPE); }
   REV = String(DB.rev||REV);
   buildScopeSel(); applyScope(); renderAll(); syncUrl(); go(PAGE);
-  startRevWatch();
+  startRevWatch(); kickCritDocs();
 }
 /** โหลดข้อมูลตั้งต้นใหม่ (ใช้หลังแก้รายการแข่งขัน/เกณฑ์/ทะเบียน) แล้วจำเวอร์ชันล่าสุดไว้ */
 async function reloadBoot(){
@@ -3004,16 +3070,17 @@ function roleTh(r){ const t={district_admin:'ผู้ดูแลเขต',gro
 
 
 /* ============================ หน้าเว็บสาธารณะ / หลังบ้าน ============================ */
-const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการแข่งขัน'],['apply','สมัครกรรมการตัดสิน'],
+const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการแข่งขัน'],['rules','เกณฑ์การแข่งขัน'],
+  ['apply','สมัครกรรมการตัดสิน'],
   ['sched','ตารางแข่งขัน'],['results','ผลการแข่งขัน'],['medals','ตารางเหรียญ'],
   ['cert','เกียรติบัตร'],['subs','ขอเปลี่ยนตัว'],['docs','เอกสารดาวน์โหลด']];
 /* ทะเบียนโรงเรียนไม่อยู่ในเมนูสาธารณะ — เปิดดูได้เฉพาะฝั่งหลังบ้านของเขตและกลุ่ม */
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
-const ADMIN_PAGES=['dash','actedit','entries','score','publish','promote','certadm','cards',
+const ADMIN_PAGES=['dash','actedit','rulesmgr','entries','score','publish','promote','certadm','cards',
   'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr'];
 /** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
-const PAGE_PERM={actedit:'actedit',entries:'entries',score:'score',publish:'publish',
+const PAGE_PERM={actedit:'actedit',rulesmgr:'actedit',entries:'entries',score:'score',publish:'publish',
   promote:'promote',judges:'judges',judgeapp:'judges',certadm:'certadm',cards:'cards',
   newsmgr:'newsmgr',site:'site',print:'print',perm:'perm'};
 const OWNER_PAGES=['admins','season','backup'];
@@ -3202,12 +3269,13 @@ function navFilter(q, clear){
 }
 function pubPages(){
   return PUBLIC_PAGES.filter(x =>
-    x[0]==='cert' ? isOpen('cert_open') :
-    x[0]==='subs' ? subWin().open : true);
+    x[0]==='cert'  ? isOpen('cert_open') :
+    x[0]==='subs'  ? subWin().open :
+    x[0]==='rules' ? (ruleHasFiles() || (ME && ME.role==='district_admin')) : true);
 }
 /** เมนู “ข้อมูลสาธารณะ” ในแถบข้าง = เมนูเดียวกับหน้าเว็บสาธารณะจริง (ตาม PUBLIC_PAGES)
     แก้รายการที่เดียวใน PUBLIC_PAGES แล้วตรงกันทั้งสองที่ */
-const PUB_ICON={home:'🏠',acts:'📋',apply:'⚖️',sched:'🗓️',results:'📣',medals:'🥇',cert:'🎖️',subs:'🔁',docs:'📄'};
+const PUB_ICON={home:'🏠',acts:'📋',rules:'📘',apply:'⚖️',sched:'🗓️',results:'📣',medals:'🥇',cert:'🎖️',subs:'🔁',docs:'📄'};
 function renderSideNav(){
   const box=$('#navPublic'); if(!box) return;
   box.innerHTML='<span class="ngh" onclick="togSec(this)">ข้อมูลสาธารณะ<i class="cv">▾</i></span>'
@@ -3291,6 +3359,199 @@ function renderDocs(){
          <td style="width:120px;text-align:right"><a class="btn g sm" href="${d.url}" target="_blank" rel="noopener">⬇ ดาวน์โหลด</a></td></tr>`
       ).join('')}</tbody></table></div></div>`;
   }).join('') || '<div class="note i"><span>📄</span><div>ยังไม่มีเอกสาร — ผู้ดูแลเพิ่มได้ที่เมนู “ประชาสัมพันธ์” ในระบบหลังบ้าน</div></div>';
+}
+
+/* ============================================================================
+   เกณฑ์การแข่งขันรายกลุ่มสาระ
+   หน้าสาธารณะ: เปิดดูทีละสาระในหน้าเว็บ · ดาวน์โหลดรายสาระ หรือทั้งเล่ม
+   หลังบ้าน:    อัปโหลด PDF ทีละสาระ (หนึ่งสาระ = หนึ่งไฟล์ อัปใหม่ทับของเดิม)
+   ============================================================================ */
+let CRITDOCS=null;
+function qq(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function kbStr(kb){ kb=Number(kb||0); if(!kb) return '';
+  return kb>=1024 ? (kb/1024).toFixed(kb>=10240?0:1)+' MB' : kb+' KB'; }
+/** วันที่แบบไทย — เวลาที่ระบบบันทึกเองเป็น ค.ศ. จึงแปลงเป็น พ.ศ. ให้อัตโนมัติ */
+function thStamp(v){
+  const m=String(dstr(v)||'').match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m) return '';
+  let y=Number(m[1]); if(y<2400) y+=543;
+  return Number(m[3])+' '+TH_MONTH[Number(m[2])-1]+' '+y;
+}
+/** ไอคอนเล่มเกณฑ์ — เส้นสีขาวบนพื้นสีประจำกลุ่มสาระ */
+const RICON='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.8A1.8 1.8 0 0 1 5.8 3H18a1 1 0 0 1 1 1v13.5"/><path d="M6.2 16.5H19a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H6.2A2.2 2.2 0 0 1 4 18.3V4.8"/><path d="M8 7.5h7M8 10.6h5"/></svg>';
+/** ดึงรหัสไฟล์ออกจากลิงก์ Google Drive ทุกรูปแบบที่ครูอาจคัดลอกมา */
+function driveIdOf(u){ const m=String(u||'').match(/[-\w]{25,}/); return m?m[0]:''; }
+function pdfLinks(d){
+  const id=(d&&d.file_id)||driveIdOf(d&&d.url);
+  if(!id) return {view:d.url, open:d.url, dl:d.url, embed:false};
+  return {view:'https://drive.google.com/file/d/'+id+'/preview',
+          open:'https://drive.google.com/file/d/'+id+'/view',
+          dl:'https://drive.google.com/uc?export=download&id='+id, embed:true};
+}
+async function loadCritDocs(force){
+  if(CRITDOCS && !force) return CRITDOCS;
+  try{ CRITDOCS=await api('criteriaDocs',{}); }
+  catch(e){ CRITDOCS={docs:[],cats:[]}; }
+  return CRITDOCS;
+}
+/** โหลดเงียบ ๆ ตอนเปิดเว็บ เพื่อให้เมนู “เกณฑ์การแข่งขัน” โผล่เฉพาะตอนที่มีไฟล์จริง */
+function kickCritDocs(){
+  if(CRITDOCS) return;
+  loadCritDocs().then(()=>{ try{ renderPubNav(); renderSideNav(); }catch(e){} });
+}
+function ruleDoc(cat){ return (((CRITDOCS||{}).docs)||[]).find(d=>String(d.category)===String(cat)); }
+function ruleHasFiles(){ return !!(((CRITDOCS||{}).docs)||[]).length; }
+/** กลุ่มสาระทั้งหมด = หมวดหมู่ที่ใช้จริงในรายการแข่งขัน + หมวดที่มีไฟล์อยู่แล้ว */
+function ruleCats(){
+  const a=[...new Set((DB.activities||[]).map(x=>x.category).filter(Boolean))];
+  const b=(((CRITDOCS||{}).docs)||[]).map(d=>d.category).filter(c=>c && c!=='ALL');
+  return [...new Set(a.concat(b))];
+}
+function catColor(name){
+  let h=0; const t=String(name||'');
+  for(let k=0;k<t.length;k++) h=(h*31+t.charCodeAt(k))>>>0;
+  return GROUP_COLORS[h%GROUP_COLORS.length];
+}
+
+async function renderRules(){
+  await loadCritDocs();
+  const book=ruleDoc('ALL'), cats=ruleCats();
+  const bl=book?pdfLinks(book):null;
+  $('#ruleBook').innerHTML = book
+    ? `<div class="rbook"><div class="bk">📚</div>
+        <div><h3>${qq(book.title||'เกณฑ์การแข่งขัน (ทั้งเล่ม)')}</h3>
+          <p>รวมทุกกลุ่มสาระไว้ในไฟล์เดียว${book.size_kb?' · '+kbStr(book.size_kb):''}${book.updated_at?' · ปรับปรุง '+thStamp(book.updated_at):''}</p></div>
+        <span class="sp"></span>
+        <button class="btn o" onclick="viewRule('ALL')">👁️ เปิดอ่าน</button>
+        <a class="btn" href="${bl.dl}" target="_blank" rel="noopener">⬇ ดาวน์โหลดทั้งเล่ม</a></div>`
+    : '';
+  $('#ruleCards').innerHTML = cats.map(c=>{
+    const d=ruleDoc(c), L=d?pdfLinks(d):null;
+    const n=(DB.activities||[]).filter(a=>a.category===c).length;
+    return `<div class="rcard${d?'':' na'}" style="--gc:${catColor(c)}">
+      <div class="ricon">${RICON}</div>
+      <h4>${qq(c)}</h4>
+      <div class="rmeta">${n} รายการแข่งขัน${d&&d.size_kb?' · '+kbStr(d.size_kb):''}
+        ${d&&d.updated_at?'<br>ปรับปรุง '+thStamp(d.updated_at):''}
+        ${d&&d.note?'<br>'+qq(d.note):''}</div>
+      ${d?`<div class="rbtns">
+            <button class="btn g sm" onclick="viewRule('${qq(c)}')">👁️ ดูเกณฑ์</button>
+            <a class="btn sm" href="${L.dl}" target="_blank" rel="noopener">⬇ ดาวน์โหลด</a></div>`
+         :`<div class="rna">ยังไม่มีไฟล์เกณฑ์</div>`}
+    </div>`;
+  }).join('');
+  $('#ruleNone').innerHTML = (book||cats.some(c=>ruleDoc(c))) ? ''
+    : `<div class="note i" style="margin-top:14px"><span>📘</span><div>
+        <b>ยังไม่มีไฟล์เกณฑ์การแข่งขัน</b> — สำนักงานเขตกำลังทยอยอัปโหลดทีละกลุ่มสาระ
+        ระหว่างนี้ดูรายละเอียดรายการและสัดส่วนคะแนนได้ที่เมนู <b>รายการแข่งขัน</b></div></div>`;
+}
+function viewRule(cat){
+  const d=ruleDoc(cat); if(!d) return;
+  const L=pdfLinks(d);
+  openModal(d.title||('เกณฑ์การแข่งขัน '+cat),
+    (L.embed
+      ? `<div class="pdfbox"><iframe src="${L.view}" title="เกณฑ์การแข่งขัน" allow="autoplay"></iframe></div>`
+      : `<div class="note w"><span>↗</span><div>ไฟล์นี้เก็บไว้นอก Google Drive จึงเปิดอ่านในหน้านี้ไม่ได้ — กดปุ่มด้านล่างเพื่อเปิดไฟล์</div></div>`)+
+    `<div class="row" style="margin-top:12px">
+       <a class="btn" href="${L.dl}" target="_blank" rel="noopener">⬇ ดาวน์โหลด PDF</a>
+       <a class="btn g" href="${L.open}" target="_blank" rel="noopener">↗ เปิดในแท็บใหม่</a>
+       <span class="sp"></span>
+       <span class="hint">${cat==='ALL'?'ทุกกลุ่มสาระ':qq(cat)}${d.size_kb?' · '+kbStr(d.size_kb):''}</span></div>`,
+    ()=>false);
+  $('#mOk').style.display='none';
+  const bx=document.querySelector('#modal .box'); if(bx) bx.classList.add('wide');
+}
+
+/* ---------- หลังบ้าน: อัปโหลดไฟล์เกณฑ์ทีละกลุ่มสาระ ---------- */
+async function renderRulesMgr(){
+  await loadCritDocs(true);
+  const rows=[['ALL','📚 ไฟล์ทั้งเล่ม (ทุกกลุ่มสาระ)']].concat(ruleCats().map(c=>[c,c]));
+  const have=rows.filter(r=>ruleDoc(r[0])).length;
+  tbl($('#rmTbl'),['กลุ่มสาระ','รายการแข่งขัน','ไฟล์เกณฑ์','ขนาด','ปรับปรุงล่าสุด','จัดการ'],
+    rows.map(([k,label])=>{
+      const d=ruleDoc(k);
+      const n=k==='ALL'? (DB.activities||[]).length : (DB.activities||[]).filter(a=>a.category===k).length;
+      return `<tr>
+        <td><b>${qq(label)}</b>${d&&d.note?'<br><span class="hint">'+qq(d.note)+'</span>':''}</td>
+        <td class="num">${n}</td>
+        <td>${d? '<span class="pill ok">มีไฟล์</span> '+qq(d.title||'')
+               : '<span class="pill b">ยังไม่มีไฟล์</span>'}</td>
+        <td class="num">${d?kbStr(d.size_kb):''}</td>
+        <td>${d&&d.updated_at?thStamp(d.updated_at)+(d.updated_by?'<br><span class="hint">'+qq(d.updated_by)+'</span>':''):''}</td>
+        <td style="white-space:nowrap">
+          <button class="btn ${d?'g ':''}sm" onclick="editRuleDoc('${qq(k)}')">${d?'เปลี่ยนไฟล์':'⬆️ อัปโหลด'}</button>
+          ${d?`<button class="btn g sm" onclick="viewRule('${qq(k)}')">ดู</button>
+               <button class="btn g sm" onclick="delRuleDoc('${d.doc_id}','${qq(label)}')">ลบ</button>`:''}
+        </td></tr>`;
+    }).join(''));
+}
+function editRuleDoc(cat){
+  if(!ME || ME.role!=='district_admin')
+    return alert('ไฟล์เกณฑ์การแข่งขันอยู่ในความดูแลของสำนักงานเขตพื้นที่การศึกษา');
+  const d=ruleDoc(cat)||{};
+  const label = cat==='ALL' ? 'ไฟล์ทั้งเล่ม (ทุกกลุ่มสาระ)' : cat;
+  const defTitle = d.title || ('เกณฑ์การแข่งขัน '+(cat==='ALL'?'(ทั้งเล่ม)':cat));
+  openModal('ไฟล์เกณฑ์ — '+label,
+    `<div class="note i" style="margin-bottom:12px"><span>📘</span><div>
+       อัปโหลดไฟล์ PDF เข้าระบบได้ไม่เกิน <b>20 MB</b> ระบบเก็บให้ใน Google Drive ของเขตและเปิดสิทธิ์ให้คนทั่วไปอ่านได้เอง<br>
+       ถ้าไฟล์ใหญ่กว่านั้น ให้อัปขึ้น Google Drive เองแล้ววางลิงก์ในช่องล่าง
+       (ตั้งค่าแชร์เป็น <b>ผู้ที่มีลิงก์ · ผู้อ่าน</b> ด้วยนะคะ)</div></div>
+     <div class="fld"><label>ชื่อเอกสาร</label><input id="rd_title" value="${qq(defTitle)}"></div>
+     <div class="fld"><label>ไฟล์ PDF</label>
+       <div class="updrop" id="rdDrop"><b>📤 คลิกเพื่อเลือกไฟล์ PDF หรือลากไฟล์มาวางตรงนี้</b>
+         หนึ่งกลุ่มสาระเก็บหนึ่งไฟล์ · อัปไฟล์ใหม่ทับของเดิมได้ทันที</div>
+       <div class="upbar" id="rdBar"><i></i></div>
+       <div class="hint" id="rdState" style="margin-top:7px">${d.url?'ไฟล์ปัจจุบัน'+(d.size_kb?' · '+kbStr(d.size_kb):''):''}</div></div>
+     <div class="fld"><label>หรือวางลิงก์ไฟล์เอง</label>
+       <input id="rd_url" value="${qq(d.url||'')}" placeholder="https://drive.google.com/file/d/…"></div>
+     <div class="fld"><label>หมายเหตุ <span class="hint">(แสดงใต้ชื่อในหน้าสาธารณะ เว้นว่างได้)</span></label>
+       <input id="rd_note" value="${qq(d.note||'')}" placeholder="เช่น ฉบับปรับปรุง 15 ต.ค. 2569"></div>`,
+    async()=>{
+      const inp=$('#rd_url'), url=inp.value.trim();
+      if(!url) throw new Error('กรุณาอัปโหลดไฟล์ PDF หรือวางลิงก์ไฟล์');
+      await api('saveCriteriaDoc',{doc:{
+        category:cat, title:$('#rd_title').value.trim(), url:url,
+        file_id:inp.dataset.fid||driveIdOf(url), size_kb:Number(inp.dataset.kb||d.size_kb||0),
+        note:$('#rd_note').value.trim()}});
+      await loadCritDocs(true); renderRulesMgr();
+    });
+  bindPdfUploader('rdDrop','rd_url','rdBar','rdState', cat);
+}
+function delRuleDoc(id,label){
+  if(!confirm('ลบไฟล์เกณฑ์ของ “'+label+'” ออกจากหน้าเว็บ?\n\n(ตัวไฟล์ใน Google Drive ยังอยู่ ไม่ได้ถูกลบ)')) return;
+  api('deleteCriteriaDoc',{doc_id:id})
+    .then(async()=>{ await loadCritDocs(true); renderRulesMgr(); })
+    .catch(e=>alert(e.message));
+}
+function bindPdfUploader(dropId,inputId,barId,stateId,cat){
+  const drop=$('#'+dropId), inp=$('#'+inputId), st=$('#'+stateId);
+  if(!drop) return;
+  const send=async(file)=>{
+    if(!file) return;
+    if(file.type!=='application/pdf' && !/\.pdf$/i.test(file.name))
+      return alert('รองรับเฉพาะไฟล์ PDF ค่ะ');
+    if(file.size>20*1024*1024)
+      return alert('ไฟล์ใหญ่เกิน 20 MB — ให้อัปขึ้น Google Drive เองแล้ววางลิงก์ในช่องด้านล่างแทนค่ะ');
+    $('#'+barId).classList.add('on');
+    st.textContent='กำลังอัปโหลด '+kbStr(Math.round(file.size/1024))+' …';
+    try{
+      const dataUrl=await new Promise((res,rej)=>{
+        const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error('อ่านไฟล์ไม่สำเร็จ'));
+        r.readAsDataURL(file); });
+      const r=await api('uploadDoc',{data_url:dataUrl,
+        filename:'เกณฑ์-'+(cat==='ALL'?'ทั้งเล่ม':cat)});
+      inp.value=r.url; inp.dataset.fid=r.id||''; inp.dataset.kb=r.size_kb||0;
+      st.innerHTML='<b style="color:var(--ok)">อัปโหลดแล้ว</b> · '+kbStr(r.size_kb)+' · '+qq(file.name)+
+        ' <span class="hint">— กด “บันทึก” เพื่อนำขึ้นหน้าเว็บ</span>';
+    }catch(e){ st.textContent=''; alert('อัปโหลดไม่สำเร็จ: '+e.message); }
+    $('#'+barId).classList.remove('on');
+  };
+  drop.onclick=()=>{ const i=document.createElement('input');
+    i.type='file'; i.accept='application/pdf,.pdf';
+    i.onchange=()=>send(i.files&&i.files[0]); i.click(); };
+  drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+  drop.ondragleave=()=>drop.classList.remove('over');
+  drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');
+    send(e.dataTransfer.files&&e.dataTransfer.files[0]);};
 }
 
 /* ---------- หลังบ้าน: ตั้งค่าเว็บ & แบนเนอร์ ---------- */
@@ -4903,7 +5164,8 @@ function go(p){
     judges:'ทำเนียบกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกกรรมการ',apply:'สมัครกรรมการตัดสิน',
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
-    subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน'}[p]||p;
+    subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
+    rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
   closeMenu(); closeSide();
@@ -4927,7 +5189,8 @@ function renderPage(p){
     newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
     judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
     apply:renderApply, judgeapp:renderJudgeApp,
-    subs:renderSubsPublic, submgr:renderSubMgr}[p]||(()=>{}))();
+    subs:renderSubsPublic, submgr:renderSubMgr,
+    rules:renderRules, rulesmgr:renderRulesMgr}[p]||(()=>{}))();
 }
 
 function renderHome(){
@@ -5222,7 +5485,8 @@ function drawActEdit(){
         <td class="num">${a.team_min}-${a.team_max}</td><td class="num">${a.coaches||1}</td>
         <td class="num">${a.judges_required}</td><td class="num">${a.quota_to_district||1}</td>
         <td>${badge}</td>
-        <td><span class="pill ${a.status==='เปิด'?'ok':'b'}">${a.status}</span></td>
+        <td><span class="pill ${a.status==='เปิด'?'ok':'b'}" style="cursor:pointer"
+              title="คลิกเพื่อสลับเปิด/ปิดรับสมัครรายการนี้" onclick="toggleAct('${a.act_id}')">${a.status}</span></td>
         <td style="white-space:nowrap"><button class="btn g sm" onclick="editAct('${a.act_id}')">แก้ไข</button>
           <button class="btn g sm" onclick="editCrit('${a.act_id}')">เกณฑ์</button>
           <button class="btn g sm" onclick="delAct('${a.act_id}')">ลบ</button></td></tr>`;
@@ -5295,11 +5559,39 @@ async function dupAct(id){
   }catch(e){ alert(e.message); }
 }
 
-function delAct(id){
-  if(!confirm('ลบรายการนี้? (ลบไม่ได้ถ้ามีผู้สมัครแล้ว)')) return;
-  api('deleteActivity',{act_id:id}).then(async()=>{
+/** สลับเปิด/ปิดรับสมัครรายการเดียว — ใช้ตอนปีนี้งดแข่งบางรายการ แต่ยังไม่อยากลบทิ้ง */
+async function toggleAct(id){
+  if(!ME || ME.role!=='district_admin')
+    return alert('รายการแข่งขันอยู่ในความดูแลของสำนักงานเขตพื้นที่การศึกษา');
+  const a=(DB.activities||[]).find(x=>x.act_id===id); if(!a) return;
+  const to = a.status==='เปิด' ? 'ปิด' : 'เปิด';
+  const why = to==='ปิด'
+    ? 'ปิด = ไม่รับสมัครเพิ่ม และไม่ขึ้นหน้าเว็บสาธารณะ แต่ผู้สมัครและคะแนนเดิมยังอยู่ครบ'
+    : 'เปิด = กลับมารับสมัครและแสดงบนหน้าเว็บตามปกติ';
+  if(!confirm('“'+a.act_name+'” ('+a.level+')\n\nเปลี่ยนสถานะ '+a.status+' → '+to+' ?\n\n'+why)) return;
+  try{
+    await api('saveActivity',{activity:{act_id:a.act_id, group_code:'ALL', status:to}});
     await reloadBoot(); renderActEdit(); fillActSelects();
-  }).catch(e=>alert(e.message));
+  }catch(e){ alert(e.message); }
+}
+async function delAct(id){
+  const a=(DB.activities||[]).find(x=>x.act_id===id)||{};
+  if(!confirm('ลบรายการ “'+(a.act_name||'')+'” ('+(a.level||'')+') ออกจากระบบ?\n\n'+
+    '• เกณฑ์การให้คะแนนของรายการนี้จะถูกลบไปด้วย\n'+
+    '• ถ้ามีโรงเรียนสมัครไว้แล้ว ระบบจะไม่ยอมให้ลบ และจะเสนอให้เปลี่ยนเป็น “ปิด” แทน')) return;
+  try{
+    await api('deleteActivity',{act_id:id});
+    await reloadBoot(); renderActEdit(); fillActSelects();
+  }catch(e){
+    if(/ผู้สมัคร/.test(e.message) &&
+       confirm(e.message+'\n\nเปลี่ยนสถานะรายการนี้เป็น “ปิด” แทนไหมคะ?\n'+
+               '(ไม่รับสมัครเพิ่ม ไม่ขึ้นหน้าเว็บ แต่ข้อมูลและคะแนนเดิมยังอยู่ครบ)')){
+      try{
+        await api('saveActivity',{activity:{act_id:id, group_code:'ALL', status:'ปิด'}});
+        await reloadBoot(); renderActEdit(); fillActSelects();
+      }catch(e2){ alert(e2.message); }
+    } else alert(e.message);
+  }
 }
 async function editCrit(actId){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
