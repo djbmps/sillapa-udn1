@@ -5,22 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>งานศิลปหัตถกรรมนักเรียน · สพป.อุดรธานี เขต 1</title>
 <meta name="description" content="ระบบจัดการแข่งขันงานศิลปหัตถกรรมนักเรียน ระดับกลุ่มโรงเรียนและระดับเขตพื้นที่ สพป.อุดรธานี เขต 1">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#6E0030">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* ชุดสีหลัก — น้ำเงินสดใสบนพื้นฟ้าอ่อน การ์ดสีขาว และป้ายสีสันสดใส */
-  --ink:#111A2E; --ink-2:#44506B; --ink-3:#7A879F;
-  --line:#D7E0F1; --line-2:#EBF0FA; --bg:#E9EEF8; --card:#fff;
-  --pri:#2656C9; --pri-2:#12306E; --pri-soft:#E6EDFC;
-  --black:#12306E;
+  /* ชุดสีหลัก — ถอดสีจากโลโก้ SILLAPA 74 UDON1 (ไวน์ #A00040 · ชมพูสด #F82068) */
+  --ink:#2B1220; --ink-2:#6A4A58; --ink-3:#8A6E7C;
+  --line:#EBD5DF; --line-2:#F7EDF2; --bg:#F6EBF1; --card:#fff;
+  --pri:#A00040; --pri-2:#6E0030; --pri-soft:#FCE7EF;
+  --accent:#F82068; --accent-soft:#FDE3EC;
+  --black:#6E0030;
   --ok:#1B7A56; --ok-soft:#E3F5EC; --warn:#9A6A08; --warn-soft:#FBF2DC;
   --bad:#B3261E; --bad-soft:#FCEBE9;
   --m-g:#D6A63C; --m-s:#97A5B8; --m-b:#B4713B;
-  --c1:#D9730D; --c1s:#FDEEDC; --c2:#1E9A5F; --c2s:#E2F6EC;
-  --c3:#2656C9; --c3s:#E6EDFC; --c4:#7C5CD6; --c4s:#EFEAFB;
-  --r:12px; --sh:0 1px 2px rgba(16,33,74,.07),0 6px 20px rgba(16,33,74,.07);
+  --c1:#C2185B; --c1s:#FCE4EC; --c2:#1E9A5F; --c2s:#E2F6EC;
+  --c3:#6A3FBF; --c3s:#EFEAFB; --c4:#B26A00; --c4s:#FBF0DC;
+  --r:12px; --sh:0 1px 2px rgba(96,8,48,.08),0 6px 20px rgba(96,8,48,.08);
 }
 body[data-scope="group"]{--pri:#9C3A12;--pri-2:#7E2E0C;--pri-soft:#F8EBE3}
 *{box-sizing:border-box}
@@ -34,9 +38,11 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .shell>*{min-width:0}
 .side{background:var(--black);color:#C3D2EC;height:100vh;position:sticky;top:0;overflow-y:auto;padding-bottom:26px}
 .brand{display:flex;gap:11px;align-items:center;padding:18px 16px 15px;border-bottom:1px solid rgba(255,255,255,.09)}
-.brand .mk{width:38px;height:38px;border-radius:10px;background:linear-gradient(140deg,#4F8DF7,#1E40AF);display:grid;place-items:center;font-size:19px;flex:none}
+.brand .mk{width:40px;height:40px;border-radius:11px;background:#fff;display:grid;place-items:center;
+  font-size:19px;flex:none;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.brand .mk img{width:88%;height:88%;object-fit:contain;display:block}
 .brand h1{font-size:14px;color:#fff}
-.brand p{margin:2px 0 0;font-size:11px;color:#9DAFCE}
+.brand p{margin:2px 0 0;font-size:11px;color:#E7BACC}
 .ng{padding:13px 11px 0}
 .ng>span{display:block;padding:0 8px 6px;font-size:10.5px;letter-spacing:.05em;color:#8CA0C4;font-weight:600}
 .nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;font-size:13.5px;color:#C3D2EC;width:100%;text-align:left}
@@ -179,11 +185,11 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .hero h2{font-size:26px;margin:7px 0 6px;max-width:660px}
 .hero p{margin:0;color:#EBD9CB;font-size:13.5px;max-width:600px}
 .hero::after{content:'🏆';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:110px;opacity:.09}
-.livebar{display:flex;align-items:center;gap:12px;background:#0D2252;color:#D5E0F5;border-radius:12px;padding:12px 15px;margin-bottom:12px}
+.livebar{display:flex;align-items:center;gap:12px;background:#3D0019;color:#F3CEDD;border-radius:12px;padding:12px 15px;margin-bottom:12px}
 .livebar .dt{width:9px;height:9px;border-radius:50%;background:#4ADE80;animation:bl 1.5s infinite}
 @keyframes bl{50%{opacity:.25}}
 .livebar b{display:block;color:#fff;font-size:13.5px}
-.livebar small{color:#9FB3D8;font-size:12px}
+.livebar small{color:#DDA6BD;font-size:12px}
 .livebar .a{margin-left:auto;display:flex;gap:8px}
 .livebar .a button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:9px;font-size:12.5px;font-weight:600}
 .livebar .a button:hover{background:var(--pri);border-color:var(--pri)}
@@ -211,16 +217,19 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .lbr .c{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 .gc{color:#F0C863}.sc{color:#C6D0DB}.bc{color:#D2925C}
 .login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
-.login .l{position:relative;overflow:hidden;background:linear-gradient(150deg,#0A1A40,#163A8A 55%,#2656C9);
+.login .l{position:relative;overflow:hidden;background:linear-gradient(150deg,#3D0019,#78002F 55%,#A00040);
   color:#fff;padding:40px;display:flex;flex-direction:column;justify-content:center}
 /* ภาพเงาเด็ก ๆ ทำกิจกรรม — วางไว้ครึ่งล่าง ไม่ให้ทับข้อความ */
 .login .l::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56%;
-  background:url("banner-blue.webp") center bottom/cover no-repeat;
+  background:url("banner-wine.webp") center bottom/cover no-repeat;
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%);
           mask-image:linear-gradient(180deg,transparent,#000 22%);pointer-events:none}
 .login .l>*{position:relative;z-index:1}
 .login .l h2{font-size:30px;margin:14px 0 10px;max-width:380px;text-shadow:0 2px 14px rgba(0,0,0,.45)}
-.login .l p{color:#D6E2F7;max-width:400px;margin:0;text-shadow:0 1px 10px rgba(0,0,0,.45)}
+.login .l p{color:#F6D9E4;max-width:400px;margin:0;text-shadow:0 1px 10px rgba(0,0,0,.45)}
+.login .l .lgo{background:#fff;border-radius:16px;padding:14px 18px;align-self:flex-start;
+  margin-bottom:16px;box-shadow:0 6px 24px rgba(0,0,0,.28)}
+.login .l .lgo img{display:block;width:230px;max-width:52vw;height:auto}
 .login .r{display:flex;flex-direction:column;justify-content:center;padding:40px;max-width:460px;margin:0 auto;width:100%}
 @media(max-width:1000px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.g4,.g3,.g2{grid-template-columns:1fr}.login{grid-template-columns:1fr}.login .l{display:none}}
 
@@ -253,7 +262,7 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#141210 0%,#4
 
 
 .pnote{background:var(--warn-soft);color:#7A5205;font-size:13px;padding:9px 18px;text-align:center;border-bottom:1px solid #EFDFB6}
-.pfoot{background:var(--black);color:#9DAFCE;margin-top:40px;padding:26px 18px;font-size:13px}
+.pfoot{background:var(--black);color:#E7BACC;margin-top:40px;padding:26px 18px;font-size:13px}
 .pfoot .in{max-width:1180px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
 .pfoot b{color:#fff}
 .pfoot .dev{font-size:12.5px;color:#8E8278}
@@ -285,9 +294,9 @@ body[data-view="admin"] .pfoot{display:none}
 .upbar i{display:block;height:100%;width:40%;background:var(--pri);animation:upmove 1s infinite linear}
 @keyframes upmove{0%{margin-left:-40%}100%{margin-left:100%}}
 /* ---------- ปุ่มแฮมเบอร์เกอร์ (จอเล็ก) ---------- */
-.burger{display:none;align-items:center;gap:9px;padding:12px 4px;font-size:14px;color:#E7DED6;font-weight:600}
+.burger{display:none;align-items:center;gap:9px;padding:12px 4px;font-size:14px;color:#F6D9E4;font-weight:600}
 .burger .bars{display:inline-block;width:20px}
-.burger .bars i{display:block;height:2px;background:#E7DED6;margin:4px 0;border-radius:2px;transition:.2s}
+.burger .bars i{display:block;height:2px;background:#F6D9E4;margin:4px 0;border-radius:2px;transition:.2s}
 .pnav.open .burger .bars i:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .pnav.open .burger .bars i:nth-child(2){opacity:0}
 .pnav.open .burger .bars i:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
@@ -341,13 +350,14 @@ body[data-view="admin"] .pfoot{display:none}
   .sideveil.on{display:block}
 }
 /* ---------- แถบเครื่องมือด้านบนสุด ---------- */
-.utilbar{background:#0D2252;color:#AEC0E0;font-size:12.5px;border-bottom:1px solid #1B3A77}
+.utilbar{background:#3D0019;color:#E7BACC;font-size:12.5px;border-bottom:1px solid #5E0028}
 .utilbar .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:7px 18px;flex-wrap:wrap}
-.utilbar .lbl{color:#8D8177}
-.utilbar select{background:#332B25;color:#EFE5DC;border:1px solid #4A3F36;border-radius:8px;
+.utilbar .lbl{color:#E7BACC}
+.utilbar .ulogo{height:26px;width:auto;display:block;flex:none}
+.utilbar select{background:#5E0028;color:#FBE7EF;border:1px solid #7D0036;border-radius:8px;
   padding:6px 10px;font-size:12.5px;max-width:280px}
 .utilbar .btn{padding:6px 14px;font-size:12.5px;white-space:nowrap}
-.utilbar .who{color:#E7DED6}
+.utilbar .who{color:#F6D9E4}
 body[data-view="admin"] .utilbar{display:none}
 @media print{.utilbar{display:none!important}}
 
@@ -364,7 +374,7 @@ body[data-view="admin"] .utilbar{display:none}
 .idc .ph{position:absolute;left:50%;transform:translateX(-50%);border-radius:3mm;overflow:hidden;
   border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.18);background:#EFE6DC}
 .idc .ph img{width:100%;height:100%;object-fit:cover;display:block}
-.idc .ph .none{display:grid;place-items:center;height:100%;color:#9DAFCE;font-size:11px;text-align:center;padding:4px}
+.idc .ph .none{display:grid;place-items:center;height:100%;color:#E7BACC;font-size:11px;text-align:center;padding:4px}
 .idc .l{position:absolute;left:0;right:0;text-align:center;padding:0 7mm}
 .idc .l.nm{font-size:15px;font-weight:700}
 .idc .l.dt{font-size:11.5px;color:#4C433C}
@@ -425,15 +435,15 @@ body[data-view="admin"] .utilbar{display:none}
 .prtdoc span{display:block;line-height:1.45}
 .prtdoc b{display:block;font-size:14px}
 .prtdoc i{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:2px}
-.prtdoc:has(input:checked){border-color:var(--pri);background:#E9F0FE}
+.prtdoc:has(input:checked){border-color:var(--pri);background:#FCE7EF}
 /* การ์ดกลุ่มโรงเรียน — แต่ละกลุ่มมีสีประจำกลุ่มของตัวเอง */
 .gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:14px}
 .gcard{position:relative;overflow:hidden;border-radius:14px;color:#fff;isolation:isolate;
-  background-color:var(--gc,#2656C9);
+  background-color:var(--gc,#A00040);
   background-image:linear-gradient(155deg,rgba(255,255,255,.17),rgba(0,0,0,.20));
-  box-shadow:0 1px 2px rgba(16,33,74,.10),0 8px 22px rgba(16,33,74,.14);
+  box-shadow:0 1px 2px rgba(96,8,48,.10),0 8px 22px rgba(96,8,48,.14);
   display:flex;flex-direction:column;padding:15px 16px 14px;transition:transform .15s,box-shadow .15s}
-.gcard:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(16,33,74,.24)}
+.gcard:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(96,8,48,.24)}
 .gcard>*{position:relative;z-index:1}
 .gcard .gwm{position:absolute;right:-20px;bottom:-26px;width:138px;height:138px;
   opacity:.15;z-index:0;pointer-events:none}
@@ -455,15 +465,15 @@ body[data-view="admin"] .utilbar{display:none}
   box-shadow:0 0 0 3px rgba(255,255,255,.25)}
 .gcard .gpill.off i{background:rgba(255,255,255,.45);box-shadow:none}
 .gcard .gfoot{margin-top:auto;padding-top:13px}
-.gcard .gbtn{background:#fff;color:var(--gc,#2656C9);border-radius:10px;padding:9px 10px;
+.gcard .gbtn{background:#fff;color:var(--gc,#A00040);border-radius:10px;padding:9px 10px;
   font-size:13px;font-weight:700;text-align:center;cursor:pointer;transition:transform .12s}
 .gcard .gbtn:hover{transform:translateY(-1px)}
-.gdot{width:11px;height:11px;border-radius:50%;background:var(--gc,#2656C9);flex:none;display:inline-block}
+.gdot{width:11px;height:11px;border-radius:50%;background:var(--gc,#A00040);flex:none;display:inline-block}
 /* การ์ดเกณฑ์การแข่งขันรายกลุ่มสาระ */
 .rcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px}
-.rcard{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--gc,#2656C9);
+.rcard{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--gc,#A00040);
   border-radius:12px;box-shadow:var(--sh);padding:15px 16px 14px;display:flex;flex-direction:column}
-.rcard .ricon{width:38px;height:38px;border-radius:11px;background:var(--gc,#2656C9);
+.rcard .ricon{width:38px;height:38px;border-radius:11px;background:var(--gc,#A00040);
   display:flex;align-items:center;justify-content:center;margin-bottom:11px}
 .rcard .ricon svg{width:21px;height:21px}
 .rcard.na .ricon svg{stroke:var(--ink-3)}
@@ -477,7 +487,7 @@ body[data-view="admin"] .utilbar{display:none}
 .rcard.na .ricon{background:var(--line);color:var(--ink-3)}
 .rbook{background:linear-gradient(135deg,var(--pri-2),var(--pri));color:#fff;border-radius:14px;
   padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
-  box-shadow:0 8px 24px rgba(16,33,74,.18)}
+  box-shadow:0 8px 24px rgba(96,8,48,.18)}
 .rbook .bk{font-size:34px;line-height:1;flex:none}
 .rbook h3{margin:0;font-size:17px;font-weight:700}
 .rbook p{margin:3px 0 0;font-size:13px;opacity:.9}
@@ -487,7 +497,7 @@ body[data-view="admin"] .utilbar{display:none}
 .pdfbox{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--line-2)}
 .pdfbox iframe{display:block;width:100%;height:68vh;border:0;background:#fff}
 @media(max-width:700px){.pdfbox iframe{height:58vh}}
-#gpList .btn.g{border-left:5px solid var(--gc,#2656C9)}
+#gpList .btn.g{border-left:5px solid var(--gc,#A00040)}
 @media print{
   body{background:#fff}
   .side,.top,.noprint,.livebar,.strip,#pubHead,.pfoot{display:none!important}
@@ -504,6 +514,7 @@ body[data-view="admin"] .utilbar{display:none}
 <div id="loginView" style="display:none">
   <div class="login">
     <div class="l">
+      <div class="lgo"><img src="logo.webp" alt="SILLAPA 74 UDON1" onerror="this.closest('.lgo').remove()"></div>
       <span style="font-size:11px;letter-spacing:.14em;background:rgba(255,255,255,.18);padding:4px 12px;border-radius:999px;align-self:flex-start;font-weight:600" id="loginKw">งานศิลปหัตถกรรมนักเรียน</span>
       <h2 id="loginTitle">ระบบจัดการแข่งขัน<br>งานศิลปหัตถกรรมนักเรียน</h2>
       <p id="loginSub">สพป.อุดรธานี เขต 1 · ปีการศึกษา 2569 — รับสมัคร จัดตาราง ให้คะแนน ประกาศผล และโอนตัวแทนเข้าระดับเขต</p>
@@ -548,6 +559,7 @@ body[data-view="admin"] .utilbar{display:none}
 <!-- ================= APP ================= -->
 <header id="pubHead">
   <div class="utilbar"><div class="in">
+    <img class="ulogo" src="logo.webp" alt="SILLAPA 74 UDON1" onerror="this.remove()">
     <span class="lbl" id="utilTitle">งานศิลปหัตถกรรมนักเรียน · ปีการศึกษา</span>
     <span style="flex:1"></span>
     <span class="who" id="pubWho"></span>
@@ -572,7 +584,7 @@ body[data-view="admin"] .utilbar{display:none}
 <div class="shell" id="app">
   <aside class="side">
     <div class="brand">
-      <div class="mk" id="bMk">🏆</div>
+      <div class="mk" id="bMk"><img src="logo-mark.webp" alt="" onerror="this.remove()"></div>
       <div><h1 id="bTitle">ศิลปหัตถกรรมนักเรียน</h1><p id="bSub">สพป.อุดรธานี เขต 1</p></div>
     </div>
     <div class="navfind" id="navFind">
@@ -652,7 +664,7 @@ body[data-view="admin"] .utilbar{display:none}
       <span class="sp"></span>
       <span class="tag" id="modeTag"></span>
       <select id="scopeSel" onchange="setScope(this.value)" style="padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px"></select>
-      <span id="scopeChip" style="display:none;padding:6px 12px;border-radius:9px;background:var(--brand,#2656C9);
+      <span id="scopeChip" style="display:none;padding:6px 12px;border-radius:9px;background:var(--brand,#A00040);
             color:#fff;font-size:13px;font-weight:700;white-space:nowrap"></span>
       <span id="whoami" class="hint" style="max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
       <button class="btn g" id="admLogout" style="display:none;padding:5px 12px;font-size:12.5px"
@@ -828,17 +840,20 @@ body[data-view="admin"] .utilbar{display:none}
         <b>ระดับเขต — กรอกคะแนนรวมของแต่ละทีม</b> ตามแบบรายงานคะแนนที่คณะกรรมการสรุปส่งมา
         ระบบจะคิดเหรียญและจัดอันดับให้อัตโนมัติ ตรวจทานถูกต้องแล้วจึงไปที่หน้า
         <b>ตรวจทาน &amp; ประกาศผล</b> เพื่อประกาศผลอย่างเป็นทางการ</div></div>
+      <div id="scLock" style="margin-bottom:12px"></div>
       <div class="card"><div class="cb" style="padding:0;overflow:auto"><table id="scTbl"></table></div></div>
-      <div class="row" style="margin-top:12px">
+      <div class="row" style="margin-top:12px" id="scBtns">
         <span class="hint" id="scHint"></span><span class="sp"></span>
         <button class="btn g" onclick="saveScores('paper')">บันทึกเป็นคะแนนจากกระดาษ</button>
-        <button class="btn" onclick="saveScores('online')">บันทึกคะแนน</button>
+        <button class="btn g" onclick="saveScores('online')">บันทึกคะแนน</button>
+        <button class="btn" onclick="confirmScoresNow()">✔ ยืนยันคะแนน &amp; ล็อก</button>
       </div>
     </section>
 
     <!-- ---------- ประกาศผล ---------- -->
     <section class="page" id="p-publish">
       <div class="hd"><div><h2>ตรวจทาน &amp; ประกาศผล</h2><p>ประกาศแล้วคะแนนจะถูกล็อกทันที และผลจะขึ้นจอผลสดกับหน้าเว็บสาธารณะ</p></div></div>
+      <div id="pbLock" style="margin-bottom:12px"></div>
       <div class="row" style="margin-bottom:12px">
         <select id="pbAct" onchange="renderPublish()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
         <button class="btn g sm" onclick="printDoc('resultsheet')">🖨️ ใบสรุปผล</button>
@@ -1890,14 +1905,20 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveStaff:'certadm',deleteStaff:'certadm',saveCertTemplate:'certadm',saveCertConfig:'certadm',
   saveCardTemplate:'cards',savePersonPhoto:'cards',saveNews:'newsmgr',deleteNews:'newsmgr',
   saveDocument:'newsmgr',deleteDocument:'newsmgr',saveSiteSettings:'site',savePermConfig:'perm',
-  saveCriteriaDoc:'actedit',deleteCriteriaDoc:'actedit',
+  saveCriteriaDoc:'actedit',deleteCriteriaDoc:'actedit',confirmScores:'score',
   printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',promoteBatch:'promote',
   saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
   deleteJudgeApplication:'judges'};
-const DEMO_OWNER=['saveSeason','exportBackup','inspectBackup','restoreBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
+const DEMO_OWNER=['unlockScores','saveSeason','exportBackup','inspectBackup','restoreBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
   'listSelectors','saveSelector','deleteSelector','listAccounts','resetPassword',
   'listResetRequests','handleResetRequest'];
 
+/** หาการล็อกคะแนนที่ยังมีผลอยู่ (โหมดตัวอย่าง) */
+function demoLock(actId, round){
+  let hit=null;
+  (MEM.locks||[]).forEach(l=>{ if(String(l.act_id)===String(actId)&&String(l.round)===String(round)) hit=l; });
+  return (hit && hit.status==='ล็อก') ? hit : null;
+}
 function demoApi(action,p){
   /* ให้โหมดตัวอย่างกันสิทธิ์และล็อกขอบเขตแบบเดียวกับ Apps Script จะได้ทดสอบได้ตรงกัน */
   if(ME && ME.role==='group_admin'){
@@ -2360,14 +2381,62 @@ function demoApi(action,p){
         const egS={}; MEM.entries.forEach(e=>egS[e.entry_id]=String(e.group_code));
         if((MEM.results||[]).some(r=>r.act_id===p.act_id && r.status==='ประกาศแล้ว' && egS[r.entry_id]===String(gS)))
           throw new Error('รายการนี้ประกาศผลแล้ว คะแนนถูกล็อก');
+        const lk=demoLock(p.act_id, gS);
+        if(lk) throw new Error('คะแนนรายการนี้ถูกยืนยันและล็อกแล้วเมื่อ '+lk.confirmed_at+
+          ' โดย '+(lk.confirmed_by||'-')+' — ถ้าต้องแก้ไข ให้ผู้ดูแลหลักของสำนักงานเขตปลดล็อกก่อน');
       }
       p.scores.forEach(s=>{
         const k=MEM.scores.find(x=>x.entry_id===s.entry_id&&x.judge_id===s.judge_id&&x.crit_id===s.crit_id);
         if(k){k.score=s.score;k.source=p.source;} else MEM.scores.push(Object.assign({},s,{source:p.source}));
       }); memSave(); return {saved:p.scores.length}; }
     case 'computeResults': return demoCompute(p.act_id, p.group);
+    case 'scoreLockGet':{
+      const g=p.group||demoRound();
+      const ent=(MEM.entries||[]).filter(e=>e.act_id===p.act_id&&String(e.group_code)===String(g));
+      const ids={}; ent.forEach(e=>ids[e.entry_id]=1);
+      const has={}; (MEM.scores||[]).forEach(x=>{ if(ids[x.entry_id]&&x.score!=='') has[x.entry_id]=1; });
+      const lk=demoLock(p.act_id,g);
+      return {act_id:p.act_id, round:String(g), locked:!!lk, teams:ent.length,
+        scored:Object.keys(has).length,
+        confirmed_by:lk?lk.confirmed_by:'', confirmed_pos:lk?lk.confirmed_pos:'',
+        confirmed_at:lk?lk.confirmed_at:'',
+        can_unlock:!!(ME&&ME.role==='district_admin'&&ME.own)}; }
+    case 'confirmScores':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      const g=p.group||demoRound();
+      if(demoLock(p.act_id,g)) throw new Error('รายการนี้ยืนยันคะแนนไปแล้ว');
+      const ent=(MEM.entries||[]).filter(e=>e.act_id===p.act_id&&String(e.group_code)===String(g));
+      const ids={}; ent.forEach(e=>ids[e.entry_id]=1);
+      const has={}; (MEM.scores||[]).forEach(x=>{ if(ids[x.entry_id]&&x.score!=='') has[x.entry_id]=1; });
+      const n=Object.keys(has).length;
+      if(!ent.length) throw new Error('รายการนี้ยังไม่มีผู้สมัครในรอบที่เลือก');
+      if(!n) throw new Error('ยังไม่มีการกรอกคะแนนในรายการนี้');
+      if(n<ent.length && p.allow_partial!=='Y')
+        throw new Error('ยังกรอกคะแนนไม่ครบ — มีคะแนนแล้ว '+n+' จาก '+ent.length+
+          ' ทีม (ถ้าทีมที่เหลือไม่มาแข่ง ให้ยืนยันซ้ำอีกครั้งเพื่อรับทราบ)');
+      MEM.locks=MEM.locks||[];
+      MEM.locks.push({lock_id:'L'+String(MEM.locks.length+1).padStart(5,'0'), act_id:p.act_id,
+        round:String(g), status:'ล็อก', teams:n+'/'+ent.length,
+        confirmed_by:p.confirmed_by||ME.name, confirmed_pos:p.confirmed_pos||'',
+        confirmed_at:nowStr()});
+      memSave(); return {locked:true, act_id:p.act_id, round:String(g), teams:ent.length, scored:n}; }
+    case 'unlockScores':{
+      if(!(ME&&ME.role==='district_admin'&&ME.own))
+        throw new Error('เฉพาะผู้ดูแลหลักเท่านั้นที่ทำรายการนี้ได้');
+      const g=p.round||p.group||demoRound();
+      const lk=demoLock(p.act_id,g);
+      if(!lk) throw new Error('รายการนี้ยังไม่ได้ถูกล็อก');
+      if(String(p.reason||'').trim().length<5)
+        throw new Error('กรุณาระบุเหตุผลในการปลดล็อก (อย่างน้อย 5 ตัวอักษร)');
+      lk.status='ปลดล็อก'; lk.unlocked_by=ME.name; lk.unlocked_at=nowStr(); lk.unlock_reason=p.reason;
+      memSave(); return {locked:false, act_id:p.act_id, round:String(g)}; }
+    case 'scoreLockList':{
+      const g=p.group||demoRound();
+      return {round:String(g), locked:(MEM.locks||[]).filter(l=>String(l.round)===String(g)&&l.status==='ล็อก')}; }
     case 'publishResults':{
       const g=p.group || demoRound();
+      if(!demoLock(p.act_id,g))
+        throw new Error('ยังไม่ได้ยืนยันคะแนนของรายการนี้ — ไปที่หน้า “ให้คะแนน” กด “ยืนยันคะแนน” ให้เรียบร้อยก่อน แล้วจึงประกาศผล');
       const c=demoCompute(p.act_id, g);
       const eg={}; MEM.entries.forEach(e=>eg[e.entry_id]=String(e.group_code));
       MEM.results=MEM.results.filter(r=>!(r.act_id===p.act_id && eg[r.entry_id]===String(g)));
@@ -3001,8 +3070,8 @@ function applyScope(){
   $('#loginKw').textContent   = shortName();
   $('#bTitle').textContent = g? groupName(SCOPE) : 'ศิลปหัตถกรรมนักเรียน ครั้งที่ '+edition();
   $('#bSub').textContent   = g? 'เว็บกลุ่มโรงเรียน · รอบคัดเลือก' : districtName()+' · '+acadYear();
-  $('#bMk').textContent    = g? '🏁':'🏆';
-  $('#bMk').style.background = g? groupColor(SCOPE) : '';
+  $('#bMk').innerHTML = g? '🏁' : '<img src="logo-mark.webp" alt="" onerror="this.remove()">';
+  $('#bMk').style.background = g? groupColor(SCOPE) : '#fff';
   $('#hKw').textContent    = g? 'รอบคัดเลือกระดับกลุ่มโรงเรียน' : shortName();
   $('#hTitle').textContent = g? groupName(SCOPE) : 'ระดับเขตพื้นที่การศึกษา · '+districtName();
   $('#scopeSel').value=SCOPE;
@@ -3180,7 +3249,7 @@ function eventDateLine(){
 }
 /** ภาพแบนเนอร์เริ่มต้นของระบบ — เงาร่างเด็ก ๆ ทำกิจกรรม (ฟ้อนรำ · ร้องเพลง · วาดภาพ · ชกมวย · เขียนหนังสือ)
     ฝังมากับไฟล์หน้าเว็บ จึงแสดงได้เสมอแม้ยังไม่ได้อัปโหลดภาพของตนเอง */
-const DEFAULT_BANNER = 'banner-blue.webp';
+const DEFAULT_BANNER = 'banner-wine.webp';
 function renderBanner(){
   const c=siteCfg(), b=$('#banner');
   b.style.backgroundImage = `url("${c.banner_url? imgSrc(c.banner_url) : DEFAULT_BANNER}")`;
@@ -3204,7 +3273,7 @@ const GROUP_COLORS=[
   '#BC422F','#AB632B','#8B6F23','#73761E','#5F7E20','#458321','#278321','#218337','#218355','#218372',
   '#237D8B','#2D79B4','#2F54BC','#342FBC','#5E2FBC','#882FBC','#B22FBC','#BC2F9B','#BC2F71','#BC2F46'];
 function groupColor(code){
-  if(!code || code==='ALL' || code==='DISTRICT') return '#2656C9';
+  if(!code || code==='ALL' || code==='DISTRICT') return '#A00040';
   const list=(DB.groups||[]);
   let i=list.findIndex(g=>String(g.group_code)===String(code));
   if(i<0){ let h=0; const t=String(code);
@@ -5852,6 +5921,7 @@ function renderScore(){
       }).join(''));
     $('#scHint').textContent='คะแนนเต็ม '+crit.reduce((a,b)=>a+Number(b.max_score),0)+
       ' · '+ent.length+' ทีม · '+($('#scJudge').selectedOptions[0]||{}).textContent;
+    scLoadLock(actId,'scLock');
   });
 }
 /** เกณฑ์เหรียญจากค่าตั้งค่าของเขต */
@@ -5887,6 +5957,7 @@ function renderScoreTotal(actId, act){
       }).join('') || '');
     scTotalCalc();
     $('#scHint').textContent = 'คะแนนเต็ม '+full+' · '+ent.length+' ทีม · กรอกคะแนนรวมจากแบบรายงานของคณะกรรมการ';
+    scLoadLock(actId,'scLock');
   });
 }
 /** คิดเหรียญ + จัดอันดับสด ๆ (คะแนนเท่ากันได้อันดับเท่ากัน) */
@@ -5960,9 +6031,105 @@ async function saveScoreTotals(){
   }catch(e){ alert(e.message); }
 }
 
+/* ============================================================================
+   ยืนยันและล็อกคะแนน
+   กรอกคะแนน → ยืนยันคะแนน (ล็อก) → ประกาศผล
+   ล็อกแล้วแก้ไม่ได้ ปลดล็อกได้เฉพาะผู้ดูแลหลักของเขต และต้องบอกเหตุผล
+   ============================================================================ */
+let SCLOCK=null;
+function scRound(){ return entryRound(); }
+async function scLoadLock(actId, box){
+  SCLOCK=null;
+  const el=$('#'+box); if(el) el.innerHTML='';
+  if(!actId || !ME) return null;
+  try{ SCLOCK=await api('scoreLockGet',{act_id:actId, group:scRound()}); }
+  catch(e){ SCLOCK=null; }
+  scPaintLock(box);
+  return SCLOCK;
+}
+function scPaintLock(box){
+  const el=$('#'+box); if(!el) return;
+  const L=SCLOCK;
+  if(!L){ el.innerHTML=''; return; }
+  if(L.locked){
+    el.innerHTML=`<div class="note ok"><span>🔒</span><div>
+      <b>คะแนนรายการนี้ยืนยันและล็อกแล้ว</b> — แก้ไขไม่ได้จนกว่าจะปลดล็อก<br>
+      <span class="hint">ยืนยันโดย ${qq(L.confirmed_by||'-')}${L.confirmed_pos?' ('+qq(L.confirmed_pos)+')':''} · ${thStamp(L.confirmed_at)||qq(L.confirmed_at)}</span>
+      ${L.can_unlock?`<div style="margin-top:9px"><button class="btn g sm" onclick="unlockScoresNow()">🔓 ปลดล็อกเพื่อแก้ไข</button></div>`:
+        '<div class="hint" style="margin-top:6px">ถ้าต้องแก้ไข ให้แจ้งผู้ดูแลหลักของสำนักงานเขตปลดล็อกให้</div>'}
+    </div>`;
+  }else{
+    const full = L.teams && L.scored>=L.teams;
+    el.innerHTML=`<div class="note ${full?'i':'w'}"><span>${full?'📝':'⏳'}</span><div>
+      <b>ยังไม่ได้ยืนยันคะแนน</b> — กรอกคะแนนแล้ว ${L.scored} จาก ${L.teams} ทีม<br>
+      <span class="hint">กรอกครบและตรวจทานแล้ว กดปุ่ม “ยืนยันคะแนน &amp; ล็อก” ด้านล่าง ระบบจึงจะให้ประกาศผลได้</span></div></div>`;
+  }
+  scApplyLock();
+}
+/** ล็อกแล้วปิดช่องกรอกและปุ่มบันทึกทั้งหมดในหน้าให้คะแนน */
+function scApplyLock(){
+  const locked=!!(SCLOCK&&SCLOCK.locked);
+  $$('#scTbl input').forEach(i=>{ i.disabled=locked; i.style.background=locked?'var(--line-2)':''; });
+  const row=$('#scBtns'); if(row){
+    [...row.querySelectorAll('button')].forEach(b=>{
+      const isConfirm=/ยืนยันคะแนน/.test(b.textContent);
+      b.style.display = locked ? 'none' : (isConfirm? '' : '');
+    });
+  }
+}
+async function confirmScoresNow(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const actId=$('#scAct').value;
+  const act=(DB.activities||[]).find(a=>a.act_id===actId)||{};
+  if(!actId) return alert('ยังไม่ได้เลือกรายการแข่งขัน');
+  const L=SCLOCK||{};
+  if(!confirm('ยืนยันคะแนนของ “'+(act.act_name||'')+'” ('+(act.level||'')+') ?\n\n'+
+    'กรอกคะแนนแล้ว '+(L.scored||0)+' จาก '+(L.teams||0)+' ทีม\n\n'+
+    '• ยืนยันแล้วคะแนนจะถูกล็อก แก้ไขไม่ได้\n'+
+    '• ปลดล็อกได้เฉพาะผู้ดูแลหลักของสำนักงานเขต และต้องระบุเหตุผล')) return;
+  const who=prompt('ชื่อผู้ยืนยัน (ประธานกรรมการตัดสิน)', (ME&&ME.name)||'');
+  if(who===null) return;
+  const pos=prompt('ตำแหน่ง (เว้นว่างได้)','ประธานกรรมการตัดสิน');
+  if(pos===null) return;
+  try{
+    await api('confirmScores',{act_id:actId, group:scRound(),
+      confirmed_by:who.trim()||((ME&&ME.name)||''), confirmed_pos:(pos||'').trim()});
+    await scLoadLock(actId,'scLock');
+    alert('ยืนยันคะแนนเรียบร้อย — คะแนนถูกล็อกแล้ว\n\nขั้นต่อไปไปที่หน้า “ตรวจทาน & ประกาศผล”');
+  }catch(e){
+    if(/ยังกรอกคะแนนไม่ครบ/.test(e.message) &&
+       confirm(e.message+'\n\nยืนยันทั้งที่ยังไม่ครบใช่ไหมคะ?')){
+      try{ await api('confirmScores',{act_id:actId, group:scRound(), allow_partial:'Y',
+            confirmed_by:who.trim()||((ME&&ME.name)||''), confirmed_pos:(pos||'').trim()});
+        await scLoadLock(actId,'scLock'); alert('ยืนยันคะแนนเรียบร้อย — คะแนนถูกล็อกแล้ว');
+      }catch(e2){ alert(e2.message); }
+    } else alert(e.message);
+  }
+}
+async function unlockScoresNow(){
+  const actId=$('#scAct').value || $('#pbAct').value;
+  const act=(DB.activities||[]).find(a=>a.act_id===actId)||{};
+  const reason=prompt('ปลดล็อกคะแนนของ “'+(act.act_name||'')+'”\n\n'+
+    'ระบุเหตุผล (ระบบจะบันทึกชื่อผู้ปลดล็อกและเหตุผลไว้ตรวจสอบ):','');
+  if(reason===null) return;
+  if(reason.trim().length<5) return alert('กรุณาระบุเหตุผลอย่างน้อย 5 ตัวอักษร');
+  try{
+    await api('unlockScores',{act_id:actId, group:scRound(), reason:reason.trim()});
+    if($('#p-score').classList.contains('on')||PAGE==='score') await scLoadLock(actId,'scLock');
+    else await scLoadLock(actId,'pbLock');
+    alert('ปลดล็อกแล้ว — แก้ไขคะแนนได้ และต้องยืนยันใหม่ก่อนประกาศผล');
+  }catch(e){ alert(e.message); }
+}
+
 /* ---------- ประกาศผล ---------- */
 function renderPublish(){
   const actId=$('#pbAct').value; if(!actId) return;
+  scLoadLock(actId,'pbLock').then(()=>{
+    const b=$('#pbBtn'); if(!b) return;
+    const ok=!!(SCLOCK&&SCLOCK.locked);
+    b.disabled=!ok; b.style.opacity=ok?'':'.45'; b.style.cursor=ok?'':'not-allowed';
+    b.title = ok? '' : 'ต้องยืนยันคะแนนที่หน้า “ให้คะแนน” ก่อน';
+  });
   api('computeResults',{act_id:actId, group: SCOPE==='ALL'?'':SCOPE}).then(c=>{
     const S=schoolsOf('ALL');
     const warn=c.rows.filter(r=>r.spread>c.warn_gap);
@@ -6405,7 +6572,7 @@ function allCats(){ return [...new Set((DB.activities||[]).map(a=>a.category).fi
 function apPickRow(i){
   const cats=allCats();
   return `<div class="row" style="margin-bottom:8px;align-items:flex-end">
-    <div style="width:34px;height:34px;border-radius:50%;background:var(--brand,#2656C9);color:#fff;
+    <div style="width:34px;height:34px;border-radius:50%;background:var(--brand,#A00040);color:#fff;
          display:flex;align-items:center;justify-content:center;font-weight:800">${i}</div>
     <div class="fld" style="margin:0;min-width:190px"><label>กลุ่มสาระ อันดับ ${i}</label>
       <select id="ap_c${i}" onchange="apFillActs(${i})"
