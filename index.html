@@ -789,7 +789,9 @@ body[data-view="admin"] .utilbar{display:none}
     <!-- ---------- กลุ่มโรงเรียน ---------- -->
     <section class="page" id="p-groups">
       <div class="hd"><div><h2>กลุ่มโรงเรียน</h2><p>20 กลุ่ม · เปิดเว็บของกลุ่มให้จัดแข่งเอง แล้วติดตามความคืบหน้าทุกกลุ่มจากที่เดียว</p></div>
-        <span class="sp"></span><button class="btn g sm" onclick="exportCsv('groups')">⬇ CSV</button></div>
+        <span class="sp"></span>
+        <button class="btn g sm" onclick="fillGProg(1)" title="ดึงความคืบหน้าล่าสุดของทุกกลุ่ม">🔄 รีเฟรชความคืบหน้า</button>
+        <button class="btn g sm" onclick="exportCsv('groups')">⬇ CSV</button></div>
       <div id="grpCards" class="gcards"></div>
       <div class="card" style="margin-top:16px"><div class="ch"><h3>ตารางสรุปทุกกลุ่ม</h3></div>
         <div class="cb" style="padding:0;overflow:auto"><table id="grpTbl"></table></div></div>
@@ -1112,6 +1114,13 @@ body[data-view="admin"] .utilbar{display:none}
     <section class="page" id="p-docs">
       <div class="hd"><div><h2>เอกสารดาวน์โหลด</h2><p>ระเบียบ เกณฑ์การแข่งขัน หนังสือราชการ และแบบฟอร์ม</p></div></div>
       <div id="docList"></div>
+    </section>
+
+    <!-- ---------- เว็บกลุ่มโรงเรียนทั้ง 20 กลุ่ม (สาธารณะ เฉพาะเว็บระดับเขต) ---------- -->
+    <section class="page" id="p-gsites">
+      <div class="hd"><div><h2>เว็บกลุ่มโรงเรียน</h2>
+        <p>แต่ละกลุ่มมีเว็บของตนเองสำหรับจัดการแข่งขันรอบคัดเลือก — รายการแข่งขัน ตารางแข่ง ผลการแข่งขัน และข่าวของกลุ่ม</p></div></div>
+      <div id="gsiteList" class="gcards"></div>
     </section>
 
     <!-- ---------- เกณฑ์การแข่งขันรายกลุ่มสาระ (สาธารณะ) ---------- -->
@@ -3168,7 +3177,8 @@ function roleTh(r){ const t={district_admin:'ผู้ดูแลเขต',gro
 const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการแข่งขัน'],['rules','เกณฑ์การแข่งขัน'],
   ['apply','สมัครกรรมการตัดสิน'],
   ['sched','ตารางแข่งขัน'],['results','ผลการแข่งขัน'],['medals','ตารางเหรียญ'],
-  ['cert','เกียรติบัตร'],['subs','ขอเปลี่ยนตัว'],['docs','เอกสารดาวน์โหลด']];
+  ['cert','เกียรติบัตร'],['subs','ขอเปลี่ยนตัว'],['docs','เอกสารดาวน์โหลด'],
+  ['gsites','เว็บกลุ่มโรงเรียน']];
 /* ทะเบียนโรงเรียนไม่อยู่ในเมนูสาธารณะ — เปิดดูได้เฉพาะฝั่งหลังบ้านของเขตและกลุ่ม */
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
@@ -3366,11 +3376,14 @@ function pubPages(){
   return PUBLIC_PAGES.filter(x =>
     x[0]==='cert'  ? isOpen('cert_open') :
     x[0]==='subs'  ? subWin().open :
+    /* เมนู “เว็บกลุ่มโรงเรียน” มีเฉพาะบนเว็บระดับเขต และเฉพาะบัญชีที่ดูได้ทุกกลุ่ม
+       อยู่ในเว็บกลุ่มอยู่แล้วไม่ต้องมีหน้ารวมกลุ่มซ้ำ */
+    x[0]==='gsites'? (SCOPE==='ALL' && !lockedScope() && (DB.groups||[]).length>0) :
     x[0]==='rules' ? (ruleHasFiles() || (ME && ME.role==='district_admin')) : true);
 }
 /** เมนู “ข้อมูลสาธารณะ” ในแถบข้าง = เมนูเดียวกับหน้าเว็บสาธารณะจริง (ตาม PUBLIC_PAGES)
     แก้รายการที่เดียวใน PUBLIC_PAGES แล้วตรงกันทั้งสองที่ */
-const PUB_ICON={home:'🏠',acts:'📋',rules:'📘',apply:'⚖️',sched:'🗓️',results:'📣',medals:'🥇',cert:'🎖️',subs:'🔁',docs:'📄'};
+const PUB_ICON={home:'🏠',acts:'📋',rules:'📘',apply:'⚖️',sched:'🗓️',results:'📣',medals:'🥇',cert:'🎖️',subs:'🔁',docs:'📄',gsites:'🏁'};
 function renderSideNav(){
   const box=$('#navPublic'); if(!box) return;
   box.innerHTML='<span class="ngh" onclick="togSec(this)">ข้อมูลสาธารณะ<i class="cv">▾</i></span>'
@@ -3684,6 +3697,9 @@ async function saveSite(){
   ['banner_url','banner_title','banner_subtitle','banner_note','contact'].forEach(k=>o[k]=$('#st_'+k).value.trim());
   if(SCOPE==='ALL'){ o.event_name=$('#st_event_name').value.trim();
     o.open_at=dateSelVal('st_open_at'); o.close_at=dateSelVal('st_close_at'); }
+  /* ฝั่งเซิร์ฟเวอร์เก็บข้อความแจ้งเตือนของกลุ่มไว้ที่คอลัมน์ tagline ไม่ใช่ banner_note
+     ถ้าไม่ส่งชื่อนี้ไปด้วย ข้อความที่กลุ่มพิมพ์จะหายทุกครั้งที่บันทึก */
+  if(SCOPE!=='ALL') o.tagline=o.banner_note;
   const btn=document.querySelector('#p-site .hd .btn');
   if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังบันทึก…'; }
   try{ await api('saveSiteSettings',o);
@@ -5284,7 +5300,7 @@ function renderPage(p){
     newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
     judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
     apply:renderApply, judgeapp:renderJudgeApp,
-    subs:renderSubsPublic, submgr:renderSubMgr,
+    subs:renderSubsPublic, submgr:renderSubMgr, gsites:renderGSites,
     rules:renderRules, rulesmgr:renderRulesMgr}[p]||(()=>{}))();
 }
 
@@ -5439,6 +5455,66 @@ function renderSchools(){
       <td class="num" style="color:var(--ink-3)">${s.login_user||''}</td></tr>`).join(''));
 }
 
+/* ---------- ความคืบหน้าการแข่งขันรายกลุ่มโรงเรียน ----------
+   ดึงด้วย 2 คำขอ แล้วเก็บไว้ 2 นาที ใช้ร่วมกันทั้งหน้าเว็บกลุ่ม (สาธารณะ) และหน้ากลุ่มโรงเรียน (หลังบ้าน)
+   ทีมที่โอนขึ้นเขตจะกลายเป็นใบสมัครของเขต (group_code = ALL) แต่ยังจำกลุ่มต้นทางไว้ที่ from_group */
+let GPROG=null, GPROG_AT=0;
+async function groupProgress(force){
+  if(GPROG && !force && Date.now()-GPROG_AT < 120000) return GPROG;
+  const [ent,pub]=await Promise.all([api('listEntries',{}), api('publicResults',{})]);
+  const m={};
+  const get=g=>(m[g]=m[g]||{teams:0,students:0,schools:new Set(),acts:new Set(),pubActs:new Set(),toDistrict:0});
+  (ent||[]).forEach(e=>{
+    const g=String(e.group_code||'');
+    if(g && g!=='ALL'){
+      const o=get(g); o.teams++; o.students+=(e.students||[]).length;
+      if(e.school_smis) o.schools.add(String(e.school_smis));
+      if(e.act_id) o.acts.add(e.act_id);
+    } else if(e.from_group){ get(String(e.from_group)).toDistrict++; }
+  });
+  (((pub||{}).results)||[]).forEach(r=>{
+    const g=String(r.group_code||''); if(!g||g==='ALL') return;
+    if(r.act_id) get(g).pubActs.add(r.act_id);
+  });
+  Object.keys(m).forEach(k=>{ const o=m[k];
+    o.schoolsN=o.schools.size; o.actsN=o.acts.size; o.pubActsN=o.pubActs.size; });
+  GPROG=m; GPROG_AT=Date.now(); return m;
+}
+/** เติมตัวเลขความคืบหน้าลงในช่องที่ทำเครื่องหมาย data-gp ไว้ (เรียกหลังวาดการ์ดแล้ว) */
+function fillGProg(force){
+  const slots=$$('[data-gp]'); if(!slots.length) return;
+  groupProgress(force).then(m=>{
+    $$('[data-gp]').forEach(el=>{
+      const o=m[el.dataset.gp]||{}, v=Number(o[el.dataset.k]||0);
+      const b=el.querySelector('b'); if(b) b.textContent=v.toLocaleString();
+    });
+  }).catch(()=>{
+    $$('[data-gp]').forEach(el=>{ const b=el.querySelector('b'); if(b&&b.textContent==='—') b.textContent='0'; });
+  });
+}
+/** หน้าสาธารณะของเขต — รวมลิงก์เว็บของกลุ่มโรงเรียนทั้ง 20 กลุ่ม */
+function renderGSites(){
+  const box=$('#gsiteList'); if(!box) return;
+  const gs=(DB.groups||[]);
+  box.innerHTML = gs.length ? gs.map(g=>{
+    const c=groupColor(g.group_code), open=g.site_open==='Y', code=g.group_code;
+    return `<div class="gcard" style="--gc:${c}">
+      <div class="gwm">${GICON}</div>
+      <div class="gtop"><div class="gicon">${GICON}</div><div class="gcode">${code}</div></div>
+      <h4>${g.group_name||code}</h4>
+      <div class="gam">อำเภอ${g.amphoe||''}</div>
+      <div class="gstat">
+        <span><b>${g.schools||0}</b>โรงเรียน</span>
+        <span><b>${Number(g.students||0).toLocaleString()}</b>นักเรียน</span>
+        <span data-gp="${code}" data-k="teams"><b>—</b>ทีมที่สมัคร</span>
+        <span data-gp="${code}" data-k="pubActsN"><b>—</b>รายการประกาศผล</span>
+      </div>
+      <div class="gpill${open?'':' off'}"><i></i>${open?'เปิดเว็บแล้ว':'ยังไม่เปิดเว็บ'}</div>
+      <div class="gfoot"><div class="gbtn" onclick="setScope('${code}')">เข้าเว็บกลุ่ม →</div></div>
+    </div>`;
+  }).join('') : '<div class="note i"><span>🏁</span><div>ยังไม่มีข้อมูลกลุ่มโรงเรียน</div></div>';
+  fillGProg();
+}
 function renderGroups(){
   const box=$('#grpCards');
   if(box) box.innerHTML=(DB.groups||[]).map(g=>{
@@ -5452,21 +5528,28 @@ function renderGroups(){
       <div class="gstat">
         <span><b>${g.schools||0}</b>โรงเรียน</span>
         <span><b>${Number(g.students||0).toLocaleString()}</b>นักเรียน</span>
-        <span><b>${g.expansion_schools||0}</b>ขยายโอกาส</span>
-        <span><b>${g.quota_default||1}</b>โควตา/รายการ</span>
+        <span data-gp="${g.group_code}" data-k="teams"><b>—</b>ทีมที่สมัคร</span>
+        <span data-gp="${g.group_code}" data-k="pubActsN"><b>—</b>รายการประกาศผล</span>
       </div>
       <div class="gpill${open?'':' off'}"><i></i>${open?'เปิดเว็บแล้ว':'ยังไม่เปิดเว็บ'}</div>
       <div class="gfoot"><div class="gbtn" onclick="setScope('${g.group_code}')">เข้าเว็บกลุ่ม →</div></div>
     </div>`;
   }).join('');
-  tbl($('#grpTbl'),['','รหัส','กลุ่มโรงเรียน','อำเภอ','โรงเรียน','นักเรียน','ขยายโอกาส','เว็บกลุ่ม','โควตา',''],
-    DB.groups.map(g=>`<tr><td><span class="gdot" style="--gc:${groupColor(g.group_code)}"></span></td>
-      <td class="num">${g.group_code}</td><td><b>${g.group_name}</b></td><td>${g.amphoe}</td>
+  /* ตารางสรุป — คอลัมน์ฝั่งขวาเป็นความคืบหน้าการแข่งขันจริง เติมค่าให้หลังดึงข้อมูลเสร็จ */
+  tbl($('#grpTbl'),['','รหัส','กลุ่มโรงเรียน','อำเภอ','โรงเรียน','นักเรียน','ขยายโอกาส','โควตา','เว็บกลุ่ม',
+      'โรงเรียนที่สมัคร','ทีมที่สมัคร','รายการที่มีผู้สมัคร','ประกาศผลแล้ว','ตัวแทนเข้าเขต',''],
+    DB.groups.map(g=>{ const c=g.group_code;
+      const cell=k=>`<td class="num" data-gp="${c}" data-k="${k}"><b>—</b></td>`;
+      return `<tr><td><span class="gdot" style="--gc:${groupColor(c)}"></span></td>
+      <td class="num">${c}</td><td><b>${g.group_name}</b></td><td>${g.amphoe}</td>
       <td class="num">${g.schools}</td><td class="num">${Number(g.students).toLocaleString()}</td>
       <td class="num">${g.expansion_schools}</td>
-      <td>${g.site_open==='Y'?'<span class="pill ok">เปิดแล้ว</span>':'<span class="pill w">ยังไม่เปิด</span>'}</td>
       <td class="num">${g.quota_default||1}</td>
-      <td><button class="btn g sm" title="สลับทั้งระบบไปเป็นเว็บของกลุ่มนี้" onclick="setScope('${g.group_code}')">เข้าเว็บกลุ่ม →</button></td></tr>`).join(''));
+      <td>${g.site_open==='Y'?'<span class="pill ok">เปิดแล้ว</span>':'<span class="pill w">ยังไม่เปิด</span>'}</td>
+      ${cell('schoolsN')}${cell('teams')}${cell('actsN')}${cell('pubActsN')}${cell('toDistrict')}
+      <td><button class="btn g sm" title="สลับทั้งระบบไปเป็นเว็บของกลุ่มนี้" onclick="setScope('${c}')">เข้าเว็บกลุ่ม →</button></td></tr>`;
+    }).join(''));
+  fillGProg();
 }
 
 function renderDash(){
