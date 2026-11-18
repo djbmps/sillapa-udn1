@@ -1278,6 +1278,22 @@ body[data-view="admin"] .utilbar{display:none}
                style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
         <div class="cb" style="padding:0"><div style="overflow:auto"><table id="jgTbl"></table></div></div></div>
 
+      <!-- ---------- มอบหมายกรรมการเข้ารายการแข่งขัน ---------- -->
+      <div class="card" style="margin-top:14px"><div class="ch"><h3>มอบหมายกรรมการเข้ารายการแข่งขัน</h3>
+        <span class="sp"></span><span class="hint" id="jaSub2"></span></div>
+        <div class="cb">
+          <div class="note i" style="margin-bottom:12px"><span>📋</span><div>
+            คณะกรรมการตัดสินกิจกรรมละ <b>5 คน</b> — ประธานกรรมการ · กรรมการ 3 คน · กรรมการและเลขานุการ<br>
+            รายชื่อที่มอบหมายไว้ที่นี่จะขึ้นใน <b>ใบปะหน้าซอง</b> และ <b>DOC.3 ลงทะเบียนกรรมการตัดสิน</b> อัตโนมัติ</div></div>
+          <div class="row" style="margin-bottom:12px">
+            <select id="jaAct" onchange="renderJAssign()" style="flex:1;min-width:240px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
+            <select id="jaJudge" style="min-width:200px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
+            <select id="jaRole" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
+            <button class="btn" onclick="addJAssign()">+ มอบหมาย</button>
+          </div>
+          <div style="overflow:auto"><table id="jaTbl"></table></div>
+        </div></div>
+
       <div class="card" id="jgForm" style="display:none;margin-top:14px"><div class="ch"><h3 id="jgFormTitle">เพิ่มกรรมการ</h3></div>
         <div class="cb">
           <div class="grid g3">
@@ -1928,6 +1944,7 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveStaff:'certadm',deleteStaff:'certadm',saveCertTemplate:'certadm',saveCertConfig:'certadm',
   saveCardTemplate:'cards',savePersonPhoto:'cards',saveNews:'newsmgr',deleteNews:'newsmgr',
   saveDocument:'newsmgr',deleteDocument:'newsmgr',saveSiteSettings:'site',savePermConfig:'perm',
+  saveJudgeAssign:'judges',deleteJudgeAssign:'judges',
   saveCriteriaDoc:'actedit',deleteCriteriaDoc:'actedit',confirmScores:'score',
   printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',promoteBatch:'promote',
   saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
@@ -2231,6 +2248,22 @@ function demoApi(action,p){
       memSave(); return j; }
     case 'deleteJudge':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.judges=(MEM.judges||[]).filter(x=>x.judge_id!==p.judge_id); memSave(); return true; }
+    case 'listJudgeAssign':{
+      const rows=(MEM.jassign||[]);
+      return p.act_id? rows.filter(x=>String(x.act_id)===String(p.act_id)) : rows; }
+    case 'saveJudgeAssign':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.jassign=MEM.jassign||[];
+      const a=Object.assign({},p.assign||{});
+      if(!a.act_id) throw new Error('ยังไม่ได้เลือกรายการแข่งขัน');
+      if(!a.judge_id) throw new Error('ยังไม่ได้เลือกกรรมการ');
+      if(!a.role) a.role='กรรมการ';
+      if(MEM.jassign.some(x=>String(x.act_id)===String(a.act_id)&&String(x.judge_id)===String(a.judge_id)&&String(x.id||'')!==String(a.id||'')))
+        throw new Error('กรรมการท่านนี้ถูกมอบหมายในรายการนี้อยู่แล้ว');
+      if(!a.id){ a.id='JA'+String(MEM.jassign.length+1).padStart(5,'0'); MEM.jassign.push(a); }
+      else Object.assign(MEM.jassign.find(x=>x.id===a.id)||{}, a);
+      memSave(); return a; }
+    case 'deleteJudgeAssign':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.jassign=(MEM.jassign||[]).filter(x=>x.id!==p.id); memSave(); return true; }
     case 'saveCertTemplate':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.tpl=MEM.tpl||SEED_TPL.map(t=>Object.assign({},t));
       const t=p.template; const i=MEM.tpl.findIndex(x=>x.tpl_id===t.tpl_id);
@@ -2892,7 +2925,8 @@ function demoApi(action,p){
       const acts=MEM.activities.filter(a=>!p.act_id||a.act_id===p.act_id);
       const ent=demoApi('listEntries',{group:p.group,act_id:p.act_id});
       ent.forEach(e=>{const s=S.find(x=>String(x.smis)===String(e.school_smis)); e.school_name=s?s.school_name:e.school_smis;});
-      return {config:SEED_CONFIG,activities:acts,criteria:MEM.criteria,entries:ent,judges:[],assign:[],
+      return {config:SEED_CONFIG,activities:acts,criteria:MEM.criteria,entries:ent,
+              judges:MEM.judges||[], assign:MEM.jassign||[],
               schedule:MEM.schedule, group:G.find(g=>g.group_code===p.group)||null}; }
     default: throw new Error('โหมดตัวอย่างยังไม่รองรับคำสั่ง '+action);
   }
@@ -4097,8 +4131,55 @@ function renderJudges(){
   api('listJudges',{scope:SCOPE}).then(rows=>{
     JUDGES=rows||[];
     $('#jgSub').textContent=(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE))+' · '+JUDGES.length+' คน';
-    drawJudges();
+    drawJudges(); fillJAssignSelects(); renderJAssign();
   }).catch(e=>{ $('#jgSub').textContent='โหลดไม่สำเร็จ: '+e.message; });
+}
+
+/* ---------- มอบหมายกรรมการเข้ารายการแข่งขัน ----------
+   คณะกรรมการตัดสินกิจกรรมละ 5 คนตาม JUDGE_SEATS
+   รายชื่อที่มอบหมายถูกใช้ในใบปะหน้าซองและ DOC.3 ผ่าน printPack  */
+let JASSIGN=[];
+function fillJAssignSelects(){
+  const sa=$('#jaAct'); if(!sa) return;
+  const acts=actsOf().slice().sort((a,b)=>String(a.act_code||'').localeCompare(String(b.act_code||''),'th',{numeric:true}));
+  const keep=sa.value;
+  sa.innerHTML=acts.map(a=>`<option value="${a.act_id}">${a.act_code||a.act_id} · ${cleanTxt(a.act_name||'')} · ${a.level||''}</option>`).join('');
+  if(keep && acts.some(a=>a.act_id===keep)) sa.value=keep;
+  const sj=$('#jaJudge');
+  sj.innerHTML = JUDGES.length
+    ? JUDGES.map(j=>`<option value="${j.judge_id}">${cleanTxt(j.name||'')}${j.org? ' · '+cleanTxt(j.org):''}</option>`).join('')
+    : '<option value="">— ยังไม่มีรายชื่อกรรมการ —</option>';
+  const sr=$('#jaRole');
+  /* ที่นั่งซ้ำได้ (กรรมการ 3 คน) จึงไม่ตัดตัวเลือกที่ใช้ไปแล้วออก */
+  sr.innerHTML=[...new Set(JUDGE_SEATS)].map(r=>`<option value="${r}">${r}</option>`).join('');
+}
+function renderJAssign(){
+  const act=$('#jaAct').value;
+  if(!act){ tbl($('#jaTbl'),['กรรมการ','ตำแหน่งในคณะกรรมการ','หน่วยงาน',''],''); return; }
+  api('listJudgeAssign',{act_id:act}).then(rows=>{
+    JASSIGN=rows||[];
+    const need=Number((actsOf().find(a=>a.act_id===act)||{}).judges_required||5);
+    $('#jaSub2').textContent = JASSIGN.length+' / '+need+' คน'+(JASSIGN.length<need? ' — ยังไม่ครบ':' ✓');
+    tbl($('#jaTbl'),['กรรมการ','ตำแหน่งในคณะกรรมการ','หน่วยงาน / โรงเรียน',''],
+      JASSIGN.map(a=>{
+        const j=JUDGES.find(x=>String(x.judge_id)===String(a.judge_id))||{};
+        return `<tr><td><b>${cleanTxt(j.name||a.judge_id)}</b></td><td>${cleanTxt(a.role||'กรรมการ')}</td>
+          <td>${cleanTxt(j.org||'')}</td>
+          <td style="white-space:nowrap"><button class="btn g sm" onclick="delJAssign('${a.id}')">ถอน</button></td></tr>`;
+      }).join(''));
+  }).catch(e=>{ $('#jaSub2').textContent='โหลดไม่สำเร็จ: '+e.message; });
+}
+async function addJAssign(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const act=$('#jaAct').value, jid=$('#jaJudge').value, role=$('#jaRole').value;
+  if(!jid) return alert('ยังไม่มีรายชื่อกรรมการ — เพิ่มรายชื่อที่ตารางด้านบนก่อน');
+  try{ await api('saveJudgeAssign',{assign:{act_id:act, judge_id:jid, role:role}}); renderJAssign(); }
+  catch(e){ alert(e.message); }
+}
+async function delJAssign(id){
+  if(!confirm('ถอนการมอบหมายกรรมการท่านนี้ออกจากรายการแข่งขัน?')) return;
+  try{ await api('deleteJudgeAssign',{id:id}); renderJAssign(); }
+  catch(e){ alert(e.message); }
 }
 function drawJudges(){
   const q=($('#jg_q').value||'').trim();
