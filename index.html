@@ -630,7 +630,9 @@ body[data-view="admin"] .utilbar{display:none}
       </div></div>
 
       <div class="ng" data-sec="sc"><span class="ngh" onclick="togSec(this)">บันทึกคะแนน &amp; ประกาศผล<i class="cv">▾</i></span><div class="ngb">
-        <button class="nv" data-p="score" data-role="district_admin,group_admin,head_judge,judge" data-perm="score"><i>✍️</i>ให้คะแนน</button>
+        <!-- กรรมการตัดสินส่งใบบันทึกคะแนนกระดาษ แล้วเจ้าหน้าที่ ICT คีย์เข้าระบบ
+             เมนูนี้จึงเปิดให้เฉพาะผู้ดูแลเขตและผู้ดูแลกลุ่ม (ตามสิทธิ์ score) -->
+        <button class="nv" data-p="score" data-role="district_admin,group_admin" data-perm="score"><i>✍️</i>ให้คะแนน</button>
         <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ตรวจทาน &amp; ประกาศผล</button>
         <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
       </div></div>
@@ -842,10 +844,11 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- ให้คะแนน ---------- -->
     <section class="page" id="p-score">
-      <div class="hd"><div><h2>ให้คะแนน</h2><p>กรรมการกรอกออนไลน์ได้ทันที หรือกรอกจากใบกระดาษย้อนหลังก็ได้</p></div></div>
+      <div class="hd"><div><h2>ให้คะแนน</h2><p>เจ้าหน้าที่คีย์คะแนนจากใบบันทึกคะแนนที่คณะกรรมการตัดสินส่งมา — คีย์คะแนนรวมต่อทีม หรือสลับเป็นคีย์แยกรายกรรมการก็ได้</p></div></div>
       <div class="row" style="margin-bottom:12px">
         <select id="scAct" onchange="renderScore()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
         <select id="scJudge" onchange="renderScore()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
+        <button class="btn g sm" id="scModeBtn" onclick="scToggleMode()">⇄ สลับวิธีคีย์คะแนน</button>
         <button class="btn g sm" onclick="printDoc('scoresheet')">🖨️ ใบให้คะแนนกระดาษ</button>
       </div>
       <div class="note i" id="scTotalNote" style="display:none;margin-bottom:12px"><span>🧮</span><div>
@@ -856,8 +859,8 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="card"><div class="cb" style="padding:0;overflow:auto"><table id="scTbl"></table></div></div>
       <div class="row" style="margin-top:12px" id="scBtns">
         <span class="hint" id="scHint"></span><span class="sp"></span>
-        <button class="btn g" onclick="saveScores('paper')">บันทึกเป็นคะแนนจากกระดาษ</button>
-        <button class="btn g" onclick="saveScores('online')">บันทึกคะแนน</button>
+        <button class="btn g" id="scSavePaper" onclick="saveScores('paper')">บันทึกเป็นคะแนนจากกระดาษ</button>
+        <button class="btn g" id="scSaveOnline" onclick="saveScores('online')">บันทึกคะแนน</button>
         <button class="btn" onclick="confirmScoresNow()">✔ ยืนยันคะแนน &amp; ล็อก</button>
       </div>
     </section>
@@ -1849,7 +1852,8 @@ const LS=window.localStorage;
 /* คีย์ที่เก็บในเบราว์เซอร์ — ไม่ผูกกับเลขครั้งที่ จะได้ใช้ต่อได้ทุกปี
    ของเดิมที่เคยเก็บด้วยชื่อ sillapa74_* จะถูกย้ายมาให้อัตโนมัติครั้งแรกที่เปิด */
 const K={api:'sillapa_api',token:'sillapa_token',me:'sillapa_me',
-         scope:'sillapa_scope',view:'sillapa_view',demo:'sillapa_demo'};
+         scope:'sillapa_scope',view:'sillapa_view',demo:'sillapa_demo',
+         scmode:'sillapa_scoremode'};
 (function migrateKeys(){
   try{
     Object.keys(K).forEach(k=>{
@@ -5466,14 +5470,15 @@ async function groupProgress(force){
   const get=g=>(m[g]=m[g]||{teams:0,students:0,schools:new Set(),acts:new Set(),pubActs:new Set(),toDistrict:0});
   (ent||[]).forEach(e=>{
     const g=String(e.group_code||'');
-    if(g && g!=='ALL'){
+    const isDist = !g || g==='ALL' || g==='DISTRICT';
+    if(!isDist){
       const o=get(g); o.teams++; o.students+=(e.students||[]).length;
       if(e.school_smis) o.schools.add(String(e.school_smis));
       if(e.act_id) o.acts.add(e.act_id);
     } else if(e.from_group){ get(String(e.from_group)).toDistrict++; }
   });
   (((pub||{}).results)||[]).forEach(r=>{
-    const g=String(r.group_code||''); if(!g||g==='ALL') return;
+    const g=String(r.group_code||''); if(!g||g==='ALL'||g==='DISTRICT') return;
     if(r.act_id) get(g).pubActs.add(r.act_id);
   });
   Object.keys(m).forEach(k=>{ const o=m[k];
@@ -6024,13 +6029,45 @@ function editEntry(id){
      ระบบคิดเหรียญ/จัดอันดับให้ทันที แล้วแอดมินเขตจึงกดประกาศผลที่หน้าประกาศผล  */
 let SC_ENT=[];
 const SC_SUM_JUDGE='SUM', SC_SUM_CRIT='TOTAL';
+/* ---------- วิธีคีย์คะแนน ----------
+   ใช้งานจริง กรรมการตัดสินส่งใบบันทึกคะแนนกระดาษ แล้วเจ้าหน้าที่ ICT คีย์เข้าระบบ
+   จึงตั้งค่าเริ่มต้นเป็น “คะแนนรวมต่อทีม” ทั้งระดับเขตและระดับกลุ่ม
+   ใครที่ต้องการเก็บคะแนนแยกรายกรรมการ–รายหัวข้อ สลับเป็นโหมดละเอียดได้
+   ระดับเขตใช้คะแนนรวมเสมอ เพราะเขตรับเป็นแบบรายงานสรุปจากคณะกรรมการอยู่แล้ว */
+function scTotalMode(){
+  if(SCOPE==='ALL') return true;
+  try{ return LS.getItem(K.scmode)!=='detail'; }catch(e){ return true; }
+}
+function scToggleMode(){
+  if(SCOPE==='ALL') return;
+  try{ LS.setItem(K.scmode, scTotalMode()? 'detail':'total'); }catch(e){}
+  renderScore();
+}
 function renderScore(){
   const actId=$('#scAct').value;
   const act=(DB.activities||[]).find(a=>a.act_id===actId);
   if(!act) return;
-  const totalMode=(SCOPE==='ALL');
+  const totalMode=scTotalMode();
   const jsel=$('#scJudge'); if(jsel) jsel.style.display = totalMode? 'none':'';
-  const nt=$('#scTotalNote'); if(nt) nt.style.display = totalMode? 'flex':'none';
+  const mb=$('#scModeBtn');
+  if(mb){
+    mb.style.display = SCOPE==='ALL'? 'none':'';
+    mb.textContent = totalMode? '⇄ สลับเป็นคีย์แยกรายกรรมการ' : '⇄ สลับเป็นคีย์คะแนนรวม';
+  }
+  const nt=$('#scTotalNote');
+  if(nt){
+    nt.style.display = totalMode? 'flex':'none';
+    nt.querySelector('div').innerHTML = SCOPE==='ALL'
+      ? '<b>ระดับเขต — กรอกคะแนนรวมของแต่ละทีม</b> ตามแบบรายงานคะแนนที่คณะกรรมการสรุปส่งมา '
+        +'ระบบจะคิดเหรียญและจัดอันดับให้อัตโนมัติ ตรวจทานถูกต้องแล้วจึงไปที่หน้า <b>ตรวจทาน &amp; ประกาศผล</b> เพื่อประกาศผลอย่างเป็นทางการ'
+      : '<b>กรอกคะแนนรวมของแต่ละทีม</b> จากใบบันทึกคะแนนที่คณะกรรมการตัดสินส่งมา '
+        +'ระบบจะคิดเหรียญและจัดอันดับให้อัตโนมัติ · ใบกระดาษของกรรมการยังเป็นหลักฐานคะแนนรายหัวข้อ ให้เก็บไว้ตามระเบียบ '
+        +'<br>ถ้าต้องการเก็บคะแนนแยกรายกรรมการและรายหัวข้อไว้ในระบบด้วย กดปุ่ม <b>สลับเป็นคีย์แยกรายกรรมการ</b>';
+  }
+  /* โหมดคะแนนรวมบันทึกชุดเดียว ไม่ต้องมีปุ่มแยก “ออนไลน์ / จากกระดาษ” ให้สับสน */
+  const sp=$('#scSavePaper'), so=$('#scSaveOnline');
+  if(sp) sp.style.display = totalMode? 'none':'';
+  if(so) so.textContent = totalMode? 'บันทึกคะแนนรวม' : 'บันทึกคะแนน';
   if(totalMode) return renderScoreTotal(actId, act);
   const nj=Number(act.judges_required||3);
   if(!$('#scJudge').options.length || $('#scJudge').dataset.n!=nj){
@@ -6072,8 +6109,9 @@ function renderScoreTotal(actId, act){
   if(!crit.length){ $('#scTbl').innerHTML='<tbody><tr><td style="padding:26px;text-align:center;color:var(--ink-3)">รายการนี้ยังไม่ได้ตั้งเกณฑ์การให้คะแนน — ไปที่ “จัดการรายการ &amp; เกณฑ์”</td></tr></tbody>'; return; }
   const full=crit.reduce((a,b)=>a+Number(b.max_score||0),0) || 100;
   window.__SCFULL=full; window.__SCCRIT=crit;
-  Promise.all([api('listEntries',{group:'DISTRICT', act_id:actId}),
-               api('computeResults',{act_id:actId, group:''}).catch(()=>({rows:[]}))])
+  /* entryRound() = 'DISTRICT' เมื่ออยู่เว็บเขต · = รหัสกลุ่ม เมื่ออยู่เว็บกลุ่ม */
+  Promise.all([api('listEntries',{group:entryRound(), act_id:actId}),
+               api('computeResults',{act_id:actId, group:entryRound()}).catch(()=>({rows:[]}))])
    .then(([ent,calc])=>{
     SC_ENT=ent;
     const S=schoolsOf('ALL');
@@ -6122,7 +6160,7 @@ function scRow(inp){ const tr=inp.closest('tr');
     .reduce((a,b)=>a+Number(b.value||0),0); }
 async function saveScores(src){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
-  if(SCOPE==='ALL') return saveScoreTotals();
+  if(scTotalMode()) return saveScoreTotals();
   const jid=$('#scJudge').value, out=[];
   $$('#scTbl tbody tr').forEach(tr=>{
     tr.querySelectorAll('input').forEach(i=>{ if(i.value!=='')
@@ -6159,7 +6197,7 @@ async function saveScoreTotals(){
     });
   });
   try{
-    await api('saveScores',{act_id:$('#scAct').value, group:'DISTRICT', scores:out, source:'report'});
+    await api('saveScores',{act_id:$('#scAct').value, group:entryRound(), scores:out, source:'report'});
     scTotalSort();
     alert('บันทึกคะแนนรวมแล้ว '+teams.length+' ทีม\n\nตรวจทานอันดับให้ถูกต้อง แล้วไปที่หน้า “ตรวจทาน & ประกาศผล” เพื่อประกาศผล');
   }catch(e){ alert(e.message); }
