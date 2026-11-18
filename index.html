@@ -5495,9 +5495,18 @@ function fillGProg(force){
 /** หน้าสาธารณะของเขต — รวมลิงก์เว็บของกลุ่มโรงเรียนทั้ง 20 กลุ่ม */
 function renderGSites(){
   const box=$('#gsiteList'); if(!box) return;
+  /* หน้านี้เป็นสารบัญของเว็บระดับเขต — ถ้าเปิดจากในเว็บกลุ่ม ให้ชี้ทางกลับแทนการแสดงรายชื่อซ้ำ */
+  if(SCOPE!=='ALL'){
+    box.innerHTML='<div class="note i"><span>🏁</span><div>ขณะนี้ท่านอยู่ใน<b>เว็บของ '+groupName(SCOPE)+'</b> แล้ว'
+      + (lockedScope()? ' — บัญชีของท่านใช้งานได้เฉพาะกลุ่มนี้'
+          : ' · <b style="cursor:pointer;text-decoration:underline" onclick="setScope(\'ALL\')">ไปเว็บระดับเขตเพื่อดูครบทั้ง 20 กลุ่ม</b>')
+      + '</div></div>';
+    return;
+  }
   const gs=(DB.groups||[]);
   box.innerHTML = gs.length ? gs.map(g=>{
-    const c=groupColor(g.group_code), open=g.site_open==='Y', code=g.group_code;
+    /* ถือว่าเว็บกลุ่มเปิดใช้งาน เว้นแต่ตั้งค่า site_open = N ไว้ชัดเจน */
+    const c=groupColor(g.group_code), open=String(g.site_open||'').toUpperCase()!=='N', code=g.group_code;
     return `<div class="gcard" style="--gc:${c}">
       <div class="gwm">${GICON}</div>
       <div class="gtop"><div class="gicon">${GICON}</div><div class="gcode">${code}</div></div>
@@ -5509,7 +5518,7 @@ function renderGSites(){
         <span data-gp="${code}" data-k="teams"><b>—</b>ทีมที่สมัคร</span>
         <span data-gp="${code}" data-k="pubActsN"><b>—</b>รายการประกาศผล</span>
       </div>
-      <div class="gpill${open?'':' off'}"><i></i>${open?'เปิดเว็บแล้ว':'ยังไม่เปิดเว็บ'}</div>
+      <div class="gpill${open?'':' off'}"><i></i>${open?'เว็บกลุ่มเปิดใช้งาน':'ปิดเว็บกลุ่มไว้'}</div>
       <div class="gfoot"><div class="gbtn" onclick="setScope('${code}')">เข้าเว็บกลุ่ม →</div></div>
     </div>`;
   }).join('') : '<div class="note i"><span>🏁</span><div>ยังไม่มีข้อมูลกลุ่มโรงเรียน</div></div>';
@@ -5519,7 +5528,7 @@ function renderGroups(){
   const box=$('#grpCards');
   if(box) box.innerHTML=(DB.groups||[]).map(g=>{
     const c=groupColor(g.group_code);
-    const open=g.site_open==='Y';
+    const open=String(g.site_open||'').toUpperCase()!=='N';
     return `<div class="gcard" style="--gc:${c}">
       <div class="gwm">${GICON}</div>
       <div class="gtop"><div class="gicon">${GICON}</div><div class="gcode">${g.group_code}</div></div>
@@ -5531,7 +5540,7 @@ function renderGroups(){
         <span data-gp="${g.group_code}" data-k="teams"><b>—</b>ทีมที่สมัคร</span>
         <span data-gp="${g.group_code}" data-k="pubActsN"><b>—</b>รายการประกาศผล</span>
       </div>
-      <div class="gpill${open?'':' off'}"><i></i>${open?'เปิดเว็บแล้ว':'ยังไม่เปิดเว็บ'}</div>
+      <div class="gpill${open?'':' off'}"><i></i>${open?'เว็บกลุ่มเปิดใช้งาน':'ปิดเว็บกลุ่มไว้'}</div>
       <div class="gfoot"><div class="gbtn" onclick="setScope('${g.group_code}')">เข้าเว็บกลุ่ม →</div></div>
     </div>`;
   }).join('');
@@ -5545,7 +5554,7 @@ function renderGroups(){
       <td class="num">${g.schools}</td><td class="num">${Number(g.students).toLocaleString()}</td>
       <td class="num">${g.expansion_schools}</td>
       <td class="num">${g.quota_default||1}</td>
-      <td>${g.site_open==='Y'?'<span class="pill ok">เปิดแล้ว</span>':'<span class="pill w">ยังไม่เปิด</span>'}</td>
+      <td>${String(g.site_open||'').toUpperCase()!=='N'?'<span class="pill ok">เปิดใช้งาน</span>':'<span class="pill w">ปิดไว้</span>'}</td>
       ${cell('schoolsN')}${cell('teams')}${cell('actsN')}${cell('pubActsN')}${cell('toDistrict')}
       <td><button class="btn g sm" title="สลับทั้งระบบไปเป็นเว็บของกลุ่มนี้" onclick="setScope('${c}')">เข้าเว็บกลุ่ม →</button></td></tr>`;
     }).join(''));
