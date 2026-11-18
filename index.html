@@ -419,9 +419,11 @@ body[data-view="admin"] .utilbar{display:none}
 .sheetdoc .meta{text-align:center;font-size:13px;margin-top:6px;color:#333}
 .sheetdoc table{font-size:13px;margin-top:14px}
 .sheetdoc th,.sheetdoc td{border:1px solid #444;padding:6px 8px;background:none!important;position:static}
-.sheetdoc .sign{display:flex;flex-wrap:wrap;justify-content:space-around;row-gap:34px;margin-top:40px;font-size:13px;text-align:center}
-.sheetdoc .sign div{width:31%}
+.sheetdoc .sign{display:flex;flex-wrap:wrap;justify-content:space-around;row-gap:30px;margin-top:36px;font-size:13px;text-align:center;page-break-inside:avoid}
+.sheetdoc .sign>div{width:31%}
 .sheetdoc .ln{border-bottom:1px dotted #333;height:22px;margin-bottom:5px}
+/* เส้นลงลายมือชื่อกว้างเท่าช่องชื่อ และอยู่กึ่งกลางของที่นั่งนั้น */
+.sheetdoc .sign .ln{width:76%;margin:0 auto 5px}
 .sheetdoc .dochd{display:flex;gap:14px;align-items:flex-start;border-bottom:1px solid #000;padding-bottom:8px}
 .sheetdoc .dochd .dt{flex:1;font-size:13.5px;line-height:1.6}
 .sheetdoc .dochd .dtag{border:1px solid #b00;color:#b00;font-weight:700;font-size:12px;padding:3px 10px;border-radius:4px;white-space:nowrap}
@@ -7174,9 +7176,13 @@ function prtSchedLine(act, pack){
   return {date: sch.date? thDateLong(sch.date):'', time: sch.start_time||'',
           venue: ven.name? (ven.name+(ven.room?' ห้อง '+ven.room:'')) : (sch.venue_id||'')};
 }
-function prtSignRow(n){
-  return `<div class="sign">${Array.from({length:n||3},()=>
-    `<div><div class="ln"></div>${PRT_DOTS}<br>เบอร์โทร ................................</div>`).join('')}</div>`;
+/** แถวลายมือชื่อคณะกรรมการตัดสิน — ใช้ 5 ที่นั่งตามตำแหน่งจริง
+ *  ประธานกรรมการ · กรรมการ 3 คน · กรรมการและเลขานุการ (ดู JUDGE_SEATS)
+ *  เรียกแบบ prtSignRow() = ครบ 5 ที่นั่ง · ส่ง seats เองได้เมื่อต้องการข้อความอื่น */
+function prtSignRow(n, seats){
+  const list = seats || (n && n!==3 ? JUDGE_SEATS.slice(0, n) : JUDGE_SEATS);
+  return `<div class="sign">${list.map(role=>
+    `<div><div class="ln"></div>${PRT_DOTS}<br><b>${role}</b><br>เบอร์โทร ................................</div>`).join('')}</div>`;
 }
 function prtJudges(act, pack){
   const ids=(pack.assign||[]).filter(a=>String(a.act_id)===String(act.act_id));
@@ -7236,7 +7242,7 @@ function prtSheet(kind, act, pack, pub){
         <td>${districtName()}</td>
         <td>${(e.students||[]).map((s,k)=>(k+1)+'. '+stuName(s)).join('<br>')||''}</td><td></td></tr>`).join('')}
       ${blanks(ent.length?2:12,5)}</tbody></table>
-      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow()}</div>`;
     return `<div class="sheetdoc">${prtHead(act,'DOC.1')}${body}</div>`;
   }
 
@@ -7248,7 +7254,7 @@ function prtSheet(kind, act, pack, pub){
         <td>${districtName()}</td>
         <td>${(e.coaches||[]).map((c,k)=>(k+1)+'. '+coachName(c)).join('<br>')||''}</td><td></td></tr>`).join('')}
       ${blanks(ent.length?2:12,5)}</tbody></table>
-      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow()}</div>`;
     return `<div class="sheetdoc">${prtHead(act,'DOC.2')}${body}</div>`;
   }
 
@@ -7279,7 +7285,7 @@ function prtSheet(kind, act, pack, pub){
       ${blanks(ent.length?2:14, 5+Math.max(1,crit.length))}</tbody></table>
       <p class="tiny" style="margin-top:8px">เกณฑ์เหรียญ: ร้อยละ 80 ขึ้นไป = ทอง · 70–79.99 = เงิน · 60–69.99 = ทองแดง · ต่ำกว่า 60 = เข้าร่วม
         · ทีมที่ไม่มาแข่งขันให้บันทึกว่า <b>ไม่เข้าร่วมการแข่งขัน</b></p>
-      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}${prtSignRow(2)}</div>`;
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow()}</div>`;
     return `<div class="sheetdoc">${prtHead(act,'DOC.4')}${body}</div>`;
   }
 
@@ -7290,7 +7296,7 @@ function prtSheet(kind, act, pack, pub){
         <th style="width:120px">ลายมือชื่อ ผอ.</th></tr></thead><tbody>${blanks(12,6)}</tbody></table>
       <p class="tiny" style="margin-top:8px">* การเปลี่ยนตัวต้องได้รับอนุมัติจากประธานกลุ่มโรงเรียนหรือสำนักงานเขตพื้นที่การศึกษา
         และสามารถยื่นคำขอออนไลน์ได้ที่หน้า “ขอเปลี่ยนตัว” ของเว็บไซต์</p>
-      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow()}</div>`;
     return `<div class="sheetdoc">${prtHead(act,'DOC.5')}${body}</div>`;
   }
 
@@ -7303,7 +7309,7 @@ function prtSheet(kind, act, pack, pub){
       ${rows.length? rows.map(r=>`<tr><td class="num">${r.rank}</td><td>${cleanName(r.school||'')}</td>
           <td class="num">${r.total}</td><td>${r.medal||''}</td><td>${rankWord(r.rank)||''}</td></tr>`).join('')
         : blanks(12,5)}</tbody></table>
-      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+      <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow()}</div>`;
     return `<div class="sheetdoc">${prtHead(act,'DOC.6')}${body}</div>`;
   }
 
@@ -7316,7 +7322,7 @@ function prtSheet(kind, act, pack, pub){
       ${ent.flatMap((e,i)=>((e.students||[{}]).map(st=>`<tr><td class="num">${i+1}</td>
          <td>${cleanName(e.school_name||e.school_smis)}</td><td>${st.first_name?stuName(st):''}</td>
          <td></td><td></td></tr>`))).join('') || blanks(14,5)}
-      </tbody></table><div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow(3)}</div>`;
+      </tbody></table><div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow()}</div>`;
     return `<div class="sheetdoc">${prtHead(act,'ลงเวลา')}${body}</div>`;
   }
 
@@ -7346,7 +7352,7 @@ function prtSheet(kind, act, pack, pub){
       ${ent.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${cleanName(e.school_name||e.school_smis)}</td>
         ${'<td></td>'.repeat(Math.max(1,crit.length))}<td></td></tr>`).join('')}
       ${blanks(ent.length?2:14, 3+Math.max(1,crit.length))}</tbody></table>
-      <div class="dfoot">${prtSignRow(1)}</div>`;
+      <div class="dfoot">${prtSignRow(0,['กรรมการผู้ให้คะแนน'])}</div>`;
     return `<div class="sheetdoc">${prtHead(act,'ใบให้คะแนน')}${body}</div>`;
   }
   return '';
