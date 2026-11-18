@@ -2912,6 +2912,13 @@ const SNAP_KEY='sillapa.snap.v1';
 function snapSave(db, scope){
   try{ LS.setItem(SNAP_KEY, JSON.stringify({t:Date.now(), scope:scope, db:db})); }catch(e){}
 }
+/* อายุของข้อมูลในเครื่อง ก่อนจะบังคับโหลดใหม่ทั้งก้อน (ไม่เชื่อเลขเวอร์ชันอย่างเดียว)
+   กันกรณีที่ฝั่งเซิร์ฟเวอร์แก้ข้อมูลแล้วไม่ได้เลื่อนเลขเวอร์ชัน เช่น ข่าว เอกสาร ตารางแข่ง */
+const SNAP_FRESH_MS = 20*60*1000;
+function snapAge(){
+  try{ const o=JSON.parse(LS.getItem(SNAP_KEY)||'null'); return o? Date.now()-o.t : Infinity; }
+  catch(e){ return Infinity; }
+}
 function snapLoad(scope){
   try{
     const o=JSON.parse(LS.getItem(SNAP_KEY)||'null');
@@ -3015,13 +3022,20 @@ async function refreshBoot(sc, force){
   try{
     /* ถามแค่ "เลขเวอร์ชันข้อมูล" ก่อน (คำขอเล็กมาก) ถ้ายังเท่าเดิมก็ไม่ต้องดึงข้อมูลทั้งก้อนซ้ำ
        ช่วยให้เปิดหน้าเว็บครั้งต่อ ๆ ไปเร็วขึ้นมาก เพราะข้อมูลหลักแทบไม่เปลี่ยนระหว่างวัน */
-    if(!force && REV){
+    /* ใช้ทางลัด "ถามแค่เลขเวอร์ชัน" ได้เฉพาะตอนข้อมูลในเครื่องยังใหม่อยู่
+       ถ้าเก่ากว่านั้นให้โหลดก้อนใหญ่ใหม่เสมอ เพื่อไม่ให้ค้างข้อมูลเก่าเมื่อเลขเวอร์ชันไม่ขยับ */
+    if(!force && REV && snapAge() < SNAP_FRESH_MS){
       const r = await api('rev',{});
       const rv = String((r&&r.rev)||'');
       if(rv && rv===REV) return;
     }
     const fresh = await api('bootstrap',{group:sc});
-    const same = String(fresh.rev||'')===String(DB.rev||'') ;
+    /* เทียบ "รูปร่างข้อมูล" ไม่ใช่เลขเวอร์ชันอย่างเดียว เพราะบางคำสั่งแก้ข้อมูลโดยไม่เลื่อนเลขเวอร์ชัน */
+    const sig = d=>[d&&d.rev, (d&&d.activities||[]).length, (d&&d.documents||[]).length,
+                    (d&&d.news||[]).length, (d&&d.schools||[]).length, (d&&d.groups||[]).length,
+                    JSON.stringify((d&&d.documents||[]).map(x=>x.id||x.doc_id)),
+                    JSON.stringify((d&&d.news||[]).map(x=>x.id))].join('|');
+    const same = sig(fresh)===sig(DB);
     DB = fresh; REV = String(DB.rev||REV); snapSave(DB, sc);
     if(!same){ buildScopeSel(); applyScope(); renderAll(); }
   }catch(e){}
