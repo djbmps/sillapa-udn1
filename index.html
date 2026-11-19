@@ -89,7 +89,9 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .e5 h4{margin:0 0 4px;font-size:17.3px}
 .e5 .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:14.8px;margin-top:10px}
 .e5 .kv span{color:var(--ink-3)}
-.subqr{width:104px;height:104px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.subqr{width:104px;height:104px;border:1px solid var(--line);border-radius:8px;background:#fff;
+  flex:none;padding:4px;box-sizing:border-box}
+.subqr svg{width:100%;height:100%}
 .main{padding:0 26px 60px;max-width:1240px;min-width:0}
 .top{display:flex;align-items:center;gap:11px;padding:13px 0 13px;border-bottom:1px solid var(--line);margin-bottom:16px;position:sticky;top:0;background:var(--bg);z-index:20}
 .top .bc{font-size:14.3px;color:var(--ink-3)}
@@ -1448,6 +1450,8 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="ch"><h3 id="smFormTitle">แบบคำขอเปลี่ยนตัว</h3><span class="sp"></span>
           <button class="btn g sm" onclick="subCloseForm()">ปิด</button></div>
         <div class="cb">
+          <div class="fld" id="sb_schoolwrap" style="display:none"><label>โรงเรียนที่ยื่นคำขอ</label>
+            <select id="sb_school" onchange="subPickSchool()"></select></div>
           <div class="g2">
             <div class="fld"><label>รายการแข่งขัน / ทีมที่ขอเปลี่ยนตัว</label>
               <select id="sb_entry" onchange="subPickEntry()"></select></div>
@@ -2906,17 +2910,34 @@ function demoApi(action,p){
       MEM.subs=MEM.subs||[];
       let r=MEM.subs.slice().sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
       if(p.ref) return r.filter(x=>String(x.ref_code).toUpperCase()===String(p.ref).toUpperCase());
+      if(p.pub){ const c={total:r.length,approved:0,waiting:0,rejected:0,canceled:0};
+        r.forEach(x=>{ const s=String(x.status);
+          if(s==='อนุมัติ')c.approved++; else if(s==='ไม่อนุมัติ')c.rejected++;
+          else if(s==='ยกเลิก')c.canceled++; else c.waiting++; });
+        return c; }
       if(ME && ME.role==='school') r=r.filter(x=>String(x.school_smis)===String(ME.scope));
       else if(p.group && p.group!=='DISTRICT') r=r.filter(x=>String(x.group_code)===String(p.group));
       return r; }
+    case 'cancelSub':{
+      MEM.subs=MEM.subs||[];
+      const o=MEM.subs.find(x=>String(x.ref_code).toUpperCase()===String(p.ref_code).toUpperCase());
+      if(!o) throw new Error('ไม่พบคำขอเลขที่ '+p.ref_code);
+      if(o.status!=='รอพิจารณา') throw new Error('ถอนได้เฉพาะคำขอที่ยังไม่ได้พิจารณา');
+      Object.assign(o,{status:'ยกเลิก',cancel_by:ME?ME.name:'',cancel_at:nowStr(),
+        cancel_note:p.note||'',updated_at:nowStr()});
+      memSave(); return o; }
     case 'saveSub':{
-      if(!ME||ME.role!=='school') throw new Error('ยื่นคำขอเปลี่ยนตัวได้เฉพาะบัญชีของโรงเรียน');
+      if(!ME||['school','group_admin','district_admin'].indexOf(ME.role)<0)
+        throw new Error('ยื่นคำขอเปลี่ยนตัวได้เฉพาะโรงเรียน ผู้ดูแลกลุ่ม หรือผู้ดูแลเขต');
       MEM.subs=MEM.subs||[];
       const n=MEM.subs.length+1;
       const o=Object.assign({}, p.sub, {
         sub_id:'S'+String(n).padStart(4,'0'),
-        ref_code:'SB-'+String((MEM.site&&MEM.site.ALL&&MEM.site.ALL.academic_year)||'2569').slice(-4)+String(n).padStart(4,'0'),
-        school_smis:ME.scope, status:'รอพิจารณา', created_at:nowStr(), updated_at:nowStr()});
+        ref_code:'SB-'+String((MEM.site&&MEM.site.ALL&&MEM.site.ALL.academic_year)||'2569').slice(-4)
+          +String(n).padStart(4,'0')+'-'+Math.random().toString(36).slice(2,6).toUpperCase(),
+        school_smis:(ME.role==='school'? ME.scope : (p.sub&&p.sub.school_smis)||''),
+        filed_by:ME.name, filed_role:ME.role,
+        status:'รอพิจารณา', created_at:nowStr(), updated_at:nowStr()});
       MEM.subs.unshift(o); memSave(); return o; }
     case 'decideSub':{
       if(!ME||(ME.role!=='district_admin'&&ME.role!=='group_admin'))
@@ -4398,15 +4419,14 @@ function renderSubsPublic(){
     : `<div class="note w" style="margin-bottom:14px"><span>🔒</span><div>
         <b>ขณะนี้ยังไม่เปิดให้ยื่นคำขอเปลี่ยนตัว</b> — ${w.note||''}</div></div>`;
   $('#subPubStat').innerHTML='<span class="hint">กำลังโหลด…</span>';
-  api('listSubs',{group:entryRound(), pub:1}).then(rows=>{
-    const n=rows.length, ok=rows.filter(r=>r.status==='อนุมัติ').length,
-          wait=rows.filter(r=>r.status==='รอพิจารณา').length,
-          no=rows.filter(r=>r.status==='ไม่อนุมัติ').length;
+  api('listSubs',{group:entryRound(), pub:1}).then(c=>{
+    c=c||{};
     $('#subPubStat').innerHTML=`<div class="g4">
-      ${[['คำขอทั้งหมด',n],['อนุมัติแล้ว',ok],['รอพิจารณา',wait],['ไม่อนุมัติ',no]]
+      ${[['คำขอทั้งหมด',c.total||0],['อนุมัติแล้ว',c.approved||0],
+         ['รอพิจารณา',c.waiting||0],['ไม่อนุมัติ',c.rejected||0]]
         .map((x,i)=>`<div class="stat s${i+1}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('')}</div>
-      <p class="hint" style="margin-top:10px">ระบบไม่เปิดเผยรายชื่อนักเรียนในหน้าสาธารณะ
-        ผู้เกี่ยวข้องตรวจสอบรายคำขอได้จากเลขที่คำขอ</p>`;
+      <p class="hint" style="margin-top:10px">หน้าสาธารณะแสดงเฉพาะจำนวนคำขอ ไม่เปิดเผยรายชื่อนักเรียน
+        และไม่เปิดเผยเลขที่คำขอ — ผู้ถือใบอนุญาตตรวจสอบรายใบได้จากเลขที่คำขอบนใบของตนเอง</p>`;
   }).catch(e=>{ $('#subPubStat').innerHTML='<span class="hint">'+e.message+'</span>'; });
 }
 /** ตรวจสอบคำขอจากเลขที่ — ใช้ได้ทั้งหน้าเว็บและสแกน QR หน้างาน */
@@ -4432,7 +4452,7 @@ function subCertHTML(r){
         <span class="hint">เลขที่คำขอ <b>${r.ref_code||'-'}</b></span>
         <div style="margin-top:7px">${subPill(r.status)}</div>
       </div>
-      <img class="subqr" alt="QR ตรวจสอบ" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}">
+      <div class="subqr">${qrSvg(url, 26)}</div>
     </div>
     <div class="kv">
       <span>โรงเรียน</span><b>${schoolName(r.school_smis)}</b>
@@ -4442,10 +4462,13 @@ function subCertHTML(r){
       <span>เปลี่ยนเป็น</span><b>${r.new_name||'-'}</b>${r.new_info?' <span class="hint">('+r.new_info+')</span>':''}
       <span>สาเหตุ</span><div>${r.reason_type||'-'}${r.reason?' — '+r.reason:''}</div>
       <span>ผู้ลงนามของโรงเรียน</span><div>${r.sign_name||'-'} <span class="hint">${r.sign_pos||''}</span></div>
-      <span>ยื่นคำขอเมื่อ</span><div>${r.created_at||'-'}</div>
+      <span>ยื่นคำขอเมื่อ</span><div>${r.created_at||'-'}${
+        r.filed_role && r.filed_role!=='school'
+          ? ' <span class="hint">(ยื่นแทนโดย '+(r.filed_by||'')+' · '+roleTh(r.filed_role)+')</span>' : ''}</div>
       <span>ผลการพิจารณา</span><div>${ok?'<b style="color:var(--ok)">อนุมัติ</b>':r.status}
         ${r.dec_at?' · '+r.dec_at:''}${r.dec_by?' · โดย '+r.dec_by:''}</div>
       ${r.dec_note?`<span>หมายเหตุ</span><div>${r.dec_note}</div>`:''}
+      ${r.status==='ยกเลิก'?`<span>ถอนคำขอเมื่อ</span><div>${r.cancel_at||'-'}${r.cancel_by?' · โดย '+r.cancel_by:''}${r.cancel_note?' — '+r.cancel_note:''}</div>`:''}
     </div>
     <p class="hint" style="margin-top:12px">เอกสารนี้ออกโดยระบบ ตรวจสอบความถูกต้องได้โดยสแกน QR
       หรือกรอกเลขที่คำขอที่หน้า “ขอเปลี่ยนตัว” ของเว็บไซต์ — ไม่จำเป็นต้องใช้เอกสารกระดาษ</p>
@@ -4455,7 +4478,15 @@ function subCertHTML(r){
 function subPill(st){
   return st==='อนุมัติ'? '<span class="pill ok">อนุมัติแล้ว</span>'
        : st==='ไม่อนุมัติ'? '<span class="pill b">ไม่อนุมัติ</span>'
+       : st==='ยกเลิก'? '<span class="pill i">ถอนคำขอแล้ว</span>'
        : '<span class="pill w">รอพิจารณา</span>';
+}
+/** เปิดหน้าขอเปลี่ยนตัวแล้วค้นเลขที่คำขอให้เลย — ใช้ตอนสแกน QR บนใบอนุญาต */
+function subOpenRef(code){
+  go('subs');
+  setTimeout(()=>{ const i=$('#subFind'); if(!i) return;
+    i.value=String(code||'').trim().toUpperCase(); subLookup();
+    const o=$('#subFindOut'); if(o) o.scrollIntoView({behavior:'smooth',block:'center'}); }, 700);
 }
 function schoolName(smis){
   const s=(DB.schools||[]).find(x=>String(x.smis)===String(smis));
@@ -4463,17 +4494,29 @@ function schoolName(smis){
 }
 
 /* ---------- หลังบ้าน ---------- */
-let SUBS=[], SUB_ENT=[];
+let SUBS=[], SUB_ENT=[], SUB_ALL=[], SUB_SMIS='';
 function subIsSchool(){ return !!(ME && ME.role==='school'); }
 function subCanDecide(){ return !!(ME && (ME.role==='district_admin' || ME.role==='group_admin')); }
+/** ยื่นคำขอได้ไหม — โรงเรียนยื่นของตนเอง กลุ่ม/เขตยื่นแทนโรงเรียนในขอบเขตของตน */
+function subCanFile(){ return subIsSchool() || subCanDecide(); }
+/** ถอนคำขอนี้ได้ไหม */
+function subCanCancel(r){
+  if(!ME || !r || r.status!=='รอพิจารณา') return false;
+  if(ME.role==='district_admin') return true;
+  if(ME.role==='group_admin') return String(r.group_code)===String(ME.scope);
+  if(ME.role==='school') return String(r.school_smis)===String(ME.scope);
+  return false;
+}
 function renderSubMgr(){
   if(!ME) return;
   const w=subWin();
   $('#smSub').textContent = subIsSchool()
     ? 'ยื่นคำขอเปลี่ยนตัวนักเรียนหรือครูผู้ฝึกสอนของโรงเรียน'
-    : 'พิจารณาคำขอเปลี่ยนตัวที่โรงเรียนยื่นเข้ามา';
+    : 'พิจารณาคำขอเปลี่ยนตัว และยื่นแทนโรงเรียนที่เข้าระบบไม่ได้';
   $('#smListTitle').textContent = subIsSchool()? 'คำขอของโรงเรียน' : 'คำขอที่ยื่นเข้ามา';
-  const nb=$('#smNewBtn'); if(nb) nb.style.display = (subIsSchool() && w.open)? '' : 'none';
+  const nb=$('#smNewBtn');
+  if(nb){ nb.style.display = (subCanFile() && w.open)? '' : 'none';
+    nb.textContent = subIsSchool()? '+ ยื่นคำขอเปลี่ยนตัว' : '+ ยื่นคำขอแทนโรงเรียน'; }
   $('#smState').innerHTML = w.open
     ? `<div class="note g" style="margin-bottom:12px"><span>🔓</span><div>
         <b>เปิดให้ยื่นคำขอเปลี่ยนตัว</b>${w.open_at?' ตั้งแต่ '+thDateLong(w.open_at):''}${w.close_at?' ถึง '+thDateLong(w.close_at):''}
@@ -4532,9 +4575,26 @@ function subOpen(ref){
           <button class="btn g" onclick="subDecide('${r.ref_code}','ไม่อนุมัติ')">✖️ ไม่อนุมัติ</button>
           <span class="sp"></span><button class="btn g" onclick="subCloseForm()">ปิด</button></div>
         </div></div>`
-      : `<div class="row" style="margin-top:14px"><button class="btn g" onclick="subCloseForm()">ปิด</button></div>`);
+      : `<div class="row" style="margin-top:14px">
+          ${subCanCancel(r)? `<button class="btn g" onclick="subCancel('${r.ref_code}')">↩ ถอนคำขอนี้</button>`:''}
+          <span class="sp"></span><button class="btn g" onclick="subCloseForm()">ปิด</button></div>`);
+  if(decide && subCanCancel(r)){
+    const row=box.querySelector('.cb .card:last-child .row:last-child');
+    if(row) row.insertAdjacentHTML('afterbegin',
+      `<button class="btn g" onclick="subCancel('${r.ref_code}')">↩ ถอนคำขอ</button>`);
+  }
   if(decide) setTimeout(()=>sigInit('dc_sig'),60);
   box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+/** ถอนคำขอที่ยังไม่ได้พิจารณา */
+async function subCancel(ref){
+  if(!confirm('ถอนคำขอเลขที่ '+ref+' ?\n\nคำขอจะถูกบันทึกว่า “ยกเลิก” และพิจารณาต่อไม่ได้\nถ้าต้องการเปลี่ยนตัวอีกครั้ง ให้ยื่นคำขอใหม่')) return;
+  const note=prompt('เหตุผลที่ถอนคำขอ (ไม่บังคับ)','')||'';
+  try{
+    await api('cancelSub',{ref_code:ref, note:note});
+    alert('ถอนคำขอเรียบร้อยแล้ว');
+    subCloseForm(); loadSubs();
+  }catch(e){ alert(e.message||e); }
 }
 async function subDecide(ref, status){
   if(status==='ไม่อนุมัติ' && !String(($('#dc_note')||{}).value||'').trim())
@@ -4562,16 +4622,40 @@ async function subNew(){
   $('#smFormTitle').textContent='แบบคำขอเปลี่ยนตัว';
   box.querySelector('.cb').innerHTML=SUB_FORM_HTML;
   $('#sb_entry').innerHTML='<option value="">กำลังโหลดรายการ…</option>';
+  SUB_ALL=[];
   try{
-    const all=await api('listEntries',{group:entryRound(), smis:ME.scope});
-    SUB_ENT=all.filter(e=>String(e.school_smis)===String(ME.scope));
-    $('#sb_entry').innerHTML = SUB_ENT.length
-      ? SUB_ENT.map(e=>{ const a=(DB.activities||[]).find(x=>x.act_id===e.act_id)||{};
-          return `<option value="${e.entry_id}">${a.act_name||e.act_id} · ${a.level||''}</option>`; }).join('')
-      : '<option value="">ยังไม่มีทีมที่สมัครไว้</option>';
+    SUB_ALL=await api('listEntries',{group:entryRound()});
   }catch(e){ $('#sb_entry').innerHTML='<option value="">'+e.message+'</option>'; }
-  subPickEntry(); sigInit('sb_sig');
+  if(subIsSchool()){
+    SUB_SMIS=String(ME.scope);
+  }else{
+    /* กลุ่ม/เขตยื่นแทน — เลือกโรงเรียนจากที่มีทีมสมัครไว้จริงในขอบเขตนี้ */
+    const wrap=$('#sb_schoolwrap'); if(wrap) wrap.style.display='';
+    const smis=[...new Set(SUB_ALL.map(e=>String(e.school_smis)))];
+    const sel=$('#sb_school');
+    sel.innerHTML = smis.length
+      ? smis.map(s=>`<option value="${s}">${schoolName(s)}</option>`).join('')
+      : '<option value="">ยังไม่มีโรงเรียนใดสมัครไว้</option>';
+    SUB_SMIS=sel.value||'';
+    const note=$('#sb_onbehalf');
+    if(!note && sel.parentNode) sel.insertAdjacentHTML('afterend',
+      '<div class="hint" id="sb_onbehalf">ยื่นแทนโรงเรียน — ระบบจะบันทึกว่าท่านเป็นผู้ยื่นคำขอนี้ '
+      +'และยังต้องมีชื่อกับลายมือชื่อผู้อำนวยการโรงเรียนกำกับตามระเบียบ</div>');
+  }
+  subFillEntries(); sigInit('sb_sig');
   box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+/** เปลี่ยนโรงเรียน (กรณีกลุ่ม/เขตยื่นแทน) */
+function subPickSchool(){ SUB_SMIS=String(($('#sb_school')||{}).value||''); subFillEntries(); }
+/** เติมรายการทีมของโรงเรียนที่เลือกอยู่ */
+function subFillEntries(){
+  SUB_ENT=(SUB_ALL||[]).filter(e=>String(e.school_smis)===String(SUB_SMIS));
+  const sel=$('#sb_entry'); if(!sel) return;
+  sel.innerHTML = SUB_ENT.length
+    ? SUB_ENT.map(e=>{ const a=(DB.activities||[]).find(x=>x.act_id===e.act_id)||{};
+        return `<option value="${e.entry_id}">${a.act_name||e.act_id} · ${a.level||''}</option>`; }).join('')
+    : '<option value="">ยังไม่มีทีมที่สมัครไว้</option>';
+  subPickEntry();
 }
 /** ชื่อเต็มของนักเรียน/ครู — รองรับทั้งรูปแบบของฐานข้อมูลจริงและโหมดตัวอย่าง */
 function subPersonName(x){
@@ -4629,7 +4713,7 @@ async function subSubmit(){
     const e=SUB_ENT.find(x=>String(x.entry_id)===String(v('sb_entry')))||{};
     const saved=await api('saveSub',{sub:{
       entry_id:v('sb_entry'), act_id:e.act_id||'', group_code:e.group_code||entryRound(),
-      school_smis:ME.scope, kind:v('sb_kind')||'นักเรียน',
+      school_smis:(subIsSchool()? ME.scope : SUB_SMIS), kind:v('sb_kind')||'นักเรียน',
       old_id:v('sb_old'), old_name:subOldName(), new_name:v('sb_new'), new_info:v('sb_newinfo'),
       reason_type:v('sb_reasontype'), reason:v('sb_reason'),
       doc_url:v('sb_doc'), sign_url:(sig&&sig.url)?sig.url:'',
@@ -8236,7 +8320,11 @@ setInterval(()=>{ const s=new Date().toTimeString().slice(0,8);
   /* ลิงก์เก่าที่ค้างอยู่ในช่อง URL อาจชี้ไปหน้าหลังบ้าน — ถ้ายังไม่เข้าสู่ระบบให้เข้าหน้าแรกตามปกติ */
   if(hp && !ME && (isAdminPage(hp) || !PUBLIC_PAGES.some(x=>x[0]===hp))) hp='';
   if(hp) PAGE=hp;
-  boot().then(()=>{ if(hp) go(hp); });
+  const subRef=(q.get('ref')||'').trim();
+  boot().then(()=>{
+    if(subRef){ subOpenRef(subRef); return; }   /* สแกน QR ใบอนุญาตเปลี่ยนตัว */
+    if(hp) go(hp);
+  });
 })();
 </script>
 </body>
