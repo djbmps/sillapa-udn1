@@ -190,6 +190,15 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .hero h2{font-size:27.3px;margin:7px 0 6px;max-width:660px}
 .hero p{margin:0;color:#EBD9CB;font-size:14.8px;max-width:600px}
 .hero::after{content:'🏆';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:111.3px;opacity:.09}
+/* ปุ่มจอฉายหน้างาน — ย้ายมาอยู่บนหัวเว็บ ไม่ต้องกินที่ทุกหน้าและไม่ทำให้หน้ากระตุก */
+.livetop{display:flex;align-items:center;gap:6px;flex:none}
+.livetop .dt{width:8px;height:8px;border-radius:50%;background:#22C55E;animation:bl 1.5s infinite;flex:none}
+.livetop button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.26);color:#fff;
+  padding:5px 11px;border-radius:9px;font-size:13.3px;font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.livetop button:hover{background:var(--pri);border-color:var(--pri)}
+.top .livetop button{background:#3D0019;border-color:#3D0019}
+.top .livetop button:hover{background:var(--pri);border-color:var(--pri)}
+@media(max-width:980px){ .livetop button span{display:none} .livetop button{padding:5px 8px} }
 .livebar{display:flex;align-items:center;gap:12px;background:#3D0019;color:#F3CEDD;border-radius:12px;padding:12px 15px;margin-bottom:12px}
 .livebar .dt{width:9px;height:9px;border-radius:50%;background:#4ADE80;animation:bl 1.5s infinite}
 @keyframes bl{50%{opacity:.25}}
@@ -594,6 +603,9 @@ body[data-view="admin"] .utilbar{display:none}
     <span class="lbl" id="utilTitle">งานศิลปหัตถกรรมนักเรียน · ปีการศึกษา</span>
     <span style="flex:1"></span>
     <span class="who" id="pubWho"></span>
+    <span class="livetop noprint"><i class="dt"></i>
+      <button onclick="openScreen('live')" title="จอแสดงผลสดหน้างาน">📺<span>จอผลสด</span></button>
+      <button onclick="openScreen('queue')" title="จอคิวตารางแข่งขัน">⏱️<span>จอคิว</span></button></span>
     <button class="btn g" id="pubGroupBtn" onclick="pubGroupBtnClick()">🏁 เข้าเว็บกลุ่มโรงเรียน</button>
     <button class="btn" id="pubAuth" onclick="gotoAdmin()">เข้าสู่ระบบ</button>
     <button class="btn g" id="pubLogout" style="display:none" onclick="logoutNow()">ออกจากระบบ</button>
@@ -697,6 +709,9 @@ body[data-view="admin"] .utilbar{display:none}
       <button class="admburger" onclick="toggleSide()" aria-label="เมนู">☰</button>
       <div class="bc" id="bc">สพป.อุดรธานี เขต 1 › <b>หน้าหลัก</b></div>
       <span class="sp"></span>
+      <span class="livetop noprint"><i class="dt"></i>
+      <button onclick="openScreen('live')" title="จอแสดงผลสดหน้างาน">📺<span>จอผลสด</span></button>
+      <button onclick="openScreen('queue')" title="จอคิวตารางแข่งขัน">⏱️<span>จอคิว</span></button></span>
       <span class="tag" id="modeTag"></span>
       <select id="scopeSel" onchange="setScope(this.value)" style="padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:14.3px"></select>
       <span id="scopeChip" style="display:none;padding:6px 12px;border-radius:9px;background:var(--brand,#A00040);
@@ -708,12 +723,6 @@ body[data-view="admin"] .utilbar{display:none}
 
     <div class="strip" id="gStrip" style="display:none">🏁 <b>เว็บกลุ่มโรงเรียน · รอบคัดเลือก</b>
       <span class="bk" id="gBack" onclick="setScope('ALL')">← ไปเว็บระดับเขต</span></div>
-
-    <div class="livebar noprint">
-      <span class="dt"></span>
-      <div><b>จอแสดงผลหน้างาน (LIVE)</b></div>
-      <div class="a"><button onclick="openScreen('live')">จอผลสด →</button><button onclick="openScreen('queue')">จอคิวตารางแข่งขัน →</button></div>
-    </div>
 
     <!-- ---------- หน้าหลัก ---------- -->
     <section class="page on" id="p-home">
@@ -4454,7 +4463,7 @@ function renderSubsPublic(){
   $('#subPubStat').innerHTML='<span class="hint">กำลังโหลด…</span>';
   api('listSubs',{group:entryRound(), pub:1}).then(c=>{
     c=c||{};
-    $('#subPubStat').innerHTML=`<div class="g4">
+    $('#subPubStat').innerHTML=`<div class="grid g4">
       ${[['คำขอทั้งหมด',c.total||0],['อนุมัติแล้ว',c.approved||0],
          ['รอพิจารณา',c.waiting||0],['ไม่อนุมัติ',c.rejected||0]]
         .map((x,i)=>`<div class="stat s${i+1}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('')}</div>
@@ -6908,7 +6917,7 @@ function drawRegionStat(){
     : '<div class="note i"><span>⏳</span><div><b>ยังไม่มีตัวแทนเข้าภาค</b> — '
       +'รายชื่อจะขึ้นเองเมื่อแข่งขันและประกาศผลรอบระดับเขตแล้ว '
       +'<span class="hint">เกณฑ์: ชนะเลิศอันดับ 1 และได้เหรียญทอง</span></div></div>';
-  box.innerHTML='<div class="g4">'+
+  box.innerHTML='<div class="grid g4">'+
     [['ทีมตัวแทนเข้าภาค',gold],['โรงเรียนที่เป็นตัวแทน',schools],
      ['ประกาศผลแล้ว',done+' / '+acts],['รอแข่ง/รอประกาศผล',Math.max(0,acts-done)]]
     .map((x,i)=>`<div class="stat s${i+1}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('')+'</div>';
