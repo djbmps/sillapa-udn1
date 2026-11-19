@@ -295,10 +295,13 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#141210 0%,#4
 
 
 .pnote{background:var(--warn-soft);color:#7A5205;font-size:14.3px;padding:9px 18px;text-align:center;border-bottom:1px solid #EFDFB6}
-.pfoot{background:var(--black);color:#E7BACC;margin-top:40px;padding:26px 18px;font-size:14.3px}
-.pfoot .in{max-width:1180px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
-.pfoot b{color:#fff}
-.pfoot .dev{font-size:13.8px;color:#8E8278}
+/* ส่วนท้ายเว็บ — 2 บรรทัด ตัวหนังสือสีขาว */
+.pfoot{background:var(--black);color:#fff;margin-top:40px;padding:20px 18px;font-size:14.3px}
+.pfoot .in{max-width:1180px;margin:0 auto;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.pfoot b{color:#fff;font-weight:400}
+.pfoot a{color:#fff;text-decoration:underline}
+.pfoot #fSub:not(:empty)::before{content:' · '}
+.pfoot .dev{font-size:13.8px;color:#fff;opacity:.88;margin-top:5px}
 .pfoot .dev a{color:#C3D2EC;text-decoration:underline}
 .sdev{padding:14px 12px 20px;font-size:12.8px;color:#7E736A;line-height:1.7;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
 .sdev b{color:#A99D93;font-weight:600}
@@ -1850,18 +1853,18 @@ body[data-view="admin"] .utilbar{display:none}
     </section>
   </main>
 </div>
-<footer class="pfoot"><div class="in" id="fTop" style="display:none">
-  <div><b id="fName"></b><br><span id="fSub"></span></div>
-  <span style="flex:1"></span>
-  <div id="fContact"></div>
-</div>
-<div class="in dev">
-  <div>พัฒนาโดย <b>ศน.ดวงใจ บุญมีประเสริฐ</b><br>
-    ศึกษานิเทศก์ สพป.อุดรธานี เขต 1</div>
-  <span style="flex:1"></span>
-  <div style="text-align:right"><a href="mailto:djbmps@gmail.com">djbmps@gmail.com</a><br>
-    Copyright © 2026 กลุ่มนิเทศ ติดตามและประเมินผลการจัดการศึกษา สพป.อุดรธานี เขต 1 · สงวนลิขสิทธิ์</div>
-</div></footer>
+<footer class="pfoot">
+  <div class="in" id="fTop">
+    <div><span id="fName"></span><span id="fSub"></span></div>
+    <span style="flex:1"></span>
+    <div id="fContact" style="text-align:right"></div>
+  </div>
+  <div class="in dev">
+    <div>พัฒนาโดย ศน.ดวงใจ บุญมีประเสริฐ ศึกษานิเทศก์</div>
+    <span style="flex:1"></span>
+    <div style="text-align:right">Copyright © 2026 · สงวนลิขสิทธิ์</div>
+  </div>
+</footer>
 
 <!-- ================= จอฉาย ================= -->
 <div class="screen" id="s-live">
@@ -3434,9 +3437,8 @@ function renderBanner(){
   n.style.display = c.banner_note? 'block':'none'; n.textContent = c.banner_note||'';
   $('#fName').textContent=eventName();
   $('#fSub').textContent=districtName();
-  $('#fContact').innerHTML=c.contact? c.contact : '';
-  /* แถวบนของส่วนท้ายแสดงเฉพาะเมื่อมีข้อมูลติดต่อของเขต — ไม่งั้นซ่อนไว้ ไม่ให้ชื่องานซ้ำกับด้านบน */
-  $('#fTop').style.display = c.contact? '' : 'none';
+  /* ส่วนท้ายมี 2 บรรทัด — บรรทัดแรกชื่องาน/เขต และหน่วยงานผู้รับผิดชอบ */
+  $('#fContact').innerHTML = c.contact ? String(c.contact).replace(/<br\s*\/?>/gi,' · ') : '';
 }
 /** เมนูสาธารณะ — แสดงเฉพาะข้อมูลที่เปิดเผยได้ เกียรติบัตรจะโผล่เมื่อเปิดระบบให้ดาวน์โหลดแล้ว */
 /* ---------- สีประจำกลุ่มโรงเรียน ----------
