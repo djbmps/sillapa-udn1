@@ -4524,7 +4524,7 @@ function renderSubMgr(){
   $('#smListTitle').textContent = subIsSchool()? 'คำขอของโรงเรียน' : 'คำขอที่ยื่นเข้ามา';
   const nb=$('#smNewBtn');
   if(nb){ nb.style.display = (subCanFile() && w.open)? '' : 'none';
-    nb.textContent = subIsSchool()? '+ ยื่นคำขอเปลี่ยนตัว' : '+ ยื่นคำขอแทนโรงเรียน'; }
+    nb.textContent = '+ ยื่นคำขอเปลี่ยนตัว'; }
   $('#smState').innerHTML = w.open
     ? `<div class="note g" style="margin-bottom:12px"><span>🔓</span><div>
         <b>เปิดให้ยื่นคำขอเปลี่ยนตัว</b>${w.open_at?' ตั้งแต่ '+thDateLong(w.open_at):''}${w.close_at?' ถึง '+thDateLong(w.close_at):''}
@@ -4553,7 +4553,8 @@ function renderSubList(){
         <td>${r.old_name||'-'} <span class="hint">→</span> <b>${r.new_name||'-'}</b></td>
         <td>${r.reason_type||'-'}${r.doc_url?` · <a href="${imgSrc(r.doc_url)}" target="_blank" style="color:var(--pri)">ดูหลักฐาน</a>`:''}</td>
         <td>${subPill(r.status)}</td>
-        <td><button class="btn g sm" onclick="subOpen('${r.ref_code}')">ดู / ${subCanDecide()&&r.status==='รอพิจารณา'?'พิจารณา':'ใบอนุญาต'}</button></td>
+        <td style="white-space:nowrap"><button class="btn g sm" onclick="subOpen('${r.ref_code}')">ดู / ${subCanDecide()&&r.status==='รอพิจารณา'?'พิจารณา':'ใบอนุญาต'}</button>
+          ${(ME&&ME.role==='district_admin'&&ME.own&&r.status!=='อนุมัติ')?`<button class="btn g sm" onclick="subDelete('${r.ref_code}')">ลบ</button>`:''}</td>
       </tr>`;
     }).join('') || '<tr><td colspan="7" style="padding:26px;text-align:center;color:var(--ink-3)">ยังไม่มีคำขอเปลี่ยนตัว</td></tr>');
 }
@@ -4593,6 +4594,12 @@ function subOpen(ref){
   }
   if(decide) setTimeout(()=>sigInit('dc_sig'),60);
   box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+/** ลบคำขอทิ้งถาวร — เฉพาะผู้ดูแลหลักของเขต (คำขอที่ยื่นผิด หรือรายการทดสอบ) */
+async function subDelete(ref){
+  if(!confirm('ลบคำขอเลขที่ '+ref+' ออกจากระบบถาวร?\n\nใช้เมื่อยื่นผิดหรือเป็นรายการทดสอบเท่านั้น กู้คืนไม่ได้')) return;
+  try{ await api('deleteSub',{ref_code:ref}); subCloseForm(); loadSubs(); }
+  catch(e){ alert(e.message||e); }
 }
 /** ถอนคำขอที่ยังไม่ได้พิจารณา */
 async function subCancel(ref){
