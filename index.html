@@ -951,10 +951,18 @@ body[data-view="admin"] .utilbar{display:none}
           <div class="ch"><h3>การโอนของแต่ละกลุ่ม</h3><span class="sp"></span><span class="hint" id="prSum"></span></div>
           <div class="cb" style="padding:0;overflow:auto"><table id="prBoard"></table></div></div>
 
-        <div class="card"><div class="ch"><h3>รายการที่โอนเข้ามา</h3><span class="sp"></span>
+        <div class="card" style="margin-bottom:14px"><div class="ch"><h3>รายการที่โอนเข้ามา</h3><span class="sp"></span>
           <select id="prFilter" onchange="drawPromoteDetail()"
                   style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select></div>
           <div class="cb" style="padding:0;overflow:auto"><table id="prDetail"></table></div></div>
+
+        <div class="card"><div class="ch"><h3>ทีมตัวแทนเข้าแข่งระดับภาค</h3><span class="sp"></span>
+          <span class="hint" id="prRegSum"></span>
+          <button class="btn g sm" onclick="exportCsv('region')">⬇ CSV</button></div>
+          <div class="cb" style="padding:12px 14px 0"><div class="note i"><span>🏅</span><div>
+            ทีมที่<b>ชนะเลิศและได้เหรียญทอง</b>ในรอบระดับเขต คือตัวแทนของ สพป.อุดรธานี เขต 1
+            เข้าแข่งขันในระดับภาค · รายชื่อขึ้นเองเมื่อประกาศผลรอบระดับเขตแล้ว</div></div></div>
+          <div class="cb" style="padding:0;overflow:auto"><table id="prRegion"></table></div></div>
       </div>
     </section>
 
@@ -3228,6 +3236,7 @@ function applyScope(){
   /* เมนูเฉพาะระดับเขต (เช่น กลุ่มโรงเรียน 20 กลุ่ม) */
   $$('.nv[data-dist="1"]').forEach(b=>{
     b.style.display = (!g && (!ME || ME.role==='district_admin')) ? '' : 'none'; });
+  const np=$('#nvPromote'); if(np) np.textContent=promoteLabel();
   const own = $('#ownerNote');
   if(own) own.style.display = (ME && ME.role!=='district_admin') ? 'flex' : 'none';
   document.body.dataset.view=VIEW;
@@ -3248,6 +3257,12 @@ function applyScope(){
 }
 /** สิทธิ์ของบัญชีที่เข้าสู่ระบบอยู่ — ผู้ดูแลหลักผ่านทุกเมนู */
 function isOwner(){ return !!(ME && ME.own); }
+/** ชื่อเมนู "โอนตัวแทน" เปลี่ยนตามระดับที่กำลังดูอยู่
+ *  กลุ่มโรงเรียนส่งตัวแทนขึ้นเขต · เขตส่งตัวแทนขึ้นภาค */
+function promoteLabel(){
+  const g = (ME && ME.role==='group_admin') || (SCOPE && SCOPE!=='ALL');
+  return g ? 'ตัวแทนเข้าเขต' : 'ตัวแทนเข้าภาค';
+}
 function canDo(key){ return !!(ME && (ME.own || (ME.perm||[]).indexOf(key)>=0)); }
 const PERM_LABEL={actedit:'จัดการรายการ & เกณฑ์',entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',
   publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',judges:'ทำเนียบกรรมการตัดสิน',
@@ -5663,7 +5678,7 @@ function go(p){
   openActiveSec(); syncNavSections();
   const t={home:'หน้าหลัก',acts:'รายการแข่งขัน',sched:'ตารางแข่งขัน',results:'ผลการแข่งขัน',medals:'ตารางเหรียญ',
     schools:'ทะเบียนโรงเรียน',groups:'กลุ่มโรงเรียน',dash:'แดชบอร์ด',actedit:'จัดการรายการ & เกณฑ์',
-    entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',
+    entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',publish:'ประกาศผล',promote:promoteLabel(),
     print:'พิมพ์เอกสาร',setup:'ตั้งค่า',news:'ข่าวประชาสัมพันธ์',docs:'เอกสารดาวน์โหลด',
     site:'หน้าเว็บ & แบนเนอร์',newsmgr:'ประชาสัมพันธ์',cert:'เกียรติบัตร',certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',
     judges:'ทำเนียบกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกกรรมการ',apply:'สมัครกรรมการตัดสิน',
@@ -6825,17 +6840,44 @@ async function renderPromote(){
   if(!gb||!db) return;
   gb.style.display = grp?'':'none';
   db.style.display = grp?'none':'';
-  $('#prTitle').textContent = grp ? 'โอนตัวแทนเข้าระดับเขต'
-                                  : 'ตัวแทนเข้าเขต — ติดตามการโอนของกลุ่ม';
+  $('#prTitle').textContent = grp ? 'โอนตัวแทนเข้าระดับเขต' : 'ตัวแทนเข้าภาค';
   $('#prSub').textContent = grp
     ? 'ทีมที่ติดโควตาของกลุ่มจะถูกส่งขึ้นเป็นผู้สมัครระดับเขต พร้อมป้ายบอกกลุ่มต้นทางและอันดับ'
-    : 'เขตเห็นข้อมูลที่กลุ่มโอนเข้ามา เปิด-ปิดช่วงเวลารับโอน และรีเซ็ตให้กลุ่มโอนใหม่ได้';
+    : 'ทีมชนะเลิศเหรียญทองรอบระดับเขต คือตัวแทนเข้าแข่งระดับภาค · หน้านี้ยังใช้ติดตามการโอนตัวแทนของกลุ่มโรงเรียนด้วย';
   if(!ME) return;
   if(grp){ await loadPromotable(); return; }
   try{
     PRB = await api('promotionBoard', {group: SCOPE==='ALL'?'':SCOPE});
   }catch(e){ PRB=null; return; }
   drawPromoteDistrict();
+  loadRegionReps();
+}
+/* ---------- ทีมตัวแทนของเขตที่จะไปแข่งระดับภาค ---------- */
+let PRREG=[];
+const PR_REG_HEAD=['ที่','รายการแข่งขัน','ระดับชั้น','โรงเรียน','กลุ่มต้นทาง','คะแนน','เหรียญ'];
+async function loadRegionReps(){
+  const t=$('#prRegion'); if(!t) return;
+  tbl(t, PR_REG_HEAD, '<tr><td colspan="7" style="text-align:center;color:var(--ink-3);padding:22px">กำลังโหลด…</td></tr>');
+  try{
+    const r=await api('publicResults',{group:'DISTRICT'});
+    PRREG=(r.results||[])
+      .filter(x=>Number(x.rank)===1 && String(x.medal)==='ทอง')
+      .sort((a,b)=>String(a.act_id).localeCompare(String(b.act_id)));
+  }catch(e){ PRREG=[]; }
+  drawRegionReps();
+}
+function drawRegionReps(){
+  const t=$('#prRegion'); if(!t) return;
+  $('#prRegSum').textContent = PRREG.length? PRREG.length+' ทีม' : '';
+  tbl(t, PR_REG_HEAD, PRREG.map((x,i)=>`<tr>
+    <td class="num">${i+1}</td>
+    <td><b>${x.act_name||x.act_id}</b></td>
+    <td>${x.level||''}</td>
+    <td>${cleanName(x.school||'')}</td>
+    <td>${x.from_group? groupName(x.from_group) : '<span class="hint">—</span>'}</td>
+    <td class="num">${x.total!=null? Number(x.total).toFixed(2):''}</td>
+    <td><span class="pill ok">ทอง</span></td></tr>`).join('')
+    || '<tr><td colspan="7" style="text-align:center;color:var(--ink-3);padding:26px">ยังไม่มีทีมตัวแทน — จะขึ้นเองเมื่อประกาศผลรอบระดับเขตแล้ว</td></tr>');
 }
 
 function prWinPill(w){
@@ -8261,10 +8303,15 @@ function exportCsv(what){
   const rows = what==='schools'
     ? [['smis','โรงเรียน','ตำบล','อำเภอ','กลุ่ม','นักเรียน','ม.ต้น','เปิดสอน','ขนาด'],
        ...schoolsOf(SCOPE).map(s=>[s.smis,s.school_name,s.tambon,s.amphoe,s.group_name||groupName(s.group_code),s.n_total,s.n_lower_sec,s.offer,s.size])]
+    : what==='region'
+    ? [['ที่','รหัสกิจกรรม','รายการแข่งขัน','ระดับชั้น','โรงเรียน','กลุ่มต้นทาง','คะแนน','เหรียญ'],
+       ...(PRREG||[]).map((x,i)=>[i+1,x.act_id,x.act_name,x.level,cleanName(x.school||''),
+         x.from_group?groupName(x.from_group):'',x.total,x.medal])]
     : [['รหัส','กลุ่ม','อำเภอ','โรงเรียน','นักเรียน','ขยายโอกาส'],
        ...DB.groups.map(g=>[g.group_code,g.group_name,g.amphoe,g.schools,g.students,g.expansion_schools])];
   const text='﻿'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  saveFile((what==='schools'?'schools':'groups')+'-'+SCOPE+'.csv', text, 'text/csv');
+  const nm = what==='schools'?'schools' : what==='region'?'ตัวแทนเข้าภาค' : 'groups';
+  saveFile(nm+'-'+SCOPE+'.csv', text, 'text/csv');
 }
 
 /* ---------- auth ---------- */
