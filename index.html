@@ -5675,7 +5675,51 @@ function go(p){
   syncUrl(); window.scrollTo({top:0,behavior:'smooth'});
 }
 $$('.nv[data-p]').forEach(b=>b.onclick=()=>go(b.dataset.p));
-function syncUrl(){ history.replaceState(null,'','#?scope='+SCOPE+'&page='+PAGE+'&view='+VIEW); }
+/* ============================ ปุ่มย้อนกลับของเบราว์เซอร์ ============================
+   เว็บนี้เป็นหน้าเดียว (ทุกหน้าอยู่ในไฟล์เดียวกัน) เดิมเขียนทับที่อยู่เดิมเสมอ
+   กดย้อนกลับทีเดียวจึงหลุดออกจากเว็บไปเลย — ตอนนี้ทุกครั้งที่เปลี่ยนหน้าจะเพิ่ม
+   ประวัติให้เบราว์เซอร์ กดย้อนกลับจะกลับมาหน้าก่อนหน้าในเว็บตามปกติ            */
+let NAV_POP=false;                 /* กำลังย้อนกลับอยู่ — อย่าเพิ่มประวัติซ้ำ */
+let NAV_READY=false;               /* ยังเปิดเว็บครั้งแรกอยู่ — ยังไม่ต้องเก็บประวัติ */
+function navUrl(){ return '#?scope='+SCOPE+'&page='+PAGE+'&view='+VIEW; }
+function syncUrl(){
+  const u=navUrl();
+  if(NAV_POP) return;                       /* ย้อนกลับ: ที่อยู่ถูกต้องอยู่แล้ว */
+  if((location.hash||'')===u) return;       /* ที่เดิม ไม่ต้องเพิ่มประวัติ */
+  try{
+    if(!NAV_READY || !history.state || !history.state.sillapa)
+      history.replaceState({sillapa:1},'',u);
+    else history.pushState({sillapa:1},'',u);
+  }catch(e){ location.hash=u; }
+}
+/** มีกล่องซ้อนเปิดอยู่ไหม — กล่องกรอกข้อมูล หรือจอฉายหน้างาน */
+function navOverlayOpen(){
+  const m=document.getElementById('modal');
+  return !!((m && m.classList.contains('on')) || document.querySelector('.screen.on'));
+}
+window.addEventListener('popstate', ()=>{
+  /* กดย้อนกลับขณะเปิดกล่องซ้อน → ปิดกล่องก่อน แล้วอยู่หน้าเดิม */
+  if(navOverlayOpen()){
+    try{ closeModal(); }catch(e){}
+    try{ closeScreen(); }catch(e){}
+    try{ history.pushState({sillapa:1},'',navUrl()); }catch(e){}
+    return;
+  }
+  const q=new URLSearchParams((location.hash||'').replace(/^#\??/,''));
+  const sc=q.get('scope'), vw=q.get('view'), pg=q.get('page')||'home';
+  NAV_POP=true;
+  try{
+    if(sc && sc!==SCOPE){ SCOPE=sc; try{ LS.setItem(K.scope,sc); }catch(e){}
+      applyScope(); renderAll(); }
+    if(vw && vw!==VIEW && !(vw==='admin' && !ME)){ VIEW=vw; try{ LS.setItem(K.view,vw); }catch(e){}
+      document.body.dataset.view=VIEW; }
+    go(pg);
+  } finally {
+    NAV_POP=false;
+    /* ถ้าหน้าที่ขอมาเปิดไม่ได้ (เช่นหมดสิทธิ์) go() จะพาไปหน้าอื่น — แก้ที่อยู่ให้ตรง */
+    try{ history.replaceState({sillapa:1},'',navUrl()); }catch(e){}
+  }
+});
 
 /* ============================ render ============================ */
 function tbl(node,head,rows){ node.innerHTML='<thead><tr>'+head.map(h=>`<th>${h}</th>`).join('')+
@@ -8337,8 +8381,10 @@ setInterval(()=>{ const s=new Date().toTimeString().slice(0,8);
   if(hp) PAGE=hp;
   const subRef=(q.get('ref')||'').trim();
   boot().then(()=>{
-    if(subRef){ subOpenRef(subRef); return; }   /* สแกน QR ใบอนุญาตเปลี่ยนตัว */
-    if(hp) go(hp);
+    if(subRef) subOpenRef(subRef);              /* สแกน QR ใบอนุญาตเปลี่ยนตัว */
+    else if(hp) go(hp);
+    /* เปิดเว็บเสร็จแล้ว — ตั้งแต่นี้ไปทุกการเปลี่ยนหน้าจะเก็บประวัติให้ปุ่มย้อนกลับ */
+    setTimeout(()=>{ NAV_READY=true; }, 900);
   });
 })();
 </script>
