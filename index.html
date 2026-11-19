@@ -6885,9 +6885,11 @@ function prWinPill(w){
                 : '<span class="pill b">ปิดรับโอน</span>';
 }
 function prWinRange(w){
-  if(w.open_at && w.close_at) return w.open_at+' → '+w.close_at;
-  if(w.open_at) return 'ตั้งแต่ '+w.open_at;
-  if(w.close_at) return 'ถึง '+w.close_at;
+  /* ค่าจากชีตอาจกลับมาเป็นวันที่เต็มรูปแบบ — แสดงเป็นวันที่ไทยอ่านง่ายเสมอ */
+  const a=w.open_at? thDateLong(dstr(w.open_at)) : '', b=w.close_at? thDateLong(dstr(w.close_at)) : '';
+  if(a && b) return a+' ถึง '+b;
+  if(a) return 'ตั้งแต่ '+a;
+  if(b) return 'ถึง '+b;
   return 'ไม่จำกัดวัน';
 }
 
