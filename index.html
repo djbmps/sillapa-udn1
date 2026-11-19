@@ -657,6 +657,7 @@ body[data-view="admin"] .utilbar{display:none}
         <button class="nv" data-p="score" data-role="district_admin,group_admin" data-perm="score"><i>✍️</i>ให้คะแนน</button>
         <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ตรวจทาน &amp; ประกาศผล</button>
         <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
+        <button class="nv" data-p="region" data-role="district_admin" data-perm="promote" data-dist="1"><i>🏅</i>ตัวแทนเข้าภาค</button>
       </div></div>
 
       <div class="ng" data-sec="doc"><span class="ngh" onclick="togSec(this)">พิมพ์เอกสาร &amp; เกียรติบัตร<i class="cv">▾</i></span><div class="ngb">
@@ -956,14 +957,26 @@ body[data-view="admin"] .utilbar{display:none}
                   style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select></div>
           <div class="cb" style="padding:0;overflow:auto"><table id="prDetail"></table></div></div>
 
-        <div class="card"><div class="ch"><h3>ทีมตัวแทนเข้าแข่งระดับภาค</h3><span class="sp"></span>
-          <span class="hint" id="prRegSum"></span>
-          <button class="btn g sm" onclick="exportCsv('region')">⬇ CSV</button></div>
-          <div class="cb" style="padding:12px 14px 0"><div class="note i"><span>🏅</span><div>
-            ทีมที่<b>ชนะเลิศและได้เหรียญทอง</b>ในรอบระดับเขต คือตัวแทนของ สพป.อุดรธานี เขต 1
-            เข้าแข่งขันในระดับภาค · รายชื่อขึ้นเองเมื่อประกาศผลรอบระดับเขตแล้ว</div></div></div>
-          <div class="cb" style="padding:0;overflow:auto"><table id="prRegion"></table></div></div>
       </div>
+    </section>
+
+    <!-- ---------- ตัวแทนเข้าแข่งระดับภาค (เฉพาะระดับเขต) ---------- -->
+    <section class="page" id="p-region">
+      <div class="hd"><div><h2>ตัวแทนเข้าภาค</h2>
+        <p>ทีมที่ชนะเลิศและได้เหรียญทองในการแข่งขันระดับเขต คือตัวแทนของ สพป.อุดรธานี เขต 1 เข้าแข่งขันระดับภาค</p></div>
+        <span class="sp"></span>
+        <button class="btn g" onclick="loadRegionReps()">⟳ รีเฟรช</button>
+        <button class="btn g" onclick="exportCsv('region')">⬇ CSV</button>
+        <button class="btn" onclick="window.print()">🖨️ พิมพ์บัญชีรายชื่อ</button></div>
+
+      <div id="rgNote" style="margin-bottom:13px"></div>
+      <div id="rgStat" style="margin-bottom:14px"></div>
+
+      <div class="card"><div class="ch"><h3>บัญชีทีมตัวแทนเข้าแข่งระดับภาค</h3><span class="sp"></span>
+        <input id="rgQ" placeholder="ค้นชื่อรายการ / โรงเรียน…" oninput="drawRegionReps()"
+               style="padding:8px 12px;border:1px solid var(--line);border-radius:10px;min-width:230px">
+        <span class="hint" id="prRegSum"></span></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="prRegion"></table></div></div>
     </section>
 
     <!-- ---------- สมัครเป็นกรรมการตัดสิน (หน้าสาธารณะ) ---------- -->
@@ -3261,7 +3274,7 @@ function isOwner(){ return !!(ME && ME.own); }
  *  กลุ่มโรงเรียนส่งตัวแทนขึ้นเขต · เขตส่งตัวแทนขึ้นภาค */
 function promoteLabel(){
   const g = (ME && ME.role==='group_admin') || (SCOPE && SCOPE!=='ALL');
-  return g ? 'ตัวแทนเข้าเขต' : 'ตัวแทนเข้าภาค';
+  return g ? 'ตัวแทนเข้าเขต' : 'รับโอนตัวแทนจากกลุ่ม';
 }
 function canDo(key){ return !!(ME && (ME.own || (ME.perm||[]).indexOf(key)>=0)); }
 const PERM_LABEL={actedit:'จัดการรายการ & เกณฑ์',entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',
@@ -3294,11 +3307,11 @@ const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการ
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','rulesmgr','entries','score','publish','promote','certadm','cards',
-  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr','schedmgr'];
+  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr','schedmgr','region'];
 /** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
 const PAGE_PERM={actedit:'actedit',rulesmgr:'actedit',entries:'entries',score:'score',publish:'publish',
   promote:'promote',judges:'judges',judgeapp:'judges',certadm:'certadm',cards:'cards',
-  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm',schedmgr:'sched'};
+  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm',schedmgr:'sched',region:'promote'};
 const OWNER_PAGES=['admins','season','backup'];
 function isAdminPage(p){ return ADMIN_PAGES.indexOf(p)>=0; }
 /** ผู้ที่ยังไม่เข้าสู่ระบบ: บังคับให้อยู่หน้าสาธารณะ และถ้าค้างอยู่ที่หน้าหลังบ้าน (เช่นลิงก์เก่าในช่อง URL)
@@ -5685,7 +5698,7 @@ function go(p){
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
-    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',
+    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',
     rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
@@ -5754,7 +5767,7 @@ function renderPage(p){
     newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
     judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
     apply:renderApply, judgeapp:renderJudgeApp,
-    subs:renderSubsPublic, submgr:renderSubMgr, gsites:renderGSites, schedmgr:renderSchedMgr,
+    subs:renderSubsPublic, submgr:renderSubMgr, gsites:renderGSites, schedmgr:renderSchedMgr, region:renderRegion,
     rules:renderRules, rulesmgr:renderRulesMgr}[p]||(()=>{}))();
 }
 
@@ -6844,47 +6857,78 @@ async function renderPromote(){
   const atGroup = grp || (SCOPE && SCOPE!=='ALL');
   $('#prTitle').textContent = grp ? 'โอนตัวแทนเข้าระดับเขต'
     : atGroup ? ('ตัวแทนเข้าเขต — ติดตามการโอนของ'+groupName(SCOPE))
-              : 'ตัวแทนเข้าภาค';
+              : 'รับโอนตัวแทนจากกลุ่มโรงเรียน';
   $('#prSub').textContent = grp
     ? 'ทีมที่ติดโควตาของกลุ่มจะถูกส่งขึ้นเป็นผู้สมัครระดับเขต พร้อมป้ายบอกกลุ่มต้นทางและอันดับ'
     : atGroup ? 'เขตเห็นข้อมูลที่กลุ่มนี้โอนเข้ามา เปิด-ปิดช่วงเวลารับโอน และรีเซ็ตให้โอนใหม่ได้'
-              : 'ทีมชนะเลิศเหรียญทองรอบระดับเขต คือตัวแทนเข้าแข่งระดับภาค · หน้านี้ยังใช้ติดตามการโอนตัวแทนของกลุ่มโรงเรียนด้วย';
-  /* การ์ดตัวแทนเข้าภาคมีเฉพาะตอนดูระดับเขต */
-  const rc=$('#prRegion'); if(rc && rc.closest('.card')) rc.closest('.card').style.display = atGroup? 'none':'';
+              : 'ทีมที่กลุ่มโรงเรียนโอนขึ้นมา คือผู้เข้าแข่งขันรอบระดับเขต · ผลของรอบนี้จะได้ตัวแทนไปแข่งระดับภาค ดูที่เมนู “ตัวแทนเข้าภาค”';
   if(!ME) return;
   if(grp){ await loadPromotable(); return; }
   try{
     PRB = await api('promotionBoard', {group: SCOPE==='ALL'?'':SCOPE});
   }catch(e){ PRB=null; return; }
   drawPromoteDistrict();
-  if(SCOPE==='ALL') loadRegionReps();
 }
-/* ---------- ทีมตัวแทนของเขตที่จะไปแข่งระดับภาค ---------- */
-let PRREG=[];
-const PR_REG_HEAD=['ที่','รายการแข่งขัน','ระดับชั้น','โรงเรียน','กลุ่มต้นทาง','คะแนน','เหรียญ'];
+/* ============================ ตัวแทนเข้าแข่งระดับภาค ============================
+   คนละเรื่องกับหน้า "รับโอนตัวแทนจากกลุ่ม"
+   · กลุ่มโรงเรียนโอนทีมขึ้นมา = ผู้เข้าแข่งขันรอบระดับเขต (ขาเข้า)
+   · ทีมที่ชนะเลิศเหรียญทองรอบระดับเขต = ตัวแทนไปแข่งระดับภาค (ขาออก)        */
+let PRREG=[], PRREG_ALL=null;
+const PR_REG_HEAD=['ที่','รหัส','รายการแข่งขัน','ระดับชั้น','โรงเรียนตัวแทน','กลุ่มต้นทาง','คะแนน'];
+async function renderRegion(){
+  if(!ME) return;
+  if(SCOPE!=='ALL'){
+    $('#rgNote').innerHTML='<div class="note i"><span>🏅</span><div>ตัวแทนเข้าภาคเป็นเรื่องของ<b>ระดับเขต</b> '
+      +'ขณะนี้ท่านอยู่ในเว็บของ'+groupName(SCOPE)+' — กลุ่มโรงเรียนมีหน้าที่โอนตัวแทนขึ้นเขตเท่านั้น</div></div>';
+    $('#rgStat').innerHTML=''; tbl($('#prRegion'), PR_REG_HEAD, ''); return;
+  }
+  await loadRegionReps();
+}
 async function loadRegionReps(){
   const t=$('#prRegion'); if(!t) return;
   tbl(t, PR_REG_HEAD, '<tr><td colspan="7" style="text-align:center;color:var(--ink-3);padding:22px">กำลังโหลด…</td></tr>');
   try{
-    const r=await api('publicResults',{group:'DISTRICT'});
-    PRREG=(r.results||[])
+    const r=await api('publicResults',{group:'DISTRICT', fresh:'1'});
+    PRREG_ALL=(r.results||[]);
+    PRREG=PRREG_ALL
       .filter(x=>Number(x.rank)===1 && String(x.medal)==='ทอง')
       .sort((a,b)=>String(a.act_id).localeCompare(String(b.act_id)));
-  }catch(e){ PRREG=[]; }
-  drawRegionReps();
+  }catch(e){ PRREG_ALL=[]; PRREG=[]; }
+  drawRegionStat(); drawRegionReps();
+}
+function drawRegionStat(){
+  const box=$('#rgStat'); if(!box) return;
+  const acts=(DB.activities||[]).length;
+  const done=[...new Set((PRREG_ALL||[]).map(x=>x.act_id))].length;
+  const gold=PRREG.length;
+  const schools=[...new Set(PRREG.map(x=>x.school).filter(Boolean))].length;
+  $('#rgNote').innerHTML = gold
+    ? '<div class="note g"><span>🏅</span><div><b>ได้ตัวแทนเข้าภาคแล้ว '+gold+' ทีม</b> '
+      +'จากรายการที่ประกาศผลรอบระดับเขตแล้ว '+done+' รายการ</div></div>'
+    : '<div class="note i"><span>⏳</span><div><b>ยังไม่มีตัวแทนเข้าภาค</b> — '
+      +'รายชื่อจะขึ้นเองเมื่อแข่งขันและประกาศผลรอบระดับเขตแล้ว '
+      +'<span class="hint">เกณฑ์: ชนะเลิศอันดับ 1 และได้เหรียญทอง</span></div></div>';
+  box.innerHTML='<div class="g4">'+
+    [['ทีมตัวแทนเข้าภาค',gold],['โรงเรียนที่เป็นตัวแทน',schools],
+     ['ประกาศผลแล้ว',done+' / '+acts],['รอแข่ง/รอประกาศผล',Math.max(0,acts-done)]]
+    .map((x,i)=>`<div class="stat s${i+1}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('')+'</div>';
 }
 function drawRegionReps(){
   const t=$('#prRegion'); if(!t) return;
-  $('#prRegSum').textContent = PRREG.length? PRREG.length+' ทีม' : '';
-  tbl(t, PR_REG_HEAD, PRREG.map((x,i)=>`<tr>
+  const q=String(($('#rgQ')||{}).value||'').trim().toLowerCase();
+  const rows=PRREG.filter(x=>!q ||
+    ((x.act_name||'')+' '+(x.act_id||'')+' '+(x.school||'')).toLowerCase().indexOf(q)>=0);
+  $('#prRegSum').textContent = PRREG.length? (rows.length+' / '+PRREG.length+' ทีม') : '';
+  tbl(t, PR_REG_HEAD, rows.map((x,i)=>`<tr>
     <td class="num">${i+1}</td>
+    <td>${String(x.act_id||'').replace(/^A0*/,'')}</td>
     <td><b>${x.act_name||x.act_id}</b></td>
     <td>${x.level||''}</td>
     <td>${cleanName(x.school||'')}</td>
     <td>${x.from_group? groupName(x.from_group) : '<span class="hint">—</span>'}</td>
-    <td class="num">${x.total!=null? Number(x.total).toFixed(2):''}</td>
-    <td><span class="pill ok">ทอง</span></td></tr>`).join('')
-    || '<tr><td colspan="7" style="text-align:center;color:var(--ink-3);padding:26px">ยังไม่มีทีมตัวแทน — จะขึ้นเองเมื่อประกาศผลรอบระดับเขตแล้ว</td></tr>');
+    <td class="num">${x.total!=null? Number(x.total).toFixed(2):''}</td></tr>`).join('')
+    || '<tr><td colspan="7" style="text-align:center;color:var(--ink-3);padding:26px">'
+       +(PRREG.length? 'ไม่พบตามที่ค้นหา' : 'ยังไม่มีทีมตัวแทน — จะขึ้นเองเมื่อประกาศผลรอบระดับเขตแล้ว')+'</td></tr>');
 }
 
 function prWinPill(w){
@@ -8313,7 +8357,7 @@ function exportCsv(what){
     ? [['smis','โรงเรียน','ตำบล','อำเภอ','กลุ่ม','นักเรียน','ม.ต้น','เปิดสอน','ขนาด'],
        ...schoolsOf(SCOPE).map(s=>[s.smis,s.school_name,s.tambon,s.amphoe,s.group_name||groupName(s.group_code),s.n_total,s.n_lower_sec,s.offer,s.size])]
     : what==='region'
-    ? [['ที่','รหัสกิจกรรม','รายการแข่งขัน','ระดับชั้น','โรงเรียน','กลุ่มต้นทาง','คะแนน','เหรียญ'],
+    ? [['ที่','รหัสกิจกรรม','รายการแข่งขัน','ระดับชั้น','โรงเรียนตัวแทน','กลุ่มต้นทาง','คะแนน','เหรียญ'],
        ...(PRREG||[]).map((x,i)=>[i+1,x.act_id,x.act_name,x.level,cleanName(x.school||''),
          x.from_group?groupName(x.from_group):'',x.total,x.medal])]
     : [['รหัส','กลุ่ม','อำเภอ','โรงเรียน','นักเรียน','ขยายโอกาส'],
