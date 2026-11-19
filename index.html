@@ -269,7 +269,9 @@ body[data-view="public"] .side{display:none}
 body[data-view="public"] .shell{grid-template-columns:1fr}
 body[data-view="public"] .top{display:none}
 body[data-view="public"] .hero{display:none}
-body[data-view="public"] .main{max-width:1180px;margin:0 auto;padding-top:18px}
+/* .main เป็นช่องของกริด — ถ้าใส่ margin auto โดยไม่กำหนดความกว้าง เบราว์เซอร์จะย่อ
+   ให้พอดีเนื้อหา (shrink-to-fit) ทำให้การ์ดเรียงลงมาคอลัมน์เดียว ต้องกำหนด width:100% ไว้ด้วย */
+body[data-view="public"] .main{width:100%;max-width:1180px;margin:0 auto;padding-top:18px}
 body[data-view="admin"] #pubHead{display:none}
 /* เปิดหน้าเข้าสู่ระบบ = เห็นเฉพาะหน้าเข้าสู่ระบบ ไม่ให้แถบหัวเว็บและส่วนท้ายโผล่ต่อท้าย */
 body.login-on #pubHead, body.login-on .pfoot, body.login-on .shell{display:none!important}
