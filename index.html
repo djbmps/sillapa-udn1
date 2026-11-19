@@ -6282,9 +6282,30 @@ function renderEntries(){
           <td>${(e.coaches||[]).map(x=>x.prefix+x.name).join('<br>')||'-'}</td>
           <td>${e.source==='district'?'โอนจากกลุ่ม':'สมัครในกลุ่ม'}</td>
           <td><span class="pill ${e.status==='ยืนยัน'?'ok':'w'}">${e.status}</span></td>
-          <td><button class="btn g sm" onclick="editEntry('${e.entry_id}')">แก้ไข</button></td></tr>`;
+          <td style="white-space:nowrap"><button class="btn g sm" onclick="editEntry('${e.entry_id}')">แก้ไข</button>
+            <button class="btn g sm" onclick="delEntry('${e.entry_id}')">ลบ</button></td></tr>`;
       }).join(''));
   });
+}
+/** ลบผู้สมัคร — ใช้เมื่อโรงเรียนสมัครผิดรายการหรือสมัครซ้ำ */
+async function delEntry(id){
+  const e=(window.__ENT||[]).find(x=>String(x.entry_id)===String(id))||{};
+  const S=schoolsOf('ALL'), s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
+  const who=cleanName(s.school_name||e.school_smis||id);
+  if(!confirm('ลบผู้สมัครของ “'+who+'” ออกจากรายการนี้?\n\n'
+    +'รายชื่อนักเรียน ครูผู้ฝึกสอน และคะแนนของทีมนี้จะถูกลบไปด้วย และกู้คืนไม่ได้')) return;
+  try{
+    await api('deleteEntry',{entry_id:id, group:entryRound()});
+    renderEntries();
+  }catch(err){
+    const m=String(err.message||err);
+    if(m.indexOf('ยืนยันอีกครั้ง')<0) return alert(m);
+    if(!confirm(m+'\n\nยืนยันการลบหรือไม่?')) return;
+    try{ await api('deleteEntry',{entry_id:id, group:entryRound(), confirm:'Y'});
+      alert('ลบแล้ว — อย่าลืมประมวลผลและประกาศผลรายการนี้ใหม่');
+      renderEntries();
+    }catch(e2){ alert(e2.message||e2); }
+  }
 }
 function editEntry(id){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
