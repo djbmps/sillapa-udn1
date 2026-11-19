@@ -236,6 +236,21 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .login .l .lgo img{display:block;width:250px;max-width:56vw;height:auto;
   filter:drop-shadow(0 3px 14px rgba(0,0,0,.55))}
 .login .r{display:flex;flex-direction:column;justify-content:center;padding:40px;max-width:460px;margin:0 auto;width:100%}
+/* กล่องฟอร์มเข้าสู่ระบบ — เรียบ อ่านง่าย ไม่มีคำอธิบายการใช้งาน */
+.login .lgbox{width:100%;max-width:368px;margin:0 auto}
+.login .lgh{font-size:23.3px;font-weight:700;margin:0;letter-spacing:-.01em}
+.login .lgorg{margin:6px 0 26px;font-size:14.3px;color:var(--ink-3)}
+.login .lgbox .fld{margin-bottom:16px}
+.login .lgbox label{display:block;font-size:13.3px;font-weight:600;margin-bottom:6px;color:var(--ink-2)}
+.login .lgbox input,.login .lgbox select{width:100%;padding:11px 13px;border:1px solid var(--line);
+  border-radius:10px;background:#fff;font-size:15.3px;font-family:inherit}
+.login .lgbox input:focus,.login .lgbox select:focus{outline:none;border-color:var(--pri);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 14%,transparent)}
+.login .lgbtn{width:100%;justify-content:center;padding:12px;font-size:15.3px;margin-top:4px}
+.login .lgfoot{margin-top:20px;font-size:13.8px;display:flex;gap:10px;align-items:center}
+.login .lgfoot a{color:var(--pri);font-weight:600;text-decoration:none}
+.login .lgfoot a:hover{text-decoration:underline}
+.login .lgfoot .sep{color:var(--ink-3)}
 @media(max-width:1000px){.shell{grid-template-columns:1fr}.side{position:static;height:auto}.g4,.g3,.g2{grid-template-columns:1fr}.login{grid-template-columns:1fr}.login .l{display:none}}
 
 /* ---------- หน้าเว็บสาธารณะ ---------- */
@@ -530,38 +545,40 @@ body[data-view="admin"] .utilbar{display:none}
       <p id="loginSub">สพป.อุดรธานี เขต 1 · ปีการศึกษา 2569 — รับสมัคร จัดตาราง ให้คะแนน ประกาศผล และโอนตัวแทนเข้าระดับเขต</p>
     </div>
     <div class="r">
-      <div class="note i" id="loginCtx" style="margin-bottom:16px"></div>
-      <div class="fld"><label>เข้าสู่ระบบของ</label>
-        <select id="lgScope" onchange="lgScopeChange()"></select>
-        <div class="hint" style="margin-top:5px">ผู้ดูแลกลุ่มและโรงเรียนเลือกกลุ่มของตนเอง · ระบบจะพาเข้าเว็บกลุ่มนั้นให้อัตโนมัติ</div></div>
-      <div class="fld"><label>ชื่อผู้ใช้</label><input id="lgUser" autocomplete="username"
-           placeholder="เช่น admin-g01 หรือ sc0001" oninput="lgTyping()"
-           onkeydown="if(event.key==='Enter'){const p=document.getElementById('lgPass'); p&&p.focus();}"></div>
-      <div class="fld"><label>รหัสผ่าน</label>
-        <div class="pwwrap">
-          <input id="lgPass" type="password" autocomplete="current-password"
-                 placeholder="รหัสที่ได้รับจากผู้ดูแล" oninput="lgTyping()"
-                 onkeydown="if(event.key==='Enter')doLogin()">
-          <button type="button" class="pweye" id="lgEye" onclick="lgTogglePass()"
-                  title="แสดงรหัสผ่าน" aria-label="แสดงรหัสผ่าน">👁️</button>
-        </div></div>
-      <button class="btn" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">เข้าสู่ระบบ</button>
-      <div id="lgErr" class="note b" style="display:none;margin-top:12px"></div>
-      <p class="hint" style="margin-top:14px">
-        <a href="#" onclick="toggleForgot();return false" style="color:var(--pri);font-weight:700">ลืมรหัสผ่าน? ขอให้เขตรีเซ็ตให้</a></p>
+      <div class="lgbox">
+        <h3 class="lgh">เข้าสู่ระบบ</h3>
+        <p class="lgorg" id="loginCtx"></p>
 
-      <div id="forgotBox" style="display:none;margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#F8FBFF">
-        <b style="font-size:15.8px">ขอให้สำนักงานเขตรีเซ็ตรหัสผ่าน</b>
-        <div class="hint" style="margin:4px 0 10px">กรอกชื่อผู้ใช้ที่ลืมรหัส และช่องทางติดต่อกลับ เขตจะรีเซ็ตให้แล้วแจ้งรหัสใหม่</div>
-        <div class="fld"><label>ชื่อผู้ใช้ *</label><input id="fgUser" placeholder="เช่น admin-g06 หรือ sc0001"></div>
-        <div class="fld"><label>เบอร์โทร / อีเมลที่ติดต่อกลับ *</label><input id="fgContact" placeholder="0812345678"></div>
-        <div class="fld"><label>หมายเหตุ (ถ้ามี)</label><input id="fgReason" placeholder="เช่น ผู้ดูแลคนเดิมย้าย"></div>
-        <button class="btn" style="width:100%;justify-content:center" onclick="sendForgot()">ส่งคำขอไปยังเขต</button>
-        <div id="fgMsg" style="margin-top:10px"></div>
+        <div class="fld"><label>เข้าสู่ระบบของ</label>
+          <select id="lgScope" onchange="lgScopeChange()"></select></div>
+        <div class="fld"><label>ชื่อผู้ใช้</label><input id="lgUser" autocomplete="username"
+             oninput="lgTyping()"
+             onkeydown="if(event.key==='Enter'){const p=document.getElementById('lgPass'); p&&p.focus();}"></div>
+        <div class="fld"><label>รหัสผ่าน</label>
+          <div class="pwwrap">
+            <input id="lgPass" type="password" autocomplete="current-password" oninput="lgTyping()"
+                   onkeydown="if(event.key==='Enter')doLogin()">
+            <button type="button" class="pweye" id="lgEye" onclick="lgTogglePass()"
+                    title="แสดงรหัสผ่าน" aria-label="แสดงรหัสผ่าน">👁️</button>
+          </div></div>
+        <button class="btn lgbtn" onclick="doLogin()">เข้าสู่ระบบ</button>
+        <div id="lgErr" class="note b" style="display:none;margin-top:14px"></div>
+
+        <div class="lgfoot">
+          <a href="#" onclick="toggleForgot();return false">ลืมรหัสผ่าน</a>
+          <span class="sep">·</span>
+          <a href="#" onclick="closeLogin();return false">กลับหน้าเว็บ</a>
+        </div>
+
+        <div id="forgotBox" style="display:none;margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2,#FAF6F8)">
+          <b style="font-size:15.8px">ขอให้สำนักงานเขตรีเซ็ตรหัสผ่าน</b>
+          <div class="fld" style="margin-top:10px"><label>ชื่อผู้ใช้ *</label><input id="fgUser"></div>
+          <div class="fld"><label>เบอร์โทร / อีเมลที่ติดต่อกลับ *</label><input id="fgContact"></div>
+          <div class="fld"><label>หมายเหตุ</label><input id="fgReason"></div>
+          <button class="btn lgbtn" onclick="sendForgot()">ส่งคำขอไปยังเขต</button>
+          <div id="fgMsg" style="margin-top:10px"></div>
+        </div>
       </div>
-
-      <p class="hint" style="margin-top:14px">ดูข้อมูลสาธารณะ ตารางแข่ง และผลการแข่งขัน ได้โดยไม่ต้องเข้าสู่ระบบ
-        — <a href="#" onclick="closeLogin();return false" style="color:var(--pri);font-weight:600">กลับหน้าเว็บ</a></p>
     </div>
   </div>
 </div>
@@ -683,17 +700,12 @@ body[data-view="admin"] .utilbar{display:none}
               onclick="logoutNow()">ออกจากระบบ</button>
     </div>
 
-    <div class="note i" id="ownerNote" style="display:none;margin-bottom:12px"><span>🔗</span><div>
-      <b>รายการแข่งขัน หมวดหมู่ และเกณฑ์การให้คะแนน กำหนดโดยสำนักงานเขต</b> —
-      ชุดเดียวกันทั้งรอบคัดเลือกระดับกลุ่มและระดับเขต แก้ไขที่นี่ไม่ได้
-      · หน้าที่ของกลุ่มและโรงเรียนคือ <b>รับสมัคร · จัดตาราง · ให้คะแนน · ประกาศผล</b></div></div>
-    <div class="strip" id="gStrip" style="display:none">🏁 <b>ขณะนี้อยู่ในเว็บของกลุ่มโรงเรียน (รอบคัดเลือก)</b>
-      — ทีมที่ได้รับคัดเลือกจะเป็นตัวแทนเข้าแข่งขันระดับเขตพื้นที่
+    <div class="strip" id="gStrip" style="display:none">🏁 <b>เว็บกลุ่มโรงเรียน · รอบคัดเลือก</b>
       <span class="bk" id="gBack" onclick="setScope('ALL')">← ไปเว็บระดับเขต</span></div>
 
     <div class="livebar noprint">
       <span class="dt"></span>
-      <div><b>จอแสดงผลหน้างาน (LIVE)</b><small>ตารางเหรียญผลสด และคิวตารางแข่งขันรายสนาม เหมาะสำหรับฉายจอใหญ่</small></div>
+      <div><b>จอแสดงผลหน้างาน (LIVE)</b></div>
       <div class="a"><button onclick="openScreen('live')">จอผลสด →</button><button onclick="openScreen('queue')">จอคิวตารางแข่งขัน →</button></div>
     </div>
 
@@ -702,7 +714,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="hero">
         <div class="kw" id="hKw">งานศิลปหัตถกรรมนักเรียน</div>
         <h2 id="hTitle">ระดับเขตพื้นที่การศึกษา · สพป.อุดรธานี เขต 1</h2>
-        <p>ปีการศึกษา 2569 — ติดตามรายการแข่งขัน ตารางแข่ง ผลการแข่งขัน และดาวน์โหลดเอกสารได้ที่นี่</p>
+        <p>ปีการศึกษา 2569</p>
       </div>
       <div class="grid g4" style="margin-top:16px" id="homeStats"></div>
       <div id="homeNewsWrap" style="margin-top:20px;display:none">
@@ -756,9 +768,6 @@ body[data-view="admin"] .utilbar{display:none}
 
     <section class="page" id="p-acts">
       <div class="hd"><div><h2>รายการแข่งขัน</h2><p id="actsSub"></p></div></div>
-      <div class="note i" style="margin-bottom:12px"><span>🔗</span><div>
-        <b>รายการแข่งขัน หมวดหมู่ และเกณฑ์การให้คะแนน เป็นชุดกลางที่สำนักงานเขตกำหนด</b>
-        — กลุ่มโรงเรียนและโรงเรียนใช้ชุดเดียวกันกับเขตทั้งหมด กดปุ่ม “ดูเกณฑ์” เพื่อดูสัดส่วนคะแนนของแต่ละรายการ</div></div>
       <div class="row" style="margin-bottom:12px">
         <input id="acQ" placeholder="ค้นชื่อรายการ หรือรหัสกิจกรรม…" oninput="drawActs()"
                style="flex:1;min-width:230px;padding:9px 13px;border:1px solid var(--line);border-radius:10px">
@@ -790,7 +799,7 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- กลุ่มโรงเรียน ---------- -->
     <section class="page" id="p-groups">
-      <div class="hd"><div><h2>กลุ่มโรงเรียน</h2><p>20 กลุ่ม · เปิดเว็บของกลุ่มให้จัดแข่งเอง แล้วติดตามความคืบหน้าทุกกลุ่มจากที่เดียว</p></div>
+      <div class="hd"><div><h2>กลุ่มโรงเรียน</h2></div>
         <span class="sp"></span>
         <button class="btn g sm" onclick="fillGProg(1)" title="ดึงความคืบหน้าล่าสุดของทุกกลุ่ม">🔄 รีเฟรชความคืบหน้า</button>
         <button class="btn g sm" onclick="exportCsv('groups')">⬇ CSV</button></div>
@@ -809,7 +818,7 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- จัดการรายการ & เกณฑ์ ---------- -->
     <section class="page" id="p-actedit">
-      <div class="hd"><div><h2>จัดการรายการแข่งขัน &amp; เกณฑ์</h2><p>เพิ่ม ลด แก้ไขรายการและเกณฑ์การให้คะแนนได้อิสระ — คะแนนเต็มทุกหัวข้อรวมกันต้องได้ 100</p></div>
+      <div class="hd"><div><h2>จัดการรายการแข่งขัน &amp; เกณฑ์</h2></div>
         <span class="sp"></span><button class="btn g" onclick="manageCats()">🏷️ จัดการหมวดหมู่</button><button class="btn" onclick="editAct(null)">+ เพิ่มรายการ</button></div>
       <div class="row" style="margin-bottom:12px">
         <input id="aeQ" placeholder="ค้นชื่อรายการ หรือรหัสกิจกรรม…" oninput="drawActEdit()"
@@ -833,9 +842,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="hd"><div><h2>ผู้สมัครแข่งขัน</h2><p id="entSub"></p></div><span class="sp"></span>
         <button class="btn g sm" onclick="go('print')">🖨️ พิมพ์ใบรายชื่อ</button>
         <button class="btn" id="entAddBtn" onclick="editEntry(null)">+ เพิ่มผู้สมัคร</button></div>
-      <div class="note i" id="entDistrictNote" style="display:none;margin-bottom:12px"><span>⬆️</span><div>
-        <b>ระดับเขตแสดงเฉพาะทีมตัวแทนที่กลุ่มโรงเรียนโอนขึ้นมา</b> —
-        โรงเรียนสมัครแข่งขันที่เว็บของกลุ่มตนเอง เมื่อกลุ่มประกาศผลและโอนตัวแทนแล้ว รายชื่อจะมาปรากฏที่นี่เอง</div></div>
+      
       <div class="row" style="margin-bottom:12px">
         <select id="entAct" onchange="renderEntries()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
       </div>
@@ -844,7 +851,7 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- ให้คะแนน ---------- -->
     <section class="page" id="p-score">
-      <div class="hd"><div><h2>ให้คะแนน</h2><p>เจ้าหน้าที่คีย์คะแนนจากใบบันทึกคะแนนที่คณะกรรมการตัดสินส่งมา — คีย์คะแนนรวมต่อทีม หรือสลับเป็นคีย์แยกรายกรรมการก็ได้</p></div></div>
+      <div class="hd"><div><h2>ให้คะแนน</h2></div></div>
       <div class="row" style="margin-bottom:12px">
         <select id="scAct" onchange="renderScore()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
         <select id="scJudge" onchange="renderScore()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
@@ -867,7 +874,7 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- ประกาศผล ---------- -->
     <section class="page" id="p-publish">
-      <div class="hd"><div><h2>ตรวจทาน &amp; ประกาศผล</h2><p>ประกาศแล้วคะแนนจะถูกล็อกทันที และผลจะขึ้นจอผลสดกับหน้าเว็บสาธารณะ</p></div></div>
+      <div class="hd"><div><h2>ตรวจทาน &amp; ประกาศผล</h2></div></div>
       <div id="pbLock" style="margin-bottom:12px"></div>
       <div class="row" style="margin-bottom:12px">
         <select id="pbAct" onchange="renderPublish()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
@@ -1074,7 +1081,7 @@ body[data-view="admin"] .utilbar{display:none}
     <!-- ---------- พิมพ์เอกสาร ---------- -->
     <section class="page" id="p-print">
       <div class="hd"><div><h2>พิมพ์เอกสารการแข่งขัน</h2>
-        <p>เลือกรายการแข่งขัน → ติ๊กเอกสารที่ต้องการ → พิมพ์ทั้งชุดใส่ซองให้คณะกรรมการตัดสินได้เลย</p></div></div>
+        </div></div>
       <div id="prtPerm" style="margin-bottom:12px"></div>
 
       <div class="card noprint" style="margin-bottom:14px"><div class="ch"><h3>1 · เลือกรายการแข่งขัน</h3></div>
@@ -1115,21 +1122,21 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- เอกสารดาวน์โหลด (สาธารณะ) ---------- -->
     <section class="page" id="p-docs">
-      <div class="hd"><div><h2>เอกสารดาวน์โหลด</h2><p>ระเบียบ เกณฑ์การแข่งขัน หนังสือราชการ และแบบฟอร์ม</p></div></div>
+      <div class="hd"><div><h2>เอกสารดาวน์โหลด</h2></div></div>
       <div id="docList"></div>
     </section>
 
     <!-- ---------- เว็บกลุ่มโรงเรียนทั้ง 20 กลุ่ม (สาธารณะ เฉพาะเว็บระดับเขต) ---------- -->
     <section class="page" id="p-gsites">
       <div class="hd"><div><h2>เว็บกลุ่มโรงเรียน</h2>
-        <p>แต่ละกลุ่มมีเว็บของตนเองสำหรับจัดการแข่งขันรอบคัดเลือก — รายการแข่งขัน ตารางแข่ง ผลการแข่งขัน และข่าวของกลุ่ม</p></div></div>
+        </div></div>
       <div id="gsiteList" class="gcards"></div>
     </section>
 
     <!-- ---------- เกณฑ์การแข่งขันรายกลุ่มสาระ (สาธารณะ) ---------- -->
     <section class="page" id="p-rules">
       <div class="hd"><div><h2>เกณฑ์การแข่งขัน</h2>
-        <p>เปิดดูทีละกลุ่มสาระได้ทันทีในหน้าเว็บ หรือดาวน์โหลดเก็บไว้ จะเอาเฉพาะสาระที่ต้องการหรือทั้งเล่มก็ได้</p></div></div>
+        </div></div>
       <div id="ruleBook"></div>
       <div id="ruleCards" class="rcards"></div>
       <div id="ruleNone"></div>
@@ -1138,7 +1145,7 @@ body[data-view="admin"] .utilbar{display:none}
     <!-- ---------- ไฟล์เกณฑ์รายกลุ่มสาระ (หลังบ้าน) ---------- -->
     <section class="page" id="p-rulesmgr">
       <div class="hd"><div><h2>ไฟล์เกณฑ์รายกลุ่มสาระ</h2>
-        <p>อัปโหลดไฟล์ PDF ทีละกลุ่มสาระ และไฟล์รวมทั้งเล่ม — อัปเสร็จหน้าเว็บสาธารณะขึ้นให้ทันที</p></div>
+        </div>
         <span class="sp"></span>
         <button class="btn" onclick="editRuleDoc('ALL')">📚 ไฟล์ทั้งเล่ม</button></div>
       <div class="note i" style="margin-bottom:12px"><span>📘</span><div>
@@ -1270,9 +1277,7 @@ body[data-view="admin"] .utilbar{display:none}
     <section class="page" id="p-judges">
       <div class="hd"><div><h2>ทำเนียบคณะกรรมการตัดสิน</h2><p id="jgSub"></p></div>
         <span class="sp"></span><button class="btn" onclick="newJudge()">+ เพิ่มกรรมการ</button></div>
-      <div class="note i" style="margin-bottom:12px"><span>💡</span><div>
-        รายชื่อในหน้านี้จะถูกใช้ใน <b>บัตรประจำตัวกรรมการตัดสิน</b> และ <b>เกียรติบัตรกรรมการตัดสิน</b>
-        — เพิ่มรายชื่อที่นี่ก่อน แล้วจึงไปอัปโหลดรูปถ่ายที่หน้า “บัตรประจำตัว”</div></div>
+      
       <div class="card"><div class="ch"><h3>รายชื่อกรรมการ</h3><span class="sp"></span>
         <input id="jg_q" placeholder="ค้นชื่อ / โรงเรียน…" oninput="drawJudges()"
                style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
@@ -1282,9 +1287,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="card" style="margin-top:14px"><div class="ch"><h3>มอบหมายกรรมการเข้ารายการแข่งขัน</h3>
         <span class="sp"></span><span class="hint" id="jaSub2"></span></div>
         <div class="cb">
-          <div class="note i" style="margin-bottom:12px"><span>📋</span><div>
-            คณะกรรมการตัดสินกิจกรรมละ <b>5 คน</b> — ประธานกรรมการ · กรรมการ 3 คน · กรรมการและเลขานุการ<br>
-            รายชื่อที่มอบหมายไว้ที่นี่จะขึ้นใน <b>ใบปะหน้าซอง</b> และ <b>DOC.3 ลงทะเบียนกรรมการตัดสิน</b> อัตโนมัติ</div></div>
+          
           <div class="row" style="margin-bottom:12px">
             <select id="jaAct" onchange="renderJAssign()" style="flex:1;min-width:240px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
             <select id="jaJudge" style="min-width:200px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
@@ -1359,10 +1362,7 @@ body[data-view="admin"] .utilbar{display:none}
             </div>
             <div class="fld"><label>ข้อความที่แสดงเมื่อยังไม่เปิด / ปิดแล้ว</label>
               <input id="sw_note" placeholder="เช่น เปิดให้ยื่นคำขอเปลี่ยนตัวระหว่างวันที่ 1–10 ธันวาคม 2569"></div>
-            <div class="note i" style="margin-top:10px"><span>🔁</span><div>
-              เมื่อเปิดระบบ แท็บ <b>“ขอเปลี่ยนตัว”</b> จะโผล่ขึ้นในเมนูหน้าเว็บสาธารณะโดยอัตโนมัติ
-              และหายไปเองเมื่อพ้นกำหนด — โรงเรียนยื่นคำขอ แนบหลักฐาน และลงลายมือชื่อ ผอ. ได้ในระบบ
-              ไม่ต้องส่งกระดาษ</div></div>
+            
           </div>
         </div></div>
 
@@ -1375,7 +1375,7 @@ body[data-view="admin"] .utilbar{display:none}
     <!-- ---------- ขอเปลี่ยนตัวนักเรียน (หน้าสาธารณะ) ---------- -->
     <section class="page" id="p-subs">
       <div class="hd"><div><h2>ขอเปลี่ยนตัวนักเรียน / ครูผู้ฝึกสอน</h2>
-        <p>ยื่นคำขอออนไลน์ แนบหลักฐาน ลงลายมือชื่อในระบบ — ไม่ต้องส่งเอกสารกระดาษ</p></div></div>
+        </div></div>
       <div id="subPubState"></div>
       <div class="g2" style="margin-bottom:14px">
         <div class="card"><div class="ch"><h3>ขั้นตอนการขอเปลี่ยนตัว</h3></div>
@@ -3270,10 +3270,7 @@ function pubGroupBtnClick(){ SCOPE==='ALL'? openGroupPicker() : switchSite('ALL'
 function openGroupPicker(){
   const gs=(DB.groups||[]);
   openModal('เข้าเว็บกลุ่มโรงเรียน',
-    `<div class="note i" style="margin-bottom:12px"><span>🏁</span><div>
-       เลือกกลุ่มโรงเรียนที่ต้องการเข้าชม — เว็บกลุ่มจะแสดงรายการแข่งขัน ตารางแข่ง และผลการแข่งขันรอบคัดเลือกของกลุ่มนั้น
-       <div class="hint" style="margin-top:4px">ผู้ดูแลกลุ่มและโรงเรียนเข้าสู่ระบบหลังบ้านได้จากเว็บกลุ่มโดยตรง</div></div></div>
-     <input id="gpQ" placeholder="ค้นหากลุ่มโรงเรียน หรือ อำเภอ" oninput="gpFilter()"
+    `<input id="gpQ" placeholder="ค้นหากลุ่มโรงเรียน หรือ อำเภอ" oninput="gpFilter()"
             style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:12px">
      <div id="gpList" class="grid g2" style="gap:10px;max-height:58vh;overflow:auto">
        ${gs.map(g=>`<button class="btn g" style="--gc:${groupColor(g.group_code)}" data-q="${String(g.group_name+' '+(g.amphoe||'')).replace(/"/g,'')}"
@@ -5828,7 +5825,6 @@ function editAct(id){
        </select><div class="hint">ปิด = ไม่รับสมัครเพิ่ม แต่ข้อมูลเดิมยังอยู่</div></div></div>
      ${f('เงื่อนไขพิเศษ','condition','text','ข้อความนี้จะแสดงใต้ชื่อรายการในหน้าสาธารณะ')}
      ${f('หมายเหตุภายใน','note')}
-     <div class="note i" style="margin-top:4px"><span>ℹ️</span><div>ระดับชั้นที่ขึ้นต้นด้วย <b>ม.</b> ระบบจะอนุญาตเฉพาะโรงเรียนขยายโอกาส 59 แห่งสมัครโดยอัตโนมัติ</div></div>
      ${id?`<div class="row" style="margin-top:12px"><button class="btn g sm" onclick="dupAct('${id}')">⧉ ทำสำเนารายการนี้ (พร้อมเกณฑ์)</button></div>`:''}`,
     async()=>{
       const o={act_id:id||'', group_code:'ALL'};
@@ -5949,7 +5945,7 @@ async function editCrit(actId){
      <div class="note w" style="margin-top:14px"><span>📋</span><div>
        <label style="font-weight:600"><input type="checkbox" id="applyCat"> ใช้เกณฑ์ชุดนี้กับ<b>ทุกรายการในหมวด “${act.category||''}”</b>
        (${sameCat.length} รายการ)</label>
-       <div class="hint" style="margin-top:4px">ประหยัดเวลามากเมื่อทั้งหมวดใช้เกณฑ์เดียวกัน · เกณฑ์เดิมของรายการเหล่านั้นจะถูกแทนที่</div></div></div>`,
+       <div class="hint" style="margin-top:4px">เกณฑ์เดิมของรายการเหล่านั้นจะถูกแทนที่</div></div></div>`,
     async()=>{
       const its=readCrit();
       if(!its.length) throw new Error('ต้องมีอย่างน้อย 1 หัวข้อ และทุกหัวข้อต้องมีชื่อ');
@@ -7650,10 +7646,8 @@ function logoutNow(){
 function lgScopeChange(){
   const v=$('#lgScope').value;
   lgHero(v);
-  $('#loginCtx').innerHTML = v==='ALL'
-    ? '🏛️ กำลังเข้าสู่ระบบ<b> ระดับเขตพื้นที่</b><br>'+districtName()
-    : '🏁 กำลังเข้าสู่ระบบ<b>เว็บกลุ่ม '+groupName(v)+'</b><br>ภายใต้ '+districtName()+' · <code>'+v+'</code>';
-  if(DEMO()) $('#loginCtx').innerHTML+='<br><br><b>โหมดตัวอย่าง</b> — ลองด้วย <code>admin</code>/<code>admin</code> หรือ <code>admin-g01</code>/<code>admin</code>';
+  /* บรรทัดเดียวใต้หัวเรื่อง บอกว่ากำลังเข้าเว็บไหน — ไม่ใช่คำอธิบายวิธีใช้ */
+  $('#loginCtx').textContent = v==='ALL' ? districtName() : groupName(v)+' · '+districtName();
 }
 /** ข้อความฝั่งซ้ายของหน้าเข้าสู่ระบบ ต้องตรงกับเว็บที่เลือกไว้ในช่อง “เข้าสู่ระบบของ”
     ไม่งั้นกดเข้าระบบเขตแล้วเห็นคำว่า “ระดับกลุ่มโรงเรียน” จะสับสน */
@@ -7664,9 +7658,8 @@ function lgHero(v){
      ส่วนบรรทัดรองและกล่องทางขวาเป็นตัวบอกว่ากำลังเข้าเว็บไหน */
   if(t) t.innerHTML = 'ระบบจัดการแข่งขัน<br>งานศิลปหัตถกรรมนักเรียน';
   if(sub) sub.textContent = dist
-    ? districtName()+' · ปีการศึกษา '+acadYear()+' — รับตัวแทนจากกลุ่มโรงเรียน จัดตาราง บันทึกคะแนนรวม และประกาศผลระดับเขต'
-    : (groupName(v)||'กลุ่มโรงเรียน')+' · '+districtName()+' · ปีการศึกษา '+acadYear()
-      +' — รับสมัคร จัดตาราง ให้คะแนน ประกาศผล และโอนตัวแทนเข้าระดับเขต';
+    ? districtName()+' · ปีการศึกษา '+acadYear()
+    : (groupName(v)||'กลุ่มโรงเรียน')+' · '+districtName()+' · ปีการศึกษา '+acadYear();
 }
 function openLogin(){ $('#app').style.display='none'; $('#loginView').style.display='block';
   document.body.classList.add('login-on');
