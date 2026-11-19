@@ -14,16 +14,16 @@
 <style>
 :root{
   /* ชุดสีหลัก — ถอดสีจากโลโก้ SILLAPA 74 UDON1 (ไวน์ #A00040 · ชมพูสด #F82068) */
-  --ink:#2B1220; --ink-2:#6A4A58; --ink-3:#8A6E7C;
+  --ink:#2B1220; --ink-2:#60404E; --ink-3:#77606C;
   --line:#EBD5DF; --line-2:#F7EDF2; --bg:#F6EBF1; --card:#fff;
   --pri:#A00040; --pri-2:#6E0030; --pri-soft:#FCE7EF;
   --accent:#F82068; --accent-soft:#FDE3EC;
   --black:#6E0030;
-  --ok:#1B7A56; --ok-soft:#E3F5EC; --warn:#9A6A08; --warn-soft:#FBF2DC;
+  --ok:#1B7A56; --ok-soft:#E3F5EC; --warn:#8A5E05; --warn-soft:#FBF2DC;
   --bad:#B3261E; --bad-soft:#FCEBE9;
   --m-g:#D6A63C; --m-s:#97A5B8; --m-b:#B4713B;
-  --c1:#C2185B; --c1s:#FCE4EC; --c2:#1E9A5F; --c2s:#E2F6EC;
-  --c3:#6A3FBF; --c3s:#EFEAFB; --c4:#B26A00; --c4s:#FBF0DC;
+  --c1:#C2185B; --c1s:#FCE4EC; --c2:#18794B; --c2s:#E2F6EC;
+  --c3:#6A3FBF; --c3s:#EFEAFB; --c4:#9A5C00; --c4s:#FBF0DC;
   --r:12px; --sh:0 1px 2px rgba(96,8,48,.08),0 6px 20px rgba(96,8,48,.08);
 }
 body[data-scope="group"]{--pri:#9C3A12;--pri-2:#7E2E0C;--pri-soft:#F8EBE3}
@@ -98,7 +98,7 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .top .bc b{color:var(--ink)}
 .sp{flex:1}
 .tag{display:inline-flex;align-items:center;gap:6px;font-size:12.3px;font-weight:700;padding:4px 10px;border-radius:999px}
-.tag.demo{color:#96660A;background:var(--warn-soft);border:1px solid #EFDFB6}
+.tag.demo{color:var(--warn);background:var(--warn-soft);border:1px solid #EFDFB6}
 .tag.live{color:#1B7A56;background:var(--ok-soft);border:1px solid #C4E5D8}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
 .ch{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line-2)}
@@ -303,8 +303,9 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#141210 0%,#4
 .pfoot #fSub:not(:empty)::before{content:' · '}
 .pfoot .dev{font-size:13.8px;color:#fff;opacity:.88;margin-top:5px}
 .pfoot .dev a{color:#C3D2EC;text-decoration:underline}
-.sdev{padding:14px 12px 20px;font-size:12.8px;color:#7E736A;line-height:1.7;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
-.sdev b{color:#A99D93;font-weight:600}
+.sdev{padding:14px 12px 20px;font-size:12.8px;color:rgba(255,255,255,.82);line-height:1.7;border-top:1px solid rgba(255,255,255,.14);margin-top:6px}
+.sdev b{color:#fff;font-weight:600}
+.sdev a{color:#fff}
 body[data-view="admin"] .pfoot{display:none}
 .newscard{display:flex;gap:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff;
   box-shadow:var(--sh);margin-bottom:11px;cursor:pointer;transition:.15s}
@@ -502,8 +503,9 @@ body[data-view="admin"] .utilbar{display:none}
 .gcard .gstat b{display:block;font-size:17.8px;font-weight:700;opacity:1;
   font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.15}
 .gcard .gpill{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
-  font-size:12.8px;font-weight:600;background:rgba(255,255,255,.2);border-radius:999px;
+  font-size:12.8px;font-weight:600;color:#fff;background:rgba(0,0,0,.30);border-radius:999px;
   padding:4px 11px;margin-top:12px}
+.gcard .gpill.off{background:rgba(0,0,0,.42)}
 .gcard .gpill i{width:7px;height:7px;border-radius:50%;background:#fff;flex:none;
   box-shadow:0 0 0 3px rgba(255,255,255,.25)}
 .gcard .gpill.off i{background:rgba(255,255,255,.45);box-shadow:none}
