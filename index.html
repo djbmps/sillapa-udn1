@@ -5471,16 +5471,25 @@ function drawActs(){
       <td><b>${a.act_name}</b>${a.condition?'<br><span class="hint">'+a.condition+'</span>':''}</td>
       <td>${a.category}</td><td>${a.level}</td>
       <td class="num">${a.team_min==a.team_max?a.team_min:a.team_min+'-'+a.team_max} คน<br><span class="hint">ครู ${a.coaches||1}</span></td>
-      <td class="num">${a.duration_min?a.duration_min+' น.':'—'}</td><td class="num">${a.judges_required}</td>
+      <td class="num">${durShort(a.duration_min)}</td><td class="num">${a.judges_required}</td>
       <td><span class="pill ${a.status==='เปิด'?'ok':'b'}">${a.status}</span></td>
       <td><button class="btn g sm" onclick="viewCrit('${a.act_id}')">ดูเกณฑ์</button></td></tr>`).join(''));
 }
 
-/** แปลงเวลาแข่งขันเป็นข้อความอ่านง่าย — ว่างไว้ถ้ารายการนั้นยังไม่ได้กำหนดเวลา */
+/** เวลาแข่งขันแบบสั้น ใช้ในตาราง — เก็บในฐานข้อมูลเป็นนาทีเหมือนเดิม แต่แสดงเป็นชั่วโมงให้อ่านง่าย
+ *  180 → "3 ชม." · 90 → "1 ชม. 30 น." · 40 → "40 น." · 7.5 → "7.5 น." */
+function durShort(m){
+  m=Number(m||0); if(!m) return '—';
+  if(m<60) return (Math.round(m*10)/10)+' น.';
+  const h=Math.floor(m/60), mm=Math.round(m%60);
+  return h+' ชม.'+(mm? ' '+mm+' น.':'');
+}
+/** เวลาแข่งขันแบบเต็ม ใช้ในหน้ารายละเอียด — ว่างไว้ถ้ารายการนั้นยังไม่ได้กำหนดเวลา */
 function durWord(m){
   m=Number(m||0); if(!m) return '';
-  const h=Math.floor(m/60), mm=m%60;
-  return ' · เวลาแข่งขัน ' + (h? h+' ชั่วโมง'+(mm? ' '+mm+' นาที':'') : mm+' นาที');
+  if(m<60) return ' · เวลาแข่งขัน '+(Math.round(m*10)/10)+' นาที';
+  const h=Math.floor(m/60), mm=Math.round(m%60);
+  return ' · เวลาแข่งขัน ' + h+' ชั่วโมง'+(mm? ' '+mm+' นาที':'');
 }
 /** ดูเกณฑ์แบบอ่านอย่างเดียว — ทุกคนเปิดได้ ไม่ต้องล็อกอิน */
 async function viewCrit(actId){
@@ -5802,7 +5811,16 @@ function editAct(id){
      <div class="grid g3">${sel('ระดับชั้น','level',lvls)}
        ${f('นักเรียนต่ำสุด','team_min','number')}${f('นักเรียนสูงสุด','team_max','number')}</div>
      <div class="grid g3">${f('ครูผู้ฝึกสอน (คน)','coaches','number')}
-       ${f('เวลาแข่ง (นาที)','duration_min','number','เว้นว่างได้ ถ้ายังไม่กำหนด')}
+       <div class="fld"><label>เวลาแข่งขัน</label>
+         <div class="row" style="gap:6px;flex-wrap:nowrap">
+           <input id="f_dur_h" type="number" min="0" step="1" placeholder="0" oninput="durHint()"
+                  style="width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px">
+           <span class="hint" style="white-space:nowrap">ชม.</span>
+           <input id="f_dur_m" type="number" min="0" max="59" step="1" placeholder="0" oninput="durHint()"
+                  style="width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px">
+           <span class="hint" style="white-space:nowrap">นาที</span>
+         </div>
+         <div class="hint" id="f_dur_hint">เว้นว่างทั้งสองช่องได้ ถ้ายังไม่กำหนดเวลา</div></div>
        ${f('จำนวนกรรมการ','judges_required','number')}</div>
      <div class="grid g2">${f('โควตาส่งเข้าระดับเขต','quota_to_district','number','จำนวนทีมที่กลุ่มส่งขึ้นเขตต่อรายการ')}
        <div class="fld"><label>สถานะ</label><select id="f_status">
@@ -5814,8 +5832,11 @@ function editAct(id){
      ${id?`<div class="row" style="margin-top:12px"><button class="btn g sm" onclick="dupAct('${id}')">⧉ ทำสำเนารายการนี้ (พร้อมเกณฑ์)</button></div>`:''}`,
     async()=>{
       const o={act_id:id||'', group_code:'ALL'};
-      ['act_code','act_name','team_min','team_max','coaches','duration_min','judges_required','quota_to_district','condition','note']
+      ['act_code','act_name','team_min','team_max','coaches','judges_required','quota_to_district','condition','note']
         .forEach(k=>{const el=$('#f_'+k); if(el) o[k]=el.value;});
+      /* กรอกเป็นชั่วโมง+นาที แต่ยังเก็บลงฐานข้อมูลเป็นนาทีเหมือนเดิม ข้อมูลเดิมจึงไม่ต้องแปลง */
+      const dh=$('#f_dur_h').value.trim(), dm=$('#f_dur_m').value.trim();
+      o.duration_min = (dh==='' && dm==='') ? '' : (Number(dh||0)*60 + Number(dm||0)) || '';
       o.level=$('#f_level').value;
       o.category=$('#f_category').value==='__new'? $('#f_category_new').value : $('#f_category').value;
       o.status=$('#f_status').value;
@@ -5828,6 +5849,18 @@ function editAct(id){
     });
   const cs=$('#f_category');
   if(cs) cs.onchange=()=>{ $('#catNew').style.display = cs.value==='__new'?'block':'none'; };
+  /* เติมค่าเดิมที่เก็บเป็นนาที ลงช่อง ชั่วโมง + นาที */
+  const d0=Number(a.duration_min||0);
+  if(d0){ $('#f_dur_h').value=Math.floor(d0/60)||''; $('#f_dur_m').value=Math.round(d0%60)||''; }
+  durHint();
+}
+/** บอกผลลัพธ์ที่จะบันทึกจริง ช่วยให้มั่นใจว่ากรอกถูก */
+function durHint(){
+  const el=$('#f_dur_hint'); if(!el) return;
+  const h=$('#f_dur_h').value.trim(), m=$('#f_dur_m').value.trim();
+  if(h==='' && m===''){ el.textContent='เว้นว่างทั้งสองช่องได้ ถ้ายังไม่กำหนดเวลา'; return; }
+  const tot=Number(h||0)*60+Number(m||0);
+  el.textContent = tot? 'บันทึกเป็น '+tot+' นาที ('+durShort(tot)+')' : 'เวลาต้องมากกว่า 0';
 }
 async function dupAct(id){
   const a=(DB.activities||[]).find(x=>x.act_id===id);
