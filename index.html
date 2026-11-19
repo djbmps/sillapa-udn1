@@ -5175,6 +5175,157 @@ function certNo(it,cfg){
   const f=(cfg&&cfg.number_format)||(edition()+'/{seq:04d}');
   return f.replace(/\{seq:0(\d)d\}/,(m,w)=>String(it.seq||0).padStart(Number(w),'0'));
 }
+
+/* ============================ QR code (model 2 · byte mode · EC ระดับ M) ============================
+   สร้างในหน้าเว็บเอง ไม่พึ่งบริการภายนอก — พิมพ์เกียรติบัตรเป็นพัน ๆ ใบได้โดยไม่ต้องต่ออินเทอร์เน็ต */
+/* ---------- QR code (model 2, byte mode, EC level M) — สร้างในเครื่อง ไม่ต้องพึ่งเน็ต ---------- */
+const QR_RS=[[10,1,16,0,0],[16,1,28,0,0],[26,1,44,0,0],[18,2,32,0,0],[24,2,43,0,0],
+  [16,4,27,0,0],[18,4,31,0,0],[22,2,38,2,39],[22,3,36,2,37],[26,4,43,1,44],
+  [30,1,50,4,51],[22,6,36,2,37]];
+const QR_AL=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],
+  [6,28,50],[6,30,54],[6,32,58]];
+let QE=null,QL=null;
+function qrGF(){ if(QE) return; QE=new Array(512); QL=new Array(256); let x=1;
+  for(let i=0;i<255;i++){ QE[i]=x; QL[x]=i; x<<=1; if(x&256) x^=285; }
+  for(let i=255;i<512;i++) QE[i]=QE[i-255]; }
+function qrMul(a,b){ return (a===0||b===0)?0:QE[QL[a]+QL[b]]; }
+function qrGen(n){ qrGF(); let g=[1];
+  for(let i=0;i<n;i++){ const ng=new Array(g.length+1).fill(0);
+    for(let j=0;j<g.length;j++){ ng[j]^=g[j]; ng[j+1]^=qrMul(g[j],QE[i]); } g=ng; }
+  return g; }
+function qrEC(data,n){ const g=qrGen(n), r=new Array(n).fill(0);
+  for(let i=0;i<data.length;i++){ const f=data[i]^r[0]; r.shift(); r.push(0);
+    for(let j=0;j<n;j++) r[j]^=qrMul(g[j+1],f); }
+  return r; }
+function qrBytes(s){ const o=[]; for(const ch of unescape(encodeURIComponent(s))) o.push(ch.charCodeAt(0)); return o; }
+
+function qrMatrix(text){
+  const by=qrBytes(text);
+  let ver=-1,spec=null;
+  for(let v=1;v<=12;v++){ const r=QR_RS[v-1]; const cap=r[1]*r[2]+r[3]*r[4];
+    const cci = v<10 ? 8 : 16;
+    if(by.length + 2 + Math.ceil(cci/8) <= cap + ((cci===8)?0:0) && (4+cci+by.length*8+4) <= cap*8){ ver=v; spec=r; break; } }
+  if(ver<0) throw new Error('ข้อความยาวเกินไปสำหรับ QR');
+  const cci = ver<10 ? 8 : 16;
+  /* --- bit stream --- */
+  const bits=[];
+  const put=(v,n)=>{ for(let i=n-1;i>=0;i--) bits.push((v>>i)&1); };
+  put(4,4); put(by.length,cci); by.forEach(b=>put(b,8));
+  const totalData = spec[1]*spec[2]+spec[3]*spec[4];
+  const cap=totalData*8;
+  for(let i=0;i<4 && bits.length<cap;i++) bits.push(0);
+  while(bits.length%8) bits.push(0);
+  const dc=[]; for(let i=0;i<bits.length;i+=8){ let b=0; for(let j=0;j<8;j++) b=(b<<1)|bits[i+j]; dc.push(b); }
+  const pad=[0xEC,0x11]; let pi=0; while(dc.length<totalData) dc.push(pad[pi++%2]);
+  /* --- blocks --- */
+  const blocks=[],ecs=[]; let p=0;
+  const push=(cnt,len)=>{ for(let i=0;i<cnt;i++){ const d=dc.slice(p,p+len); p+=len; blocks.push(d); ecs.push(qrEC(d,spec[0])); } };
+  push(spec[1],spec[2]); if(spec[3]) push(spec[3],spec[4]);
+  const out=[]; const maxD=Math.max(...blocks.map(b=>b.length));
+  for(let i=0;i<maxD;i++) blocks.forEach(b=>{ if(i<b.length) out.push(b[i]); });
+  for(let i=0;i<spec[0];i++) ecs.forEach(e=>out.push(e[i]));
+  /* --- matrix --- */
+  const size=17+ver*4;
+  const m=Array.from({length:size},()=>new Array(size).fill(null));
+  const fn=Array.from({length:size},()=>new Array(size).fill(false));
+  const setF=(r,c,v)=>{ if(r<0||c<0||r>=size||c>=size) return; m[r][c]=v; fn[r][c]=true; };
+  const finder=(r,c)=>{ for(let i=-1;i<=7;i++) for(let j=-1;j<=7;j++){
+      const rr=r+i, cc=c+j; if(rr<0||cc<0||rr>=size||cc>=size) continue;
+      const on=(i>=0&&i<=6&&(j===0||j===6))||(j>=0&&j<=6&&(i===0||i===6))||(i>=2&&i<=4&&j>=2&&j<=4);
+      setF(rr,cc,on?1:0); } };
+  finder(0,0); finder(0,size-7); finder(size-7,0);
+  for(let i=8;i<size-8;i++){ const v=(i%2===0)?1:0; setF(6,i,v); setF(i,6,v); }
+  const al=QR_AL[ver-1];
+  for(const r of al) for(const c of al){
+    if((r===6&&c===6)||(r===6&&c===size-7)||(r===size-7&&c===6)) continue;
+    for(let i=-2;i<=2;i++) for(let j=-2;j<=2;j++)
+      setF(r+i,c+j,(Math.max(Math.abs(i),Math.abs(j))!==1)?1:0); }
+  setF(size-8,8,1);
+  for(let i=0;i<9;i++){ if(i!==6) setF(8,i,0); if(i!==6) setF(i,8,0); }
+  setF(8,size-8,0);
+  for(let i=0;i<8;i++) setF(8,size-1-i,0);
+  for(let i=0;i<7;i++) setF(size-1-i,8,0);
+  if(ver>=7){ for(let i=0;i<6;i++) for(let j=0;j<3;j++){ setF(size-11+j,i,0); setF(i,size-11+j,0); } }
+  /* --- data zigzag --- */
+  let bi=0; const bit=()=> (bi<out.length*8) ? ((out[bi>>3]>>(7-(bi&7)))&1) : 0;
+  let up=true;
+  for(let c=size-1;c>0;c-=2){ if(c===6) c--;
+    for(let k=0;k<size;k++){ const r=up?(size-1-k):k;
+      for(let d=0;d<2;d++){ const cc=c-d;
+        if(fn[r][cc]) continue;
+        m[r][cc]=bit(); bi++; } }
+    up=!up; }
+  /* --- mask --- */
+  const maskFn=[(r,c)=>(r+c)%2===0,(r,c)=>r%2===0,(r,c)=>c%3===0,(r,c)=>(r+c)%3===0,
+    (r,c)=>(Math.floor(r/2)+Math.floor(c/3))%2===0,(r,c)=>((r*c)%2+(r*c)%3)===0,
+    (r,c)=>(((r*c)%2+(r*c)%3)%2)===0,(r,c)=>(((r+c)%2+(r*c)%3)%2)===0];
+  let best=null,bestP=Infinity;
+  for(let k=0;k<8;k++){
+    const t=m.map(r=>r.slice());
+    for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(!fn[r][c] && maskFn[k](r,c)) t[r][c]^=1;
+    qrFormat(t,fn,k,size);
+    if(ver>=7) qrVersion(t,ver,size);
+    const pen=qrPenalty(t,size);
+    if(pen<bestP){ bestP=pen; best=t; }
+  }
+  return best;
+}
+function qrFormat(t,fn,mask,size){
+  const data=(0<<3)|mask;                 /* ระดับการแก้ไขความผิดพลาด M = 00 */
+  let rem=data<<10;
+  for(let i=4;i>=0;i--) if(rem&(1<<(i+10))) rem^=0x537<<i;
+  const f=((data<<10)|rem)^0x5412;
+  const g=k=>(f>>>(14-k))&1;
+  for(let i=0;i<=5;i++) t[8][i]=g(i);
+  t[8][7]=g(6); t[8][8]=g(7); t[7][8]=g(8);
+  for(let i=9;i<15;i++) t[14-i][8]=g(i);
+  for(let i=0;i<7;i++) t[size-1-i][8]=g(i);
+  for(let i=7;i<15;i++) t[8][size-15+i]=g(i);
+  t[size-8][8]=1;
+}
+function qrVersion(t,ver,size){
+  let d=ver<<12; for(let i=5;i>=0;i--) if(d>>>(i+12)) d^=0x1F25<<i;
+  const v=(ver<<12)|d;
+  for(let i=0;i<18;i++){ const b=(v>>>i)&1; t[Math.floor(i/3)][size-11+(i%3)]=b; t[size-11+(i%3)][Math.floor(i/3)]=b; }
+}
+function qrPenalty(t,size){
+  let p=0;
+  for(let r=0;r<size;r++){ let run=1; for(let c=1;c<size;c++){
+    if(t[r][c]===t[r][c-1]) run++; else { if(run>=5) p+=3+(run-5); run=1; } } if(run>=5) p+=3+(run-5); }
+  for(let c=0;c<size;c++){ let run=1; for(let r=1;r<size;r++){
+    if(t[r][c]===t[r-1][c]) run++; else { if(run>=5) p+=3+(run-5); run=1; } } if(run>=5) p+=3+(run-5); }
+  for(let r=0;r<size-1;r++) for(let c=0;c<size-1;c++){
+    const v=t[r][c]; if(v===t[r][c+1]&&v===t[r+1][c]&&v===t[r+1][c+1]) p+=3; }
+  const pat=[1,0,1,1,1,0,1];
+  const chk=(arr)=>{ let n=0;
+    for(let i=0;i+7<=arr.length;i++){ let ok=true;
+      for(let j=0;j<7;j++) if(arr[i+j]!==pat[j]){ ok=false; break; }
+      if(!ok) continue;
+      const pre=arr.slice(Math.max(0,i-4),i), post=arr.slice(i+7,i+11);
+      if(i<4||pre.every(x=>x===0)) n++;
+      if(i+11>arr.length||post.every(x=>x===0)) n++; }
+    return n; };
+  for(let r=0;r<size;r++) p+=40*chk(t[r]);
+  for(let c=0;c<size;c++) p+=40*chk(t.map(r=>r[c]));
+  let dark=0; t.forEach(r=>r.forEach(v=>{ if(v) dark++; }));
+  p+=10*Math.floor(Math.abs(dark*100/(size*size)-50)/5);
+  return p;
+}
+
+/** QR เป็น SVG ฝังในหน้าโดยตรง — พิมพ์คมทุกขนาด และไม่ต้องต่ออินเทอร์เน็ต */
+function qrSvg(text, mm){
+  let m; try{ m=qrMatrix(text); }catch(e){ return ''; }
+  const n=m.length, q=2, t=n+q*2;
+  let d='';
+  for(let r=0;r<n;r++){ let c=0; while(c<n){
+    if(!m[r][c]){ c++; continue; }
+    let w=1; while(c+w<n && m[r][c+w]) w++;
+    d+=`M${c+q} ${r+q}h${w}v1h-${w}z`; c+=w; } }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${t} ${t}" width="${mm}mm" height="${mm}mm"
+    shape-rendering="crispEdges" style="display:block"><rect width="${t}" height="${t}" fill="#fff"/>
+    <path d="${d}" fill="#1A1207"/></svg>`;
+}
+
 function certHTML(it,tpl,cfg){
   const bg=tpl&&tpl.bg_url;
   return `<div class="cert ${bg?'':'noimg'}" ${bg?`style="background-image:url('${imgSrc(bg)}')"`:''}>
@@ -5184,11 +5335,24 @@ function certHTML(it,tpl,cfg){
     <div class="ln sm" style="top:${tpl.y_org||60}%">${fillCert(tpl.line_org,it,cfg)}</div>
     <div class="ln sm" style="top:70%">${fillCert(tpl.line_date,it,cfg)}</div>
     <div class="seal"><div class="l"></div>(${tpl.sign_name||''})<br>${tpl.sign_position||''}</div>
-    <div style="position:absolute;left:14mm;bottom:10mm;font-size:12.3px;color:#6B5A3C">เลขที่ ${certNo(it,cfg)}</div>
+    <div style="position:absolute;right:16mm;top:13mm;text-align:right;font-size:12.3px;color:#6B5A3C">เลขที่ ${certNo(it,cfg)}</div>
+    <div style="position:absolute;left:16mm;top:13mm;text-align:center">${qrSvg(certVerifyUrl(it,cfg),20)}
+      <div style="font-size:10.3px;color:#6B5A3C;margin-top:1.5mm;letter-spacing:.2px">สแกนตรวจสอบ</div></div>
   </div>`;
+}
+/** ลิงก์ในคิวอาร์โค้ด — เปิดหน้าเกียรติบัตรของเว็บจริง พร้อมเลขที่ฉบับนั้นกำกับไว้ */
+function certVerifyUrl(it,cfg){
+  const base=location.origin+location.pathname;
+  const sc=it.group_code && it.group_code!=='ALL' ? it.group_code : 'ALL';
+  return base+'#?scope='+sc+'&page=cert&no='+encodeURIComponent(certNo(it,cfg));
 }
 
 /* ---------- หน้าสาธารณะ ---------- */
+/** เลขที่เกียรติบัตรจากคิวอาร์โค้ดที่สแกนเข้ามา (#?page=cert&no=…) */
+function certScanNo(){
+  try{ const q=new URLSearchParams((location.hash||'').replace(/^#\??/,''));
+    return (q.get('no')||'').trim(); }catch(e){ return ''; }
+}
 function renderCert(){
   $('#certSub').textContent = SCOPE==='ALL'? 'ระดับเขต — สพป.อุดรธานี เขต 1' : groupName(SCOPE);
   $('#certArea').innerHTML='';
@@ -5200,9 +5364,14 @@ function renderCert(){
         <b>ยังไม่เปิดให้ดาวน์โหลดเกียรติบัตร</b><br>${cc.note||'กรุณาติดตามประกาศจากสำนักงานเขต'}</div></div>`;
       return;
     }
-    $('#certGate').innerHTML=`<div class="note g"><span>🎖️</span><div>
-      <b>เปิดให้ดาวน์โหลดเกียรติบัตรแล้ว</b> — เลือกประเภท ค้นหาชื่อ แล้วกด “ออกเกียรติบัตร”
-      จากนั้นกด <b>Ctrl/⌘ + P</b> เพื่อพิมพ์หรือบันทึกเป็น PDF</div></div>`;
+    const scanNo=certScanNo();
+    $('#certGate').innerHTML = scanNo
+      ? `<div class="note g"><span>🔎</span><div><b>ตรวจสอบเกียรติบัตรเลขที่ ${scanNo}</b><br>
+          ออกโดย ${districtName()} · ${eventName()}<br>
+          ค้นชื่อผู้รับในช่องด้านล่างเพื่อดูรายการและออกเกียรติบัตรฉบับจริง</div></div>`
+      : `<div class="note g"><span>🎖️</span><div>
+          <b>เปิดให้ดาวน์โหลดเกียรติบัตรแล้ว</b> — เลือกประเภท ค้นหาชื่อ แล้วกด “ออกเกียรติบัตร”
+          จากนั้นกด <b>Ctrl/⌘ + P</b> เพื่อพิมพ์หรือบันทึกเป็น PDF</div></div>`;
     $('#certBody').style.display='';
     const sc=$('#cf_school');
     if(!sc.options.length){
