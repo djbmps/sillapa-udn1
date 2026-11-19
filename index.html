@@ -633,6 +633,7 @@ body[data-view="admin"] .utilbar{display:none}
         <button class="nv" data-p="groups" data-dist="1"><i>🏘️</i>กลุ่มโรงเรียน 20 กลุ่ม</button>
         <button class="nv" data-p="actedit" data-role="district_admin" data-perm="actedit"><i>📋</i>จัดการรายการ &amp; เกณฑ์</button>
         <button class="nv" data-p="rulesmgr" data-role="district_admin" data-perm="actedit"><i>📘</i>ไฟล์เกณฑ์รายกลุ่มสาระ</button>
+        <button class="nv" data-p="schedmgr" data-role="district_admin,group_admin,venue_staff" data-perm="sched"><i>🗓️</i>ตารางแข่งขัน &amp; สนาม</button>
         <button class="nv" data-p="site" data-role="district_admin,group_admin" data-perm="site"><i>🖼️</i>หน้าเว็บ &amp; แบนเนอร์</button>
         <button class="nv" data-p="newsmgr" data-role="district_admin,group_admin" data-perm="newsmgr"><i>📣</i>ประชาสัมพันธ์</button>
       </div></div>
@@ -1202,6 +1203,39 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="cb" style="padding:0;overflow:auto"><table id="nmTbl"></table></div></div>
       <div class="card"><div class="ch"><h3>เอกสารดาวน์โหลด</h3></div>
         <div class="cb" style="padding:0;overflow:auto"><table id="dmTbl"></table></div></div>
+    </section>
+
+    <!-- ---------- ตารางแข่งขัน & สนามแข่งขัน (หลังบ้าน) ---------- -->
+    <section class="page" id="p-schedmgr">
+      <div class="hd"><div><h2>ตารางแข่งขัน &amp; สนามแข่งขัน</h2><p id="smSub"></p></div>
+        <span class="sp"></span>
+        <button class="btn g" onclick="editVenue(null)">+ เพิ่มสนามแข่งขัน</button>
+        <button class="btn" onclick="editSched(null)">+ เพิ่มลงตารางแข่งขัน</button></div>
+
+      <div id="smGate"></div>
+      <div id="smBody" style="display:none">
+        <div class="card" style="margin-bottom:14px"><div class="cb" id="smOpen"></div></div>
+
+        <div class="card" style="margin-bottom:16px"><div class="ch"><h3>สนามแข่งขัน</h3>
+          <span class="sp"></span><span class="hint" id="smVCount"></span></div>
+          <div class="cb" style="padding:0;overflow:auto"><table id="smVTbl"></table></div></div>
+
+        <div class="card"><div class="ch"><h3>ตารางแข่งขัน</h3><span class="sp"></span>
+          <button class="btn g sm" onclick="smPubAll('Y')">เปิดทุกรายการ</button>
+          <button class="btn g sm" onclick="smPubAll('N')">ปิดทุกรายการ</button>
+          <button class="btn g sm" onclick="smConflicts()">🔍 ตรวจเวลาชนกัน</button></div>
+          <div class="cb" style="padding:12px 14px 2px">
+            <div class="row">
+              <input id="smQ" placeholder="ค้นชื่อรายการ / รหัสกิจกรรม / สนาม…" oninput="drawSched()"
+                     style="flex:1;min-width:230px;padding:9px 13px;border:1px solid var(--line);border-radius:10px">
+              <select id="smDate" onchange="drawSched()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
+              <select id="smVen" onchange="drawSched()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;max-width:280px"></select>
+              <select id="smPub" onchange="drawSched()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff">
+                <option value="">ทุกสถานะ</option><option value="Y">เปิดแล้ว</option><option value="N">ยังไม่เปิด</option></select>
+              <span class="hint" id="smCount"></span>
+            </div></div>
+          <div class="cb" style="padding:0;overflow:auto"><table id="smTbl"></table></div></div>
+      </div>
     </section>
 
     <!-- ---------- เกียรติบัตร (สาธารณะ) ---------- -->
@@ -3197,10 +3231,11 @@ function canDo(key){ return !!(ME && (ME.own || (ME.perm||[]).indexOf(key)>=0));
 const PERM_LABEL={actedit:'จัดการรายการ & เกณฑ์',entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',
   publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',judges:'ทำเนียบกรรมการตัดสิน',
   certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',newsmgr:'ประชาสัมพันธ์',
-  site:'หน้าเว็บ & แบนเนอร์',print:'พิมพ์เอกสาร',perm:'เปิด-ปิดสิทธิ์การพิมพ์'};
+  site:'หน้าเว็บ & แบนเนอร์',print:'พิมพ์เอกสาร',perm:'เปิด-ปิดสิทธิ์การพิมพ์',
+  sched:'ตารางแข่งขัน & สนามแข่งขัน'};
 const PERM_PRESET={
   full:   {name:'ผู้ดูแลเต็มสิทธิ์', keys:Object.keys(PERM_LABEL)},
-  reg:    {name:'ฝ่ายทะเบียน / รับสมัคร', keys:['entries','judges','print']},
+  reg:    {name:'ฝ่ายทะเบียน / รับสมัคร', keys:['entries','judges','print','sched']},
   scoring:{name:'ฝ่ายคะแนนและผลการแข่งขัน', keys:['score','publish','promote','print']},
   pr:     {name:'ฝ่ายประชาสัมพันธ์', keys:['newsmgr','site']},
   cert:   {name:'ฝ่ายเกียรติบัตร / บัตรประจำตัว', keys:['certadm','cards','print']},
@@ -3223,11 +3258,11 @@ const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการ
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','rulesmgr','entries','score','publish','promote','certadm','cards',
-  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr'];
+  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr','schedmgr'];
 /** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
 const PAGE_PERM={actedit:'actedit',rulesmgr:'actedit',entries:'entries',score:'score',publish:'publish',
   promote:'promote',judges:'judges',judgeapp:'judges',certadm:'certadm',cards:'cards',
-  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm'};
+  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm',schedmgr:'sched'};
 const OWNER_PAGES=['admins','season','backup'];
 function isAdminPage(p){ return ADMIN_PAGES.indexOf(p)>=0; }
 /** ผู้ที่ยังไม่เข้าสู่ระบบ: บังคับให้อยู่หน้าสาธารณะ และถ้าค้างอยู่ที่หน้าหลังบ้าน (เช่นลิงก์เก่าในช่อง URL)
@@ -3416,6 +3451,8 @@ function pubPages(){
     /* เมนู “เว็บกลุ่มโรงเรียน” มีเฉพาะบนเว็บระดับเขต และเฉพาะบัญชีที่ดูได้ทุกกลุ่ม
        อยู่ในเว็บกลุ่มอยู่แล้วไม่ต้องมีหน้ารวมกลุ่มซ้ำ */
     x[0]==='gsites'? (SCOPE==='ALL' && !lockedScope() && (DB.groups||[]).length>0) :
+    /* ตารางแข่งขันขึ้นหน้าเว็บเมื่อผู้ดูแลกดเปิดแล้วเท่านั้น — ผู้ดูแลเห็นได้เสมอเพื่อตรวจก่อนเปิด */
+    x[0]==='sched' ? (isOpen('sched_public') || (ME && (ME.role==='district_admin'||ME.role==='group_admin'))) :
     x[0]==='rules' ? (ruleHasFiles() || (ME && ME.role==='district_admin')) : true);
 }
 /** เมนู “ข้อมูลสาธารณะ” ในแถบข้าง = เมนูเดียวกับหน้าเว็บสาธารณะจริง (ตาม PUBLIC_PAGES)
@@ -5360,6 +5397,7 @@ function go(p){
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
+    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',
     rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
@@ -5384,7 +5422,7 @@ function renderPage(p){
     newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
     judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
     apply:renderApply, judgeapp:renderJudgeApp,
-    subs:renderSubsPublic, submgr:renderSubMgr, gsites:renderGSites,
+    subs:renderSubsPublic, submgr:renderSubMgr, gsites:renderGSites, schedmgr:renderSchedMgr,
     rules:renderRules, rulesmgr:renderRulesMgr}[p]||(()=>{}))();
 }
 
@@ -7319,14 +7357,270 @@ function drawMedals(){
   tbl($('#medTbl'),['อันดับ','โรงเรียน','ชนะเลิศ','รองชนะเลิศอันดับ 1','รองชนะเลิศอันดับ 2','ทอง','เงิน','ทองแดง'],
     rows.map((m,i)=>medalRow(m,i)).join(''));
 }
+const SCH_HEAD=['รายการแข่งขัน','ระดับชั้น','วันที่','เวลา','สนามแข่งขัน','สถานะ'];
 function renderSched(){
   $('#schSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':groupName(SCOPE));
+  const adm = ME && (ME.role==='district_admin'||ME.role==='group_admin');
+  if(!isOpen('sched_public') && adm){
+    $('#schCount').textContent='';
+    tbl($('#schTbl'),SCH_HEAD,`<tr><td colspan="${SCH_HEAD.length}" style="text-align:center;color:var(--ink-3);padding:26px">
+      ยังไม่ได้เปิดตารางแข่งขันบนหน้าเว็บ — เปิดได้ที่เมนู “ตารางแข่งขัน &amp; สนาม”</td></tr>`);
+    return;
+  }
   api('queue',{group:SCOPE==='ALL'?'':SCOPE}).then(q=>{
     $('#schCount').textContent = q.length? q.length+' รายการ' : '';
-    tbl($('#schTbl'),['รายการแข่งขัน','วันที่','เวลา','สนามแข่งขัน','สถานะ'],
-      q.map(x=>`<tr><td><b>${x.act||''}</b></td><td>${dstr(x.date)}</td><td>${x.start||''}</td>
-        <td>${x.venue||''}</td><td>${x.status||''}</td></tr>`).join(''));
-  }).catch(()=>{ tbl($('#schTbl'),['รายการแข่งขัน','วันที่','เวลา','สนามแข่งขัน','สถานะ'],''); });
+    tbl($('#schTbl'),SCH_HEAD,
+      q.map(x=>`<tr><td><b>${x.act||''}</b></td><td>${x.level||''}</td><td>${thDateLong(x.date)}</td>
+        <td>${tmRange(x.start,x.end)}</td><td>${x.venue||''}</td><td>${x.status||''}</td></tr>`).join(''));
+  }).catch(()=>{ tbl($('#schTbl'),SCH_HEAD,''); });
+}
+/** 08:30 + 11:30 → 08:30–11:30 น. */
+function tmRange(a,b){
+  a=String(a||'').trim(); b=String(b||'').trim();
+  if(!a && !b) return '—';
+  return (b? a+'–'+b : a)+' น.';
+}
+
+/* ============================ ตารางแข่งขัน & สนามแข่งขัน (หลังบ้าน) ============================
+   ขอบเขต: ระดับเขตใช้รหัส 'DISTRICT' · กลุ่มโรงเรียนใช้รหัสกลุ่มของตนเอง
+   ปุ่มเปิด-ปิด 2 ชั้น — เปิดทั้งตารางบนหน้าเว็บ (sched_public) และเปิดรายรายการ (published) */
+let SM={scope:'DISTRICT', open:'N', schedule:[], venues:[]};
+function smScope(){ return SCOPE==='ALL' ? 'DISTRICT' : SCOPE; }
+function smScopeName(){ return SCOPE==='ALL' ? 'ระดับเขตพื้นที่' : groupName(SCOPE); }
+function venName(id){
+  const v=(SM.venues||[]).find(x=>String(x.venue_id)===String(id));
+  return v? v.name : (id||'');
+}
+function actName(id){
+  const a=(DB.activities||[]).find(x=>String(x.act_id)===String(id));
+  return a? a.act_name : id;
+}
+function actLevel(id){
+  const a=(DB.activities||[]).find(x=>String(x.act_id)===String(id));
+  return a? (a.level||'') : '';
+}
+
+function renderSchedMgr(){
+  const gate=$('#smGate'), body=$('#smBody');
+  if(!ME){ body.style.display='none';
+    gate.innerHTML='<div class="note"><span>🔒</span><div>กรุณาเข้าสู่ระบบก่อน</div></div>'; return; }
+  gate.innerHTML='<div class="note"><span>⏳</span><div>กำลังโหลดตารางแข่งขัน…</div></div>';
+  body.style.display='none';
+  $('#smSub').textContent = smScopeName();
+  api('listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()}).then(r=>{
+    SM.scope=r.scope||smScope(); SM.open=r.open||'N';
+    SM.schedule=r.schedule||[]; SM.venues=r.venues||[];
+    gate.innerHTML=''; body.style.display='';
+    drawSmOpen(); drawVenues(); fillSmFilters(); drawSched();
+  }).catch(e=>{
+    body.style.display='none';
+    gate.innerHTML='<div class="note r"><span>!</span><div>โหลดไม่สำเร็จ — '+(e.message||e)+
+      '<br><span class="hint">ถ้าเพิ่งอัปเดตระบบ ให้ Deploy เวอร์ชันใหม่ของ Code.gs ก่อน</span></div></div>';
+  });
+}
+
+/** แถบสวิตช์ “เปิดตารางบนหน้าเว็บ” */
+function drawSmOpen(){
+  const on = SM.open==='Y';
+  const n  = SM.schedule.length;
+  const np = SM.schedule.filter(s=>s.published==='Y').length;
+  $('#smOpen').innerHTML=`<div class="row" style="align-items:center;gap:14px">
+    <div style="flex:1;min-width:240px">
+      <div style="font-size:16.3px;font-weight:700">ตารางแข่งขันบนหน้าเว็บสาธารณะ ·
+        <span style="color:${on?'#1B7F4B':'#A00040'}">${on?'เปิดอยู่':'ยังไม่เปิด'}</span></div>
+      <div class="hint">${smScopeName()} · ในตาราง ${n} รายการ · เปิดเผยแล้ว ${np} รายการ${
+        on?'':' — ขณะนี้ผู้ชมทั่วไปยังไม่เห็นเมนูตารางแข่งขัน'}</div>
+    </div>
+    <button class="btn${on?' g':''}" onclick="smOpenToggle()">${on?'⏸ ปิดตารางบนหน้าเว็บ':'▶ เปิดตารางบนหน้าเว็บ'}</button>
+  </div>`;
+}
+async function smOpenToggle(){
+  const to = SM.open==='Y' ? 'N' : 'Y';
+  if(to==='Y'){
+    const np=SM.schedule.filter(s=>s.published==='Y').length;
+    if(!np && !confirm('ยังไม่มีรายการใดถูกเปิดเผยเลย\nเปิดตารางตอนนี้ผู้ชมจะเห็นตารางว่าง\n\nเปิดต่อไปหรือไม่?')) return;
+  }
+  try{
+    const r=await api('publishScheduleAll',{open:to, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+    SM.open=r.open||to;
+    if(SCOPE==='ALL'){ DB.config=DB.config||{}; DB.config.sched_public=SM.open; }
+    else { const g=(DB.groups||[]).find(x=>x.group_code===SCOPE); if(g) g.sched_public=SM.open; }
+    try{ snapSave(DB, SCOPE); }catch(e){}
+    drawSmOpen(); renderSideNav(); renderPubNav();
+  }catch(e){ alert(e.message||e); }
+}
+
+/* ---------- สนามแข่งขัน ---------- */
+function drawVenues(){
+  $('#smVCount').textContent = SM.venues.length? SM.venues.length+' สนาม' : '';
+  tbl($('#smVTbl'),['รหัส','ชื่อสนามแข่งขัน','ห้อง/อาคาร','ที่อยู่','ผู้ประสานงาน','ใช้ในตาราง',''],
+    SM.venues.map(v=>{
+      const used=SM.schedule.filter(s=>String(s.venue_id)===String(v.venue_id)).length;
+      return `<tr><td>${v.venue_id}</td><td><b>${v.name||''}</b></td><td>${v.room||''}</td>
+        <td>${v.address||''}</td><td>${[v.contact,v.phone].filter(Boolean).join(' · ')}</td>
+        <td class="num">${used||'—'}</td>
+        <td style="white-space:nowrap"><button class="btn g sm" onclick="editVenue('${v.venue_id}')">แก้ไข</button>
+          <button class="btn g sm" onclick="delVenue('${v.venue_id}')">ลบ</button></td></tr>`;
+    }).join(''));
+}
+function editVenue(id){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const v=SM.venues.find(x=>String(x.venue_id)===String(id))||{};
+  const q=s=>String(s||'').replace(/"/g,'&quot;');
+  openModal(id?'แก้ไขสนามแข่งขัน':'เพิ่มสนามแข่งขัน',
+    `<div class="fld"><label>ชื่อสนามแข่งขัน</label>
+       <input id="v_name" value="${q(v.name)}" placeholder="เช่น โรงเรียนอนุบาลอุดรธานี"></div>
+     <div class="grid g2">
+       <div class="fld"><label>ห้อง / อาคาร</label><input id="v_room" value="${q(v.room)}" placeholder="เช่น อาคาร 2 ห้อง 215"></div>
+       <div class="fld"><label>ที่อยู่ / จุดสังเกต</label><input id="v_addr" value="${q(v.address)}"></div>
+       <div class="fld"><label>ผู้ประสานงานประจำสนาม</label><input id="v_contact" value="${q(v.contact)}"></div>
+       <div class="fld"><label>เบอร์โทร</label><input id="v_phone" value="${q(v.phone)}"></div>
+     </div>
+     <div class="fld"><label>หมายเหตุ</label><input id="v_note" value="${q(v.note)}"></div>
+     <div class="hint">สนามนี้จะอยู่ใน${smScopeName()} และเลือกใช้ได้ในตารางแข่งขันของขอบเขตนี้</div>`,
+    async()=>{
+      const o={venue_id:id||'', name:$('#v_name').value.trim(), room:$('#v_room').value.trim(),
+        address:$('#v_addr').value.trim(), contact:$('#v_contact').value.trim(),
+        phone:$('#v_phone').value.trim(), note:$('#v_note').value.trim()};
+      if(!o.name) throw new Error('กรุณากรอกชื่อสนามแข่งขัน');
+      await api('saveVenue',{venue:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+      renderSchedMgr();
+    });
+}
+async function delVenue(id){
+  const v=SM.venues.find(x=>String(x.venue_id)===String(id))||{};
+  if(!confirm('ลบสนามแข่งขัน “'+(v.name||id)+'” ?')) return;
+  try{ await api('deleteVenue',{venue_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+    renderSchedMgr(); }
+  catch(e){ alert(e.message||e); }
+}
+
+/* ---------- ตารางแข่งขัน ---------- */
+function fillSmFilters(){
+  const dates=[...new Set(SM.schedule.map(s=>dstr(s.date)).filter(Boolean))].sort();
+  $('#smDate').innerHTML='<option value="">ทุกวัน</option>'+
+    dates.map(d=>`<option value="${d}">${thDateLong(d)}</option>`).join('');
+  $('#smVen').innerHTML='<option value="">ทุกสนาม</option>'+
+    SM.venues.map(v=>`<option value="${v.venue_id}">${v.name||v.venue_id}</option>`).join('');
+}
+function drawSched(){
+  const q=($('#smQ')?.value||'').trim().toLowerCase();
+  const fd=$('#smDate')?.value||'', fv=$('#smVen')?.value||'', fp=$('#smPub')?.value||'';
+  let rows=SM.schedule.slice().sort((a,b)=>
+    (dstr(a.date)+' '+(a.start_time||'')).localeCompare(dstr(b.date)+' '+(b.start_time||'')));
+  rows=rows.filter(s=>{
+    if(fd && dstr(s.date)!==fd) return false;
+    if(fv && String(s.venue_id)!==fv) return false;
+    if(fp && (s.published==='Y'?'Y':'N')!==fp) return false;
+    if(q){ const hay=(actName(s.act_id)+' '+s.act_id+' '+venName(s.venue_id)+' '+(s.room||'')).toLowerCase();
+      if(hay.indexOf(q)<0) return false; }
+    return true;
+  });
+  $('#smCount').textContent = rows.length+' / '+SM.schedule.length+' รายการ';
+  tbl($('#smTbl'),['รายการแข่งขัน','ระดับชั้น','วันที่','เวลา','สนาม / ห้อง','สถานะ','บนหน้าเว็บ',''],
+    rows.map(s=>{
+      const on=s.published==='Y';
+      return `<tr><td><b>${actName(s.act_id)}</b><br><span class="hint">${s.act_id}</span></td>
+        <td>${actLevel(s.act_id)}</td>
+        <td style="white-space:nowrap">${s.date? thDateLong(dstr(s.date)) : '—'}</td>
+        <td style="white-space:nowrap">${tmRange(s.start_time,s.end_time)}</td>
+        <td>${venName(s.venue_id)||'—'}${s.room? '<br><span class="hint">'+s.room+'</span>':''}</td>
+        <td>${s.status||''}</td>
+        <td><button class="btn${on?'':' g'} sm" onclick="smPubOne('${s.sched_id}')"
+              title="${on?'กดเพื่อซ่อนจากหน้าเว็บ':'กดเพื่อแสดงบนหน้าเว็บ'}">${on?'✓ เปิด':'ปิดอยู่'}</button></td>
+        <td style="white-space:nowrap"><button class="btn g sm" onclick="editSched('${s.sched_id}')">แก้ไข</button>
+          <button class="btn g sm" onclick="delSched('${s.sched_id}')">ลบ</button></td></tr>`;
+    }).join(''));
+}
+const SCH_STATUS=['รอแข่งขัน','กำลังแข่งขัน','แข่งเสร็จแล้ว','เลื่อน','งด'];
+function editSched(id){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const s=SM.schedule.find(x=>String(x.sched_id)===String(id))||{status:'รอแข่งขัน',published:'N'};
+  const q=v=>String(v||'').replace(/"/g,'&quot;');
+  const acts=(DB.activities||[]).slice().sort((a,b)=>
+    String(a.category||'').localeCompare(String(b.category||''))||String(a.act_id).localeCompare(String(b.act_id)));
+  const cats=[...new Set(acts.map(a=>a.category||'อื่น ๆ'))];
+  const actOpts=cats.map(c=>`<optgroup label="${c}">`+
+      acts.filter(a=>(a.category||'อื่น ๆ')===c)
+        .map(a=>`<option value="${a.act_id}" ${String(s.act_id)===String(a.act_id)?'selected':''}>${a.act_name} · ${a.level||''} (${a.act_id})</option>`).join('')+
+    '</optgroup>').join('');
+  openModal(id?'แก้ไขรายการในตารางแข่งขัน':'เพิ่มลงตารางแข่งขัน',
+    `<div class="fld"><label>รายการแข่งขัน</label>
+       <select id="h_act"><option value="">— เลือกรายการแข่งขัน —</option>${actOpts}</select></div>
+     <div class="grid g2">
+       <div class="fld"><label>วันที่แข่งขัน</label><div id="h_date_wrap">${dateSelHTML('h_date', s.date||'')}</div></div>
+       <div class="fld"><label>สนามแข่งขัน</label>
+         <select id="h_ven"><option value="">— ยังไม่ระบุสนาม —</option>${
+           SM.venues.map(v=>`<option value="${v.venue_id}" ${String(s.venue_id)===String(v.venue_id)?'selected':''}>${v.name||v.venue_id}</option>`).join('')}</select>
+         ${SM.venues.length?'':'<div class="hint">ยังไม่มีสนามแข่งขัน — เพิ่มได้ที่ปุ่ม “+ เพิ่มสนามแข่งขัน”</div>'}</div>
+       <div class="fld"><label>เวลาเริ่ม</label><input id="h_st" value="${q(s.start_time)}" placeholder="08:30"></div>
+       <div class="fld"><label>เวลาสิ้นสุด</label><input id="h_en" value="${q(s.end_time)}" placeholder="11:30"></div>
+       <div class="fld"><label>ห้อง / จุดแข่งขัน</label><input id="h_room" value="${q(s.room)}" placeholder="เช่น ห้องประชุม 1"></div>
+       <div class="fld"><label>สถานะ</label><select id="h_status">${
+         SCH_STATUS.map(x=>`<option ${String(s.status||'รอแข่งขัน')===x?'selected':''}>${x}</option>`).join('')}</select></div>
+     </div>
+     <div class="fld"><label>หมายเหตุ</label><input id="h_note" value="${q(s.note)}"></div>
+     <label style="font-size:14.3px"><input type="checkbox" id="h_pub" ${s.published==='Y'?'checked':''}> แสดงรายการนี้บนหน้าเว็บสาธารณะ</label>`,
+    async()=>{
+      const o={sched_id:id||'', act_id:$('#h_act').value, venue_id:$('#h_ven').value,
+        room:$('#h_room').value.trim(), date:dateSelVal('h_date'),
+        start_time:hhmm($('#h_st').value), end_time:hhmm($('#h_en').value),
+        status:$('#h_status').value, note:$('#h_note').value.trim(),
+        published:$('#h_pub').checked?'Y':'N'};
+      if(!o.act_id) throw new Error('กรุณาเลือกรายการแข่งขัน');
+      if(SM.schedule.some(x=>String(x.act_id)===String(o.act_id) && String(x.sched_id)!==String(id)))
+        if(!confirm('รายการนี้มีอยู่ในตารางแล้ว — เพิ่มอีกรอบหรือไม่?')) return false;
+      await api('saveSchedule',{schedule:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+      renderSchedMgr();
+    });
+}
+/** 830 · 8.30 · 8:30 → 08:30 */
+function hhmm(v){
+  const t=String(v||'').trim(); if(!t) return '';
+  const m=t.match(/^(\d{1,2})\D?(\d{2})$/);
+  if(!m) return t;
+  return String(Math.min(23,Number(m[1]))).padStart(2,'0')+':'+m[2];
+}
+async function delSched(id){
+  const s=SM.schedule.find(x=>String(x.sched_id)===String(id))||{};
+  if(!confirm('ลบ “'+actName(s.act_id)+'” ออกจากตารางแข่งขัน?')) return;
+  try{ await api('deleteSchedule',{sched_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+    renderSchedMgr(); }
+  catch(e){ alert(e.message||e); }
+}
+async function smPubOne(id){
+  const s=SM.schedule.find(x=>String(x.sched_id)===String(id)); if(!s) return;
+  const to = s.published==='Y' ? 'N' : 'Y';
+  try{
+    await api('publishSchedule',{ids:id, publish:to, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+    s.published=to; drawSmOpen(); drawSched();
+  }catch(e){ alert(e.message||e); }
+}
+async function smPubAll(to){
+  const n=SM.schedule.length;
+  if(!n) return alert('ยังไม่มีรายการในตารางแข่งขัน');
+  if(!confirm((to==='Y'?'เปิดเผย':'ซ่อน')+'ทุกรายการในตารางแข่งขัน '+n+' รายการ?')) return;
+  try{
+    await api('publishSchedule',{all:'Y', publish:to, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+    SM.schedule.forEach(s=>s.published=to);
+    drawSmOpen(); drawSched();
+  }catch(e){ alert(e.message||e); }
+}
+async function smConflicts(){
+  openModal('ตรวจเวลาชนกัน','<div class="note"><span>⏳</span><div>กำลังตรวจ…</div></div>',()=>{});
+  $('#mOk').style.display='none';
+  try{
+    const r=await api('checkConflicts',{group:SCOPE==='ALL'?'':SCOPE});
+    const list=(r||[]);
+    $('#mBody').innerHTML = list.length
+      ? `<p class="hint" style="margin-top:0">พบ ${list.length} จุดที่ต้องตรวจสอบ</p>
+         <table class="sm"><thead><tr><th>ประเภท</th><th>รายละเอียด</th><th>รายการ ก</th><th>รายการ ข</th></tr></thead>
+         <tbody>${list.map(c=>`<tr><td>${c.type}</td><td>${c.detail||''}</td>
+           <td>${actName(c.a)}</td><td>${actName(c.b)}</td></tr>`).join('')}</tbody></table>`
+      : '<div class="note g"><span>✓</span><div>ไม่พบเวลาที่ชนกัน — ทั้งสนาม กรรมการ และนักเรียน</div></div>';
+  }catch(e){
+    $('#mBody').innerHTML='<div class="note r"><span>!</span><div>'+(e.message||e)+'</div></div>';
+  }
 }
 
 /* ---------- ตั้งค่า ---------- */
