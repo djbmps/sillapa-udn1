@@ -3343,10 +3343,15 @@ function gpFilter(){
   $$('#gpList button').forEach(b=>{ b.style.display = (!q || String(b.dataset.q).indexOf(q)>=0)? '' : 'none'; });
 }
 function pickGroup(code){ closeModal(); switchSite(code); }
-async function switchSite(code){
+/** หน้าที่ควรเปิดเมื่อสลับเข้าเว็บกลุ่ม
+ *  อยู่ในหลังบ้านอยู่แล้ว → แดชบอร์ดของกลุ่มนั้นเลย · อยู่หน้าสาธารณะ → หน้าแรกของกลุ่ม */
+function siteLanding(){
+  return (ME && VIEW==='admin') ? 'dash' : 'home';
+}
+async function switchSite(code, page){
   setScope(code);
   try{ await reloadBoot(); }catch(e){}
-  renderAll(); go('home');
+  renderAll(); go(page || siteLanding());
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function toggleMenu(){ $('#pnav').classList.toggle('open'); }
@@ -5943,7 +5948,7 @@ function renderGSites(){
   if(SCOPE!=='ALL'){
     box.innerHTML='<div class="note i"><span>🏁</span><div>ขณะนี้ท่านอยู่ใน<b>เว็บของ '+groupName(SCOPE)+'</b> แล้ว'
       + (lockedScope()? ' — บัญชีของท่านใช้งานได้เฉพาะกลุ่มนี้'
-          : ' · <b style="cursor:pointer;text-decoration:underline" onclick="setScope(\'ALL\')">ไปเว็บระดับเขตเพื่อดูครบทั้ง 20 กลุ่ม</b>')
+          : ' · <b style="cursor:pointer;text-decoration:underline" onclick="switchSite(\'ALL\')">ไปเว็บระดับเขตเพื่อดูครบทั้ง 20 กลุ่ม</b>')
       + '</div></div>';
     return;
   }
@@ -5963,7 +5968,7 @@ function renderGSites(){
         <span data-gp="${code}" data-k="pubActsN"><b>—</b>รายการประกาศผล</span>
       </div>
       <div class="gpill${open?'':' off'}"><i></i>${open?'เว็บกลุ่มเปิดใช้งาน':'ปิดเว็บกลุ่มไว้'}</div>
-      <div class="gfoot"><div class="gbtn" onclick="setScope('${code}')">เข้าเว็บกลุ่ม →</div></div>
+      <div class="gfoot"><div class="gbtn" onclick="switchSite('${code}')">เข้าเว็บกลุ่ม →</div></div>
     </div>`;
   }).join('') : '<div class="note i"><span>🏁</span><div>ยังไม่มีข้อมูลกลุ่มโรงเรียน</div></div>';
   fillGProg();
