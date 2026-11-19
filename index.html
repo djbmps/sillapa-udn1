@@ -4459,21 +4459,29 @@ function subCertHTML(r){
       <span>กลุ่มโรงเรียน</span><div>${groupName(r.group_code)}</div>
       <span>รายการแข่งขัน</span><div>${act.act_name||r.act_id} <span class="hint">${act.level||''}</span></div>
       <span>รายชื่อเดิม</span><div>${r.old_name||'-'}</div>
-      <span>เปลี่ยนเป็น</span><b>${r.new_name||'-'}</b>${r.new_info?' <span class="hint">('+r.new_info+')</span>':''}
+      <span>เปลี่ยนเป็น</span><div><b>${r.new_name||'-'}</b>${r.new_info?' <span class="hint">('+r.new_info+')</span>':''}</div>
       <span>สาเหตุ</span><div>${r.reason_type||'-'}${r.reason?' — '+r.reason:''}</div>
       <span>ผู้ลงนามของโรงเรียน</span><div>${r.sign_name||'-'} <span class="hint">${r.sign_pos||''}</span></div>
-      <span>ยื่นคำขอเมื่อ</span><div>${r.created_at||'-'}${
+      <span>ยื่นคำขอเมื่อ</span><div>${tsTh(r.created_at)}${
         r.filed_role && r.filed_role!=='school'
           ? ' <span class="hint">(ยื่นแทนโดย '+(r.filed_by||'')+' · '+roleTh(r.filed_role)+')</span>' : ''}</div>
       <span>ผลการพิจารณา</span><div>${ok?'<b style="color:var(--ok)">อนุมัติ</b>':r.status}
-        ${r.dec_at?' · '+r.dec_at:''}${r.dec_by?' · โดย '+r.dec_by:''}</div>
+        ${r.dec_at?' · '+tsTh(r.dec_at):''}${r.dec_by?' · โดย '+r.dec_by:''}</div>
       ${r.dec_note?`<span>หมายเหตุ</span><div>${r.dec_note}</div>`:''}
-      ${r.status==='ยกเลิก'?`<span>ถอนคำขอเมื่อ</span><div>${r.cancel_at||'-'}${r.cancel_by?' · โดย '+r.cancel_by:''}${r.cancel_note?' — '+r.cancel_note:''}</div>`:''}
+      ${r.status==='ยกเลิก'?`<span>ถอนคำขอเมื่อ</span><div>${tsTh(r.cancel_at)}${r.cancel_by?' · โดย '+r.cancel_by:''}${r.cancel_note?' — '+r.cancel_note:''}</div>`:''}
     </div>
     <p class="hint" style="margin-top:12px">เอกสารนี้ออกโดยระบบ ตรวจสอบความถูกต้องได้โดยสแกน QR
       หรือกรอกเลขที่คำขอที่หน้า “ขอเปลี่ยนตัว” ของเว็บไซต์ — ไม่จำเป็นต้องใช้เอกสารกระดาษ</p>
     <div class="noprint" style="margin-top:12px"><button class="btn g sm" onclick="window.print()">🖨️ พิมพ์เก็บแฟ้ม (ถ้าต้องการ)</button></div>
   </div>`;
+}
+/** เวลาจากฐานข้อมูล (ค.ศ.) → แบบไทย เช่น 19 พ.ย. 2569 12:34 น. */
+const TH_MON_S=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function tsTh(v){
+  const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if(!m) return String(v||'-');
+  let y=Number(m[1]); if(y<2400) y+=543;
+  return Number(m[3])+' '+TH_MON_S[Number(m[2])-1]+' '+y+' '+m[4]+':'+m[5]+' น.';
 }
 function subPill(st){
   return st==='อนุมัติ'? '<span class="pill ok">อนุมัติแล้ว</span>'
@@ -4539,7 +4547,7 @@ function renderSubList(){
     rows.map(r=>{
       const act=(DB.activities||[]).find(a=>a.act_id===r.act_id)||{};
       return `<tr>
-        <td><b>${r.ref_code||'-'}</b><div class="hint">${r.created_at||''}</div></td>
+        <td><b>${r.ref_code||'-'}</b><div class="hint">${tsTh(r.created_at)}</div></td>
         <td>${schoolName(r.school_smis)}</td>
         <td>${act.act_name||r.act_id}<div class="hint">${act.level||''} · ${r.kind||'นักเรียน'}</div></td>
         <td>${r.old_name||'-'} <span class="hint">→</span> <b>${r.new_name||'-'}</b></td>
