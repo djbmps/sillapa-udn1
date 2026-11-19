@@ -6840,17 +6840,24 @@ async function renderPromote(){
   if(!gb||!db) return;
   gb.style.display = grp?'':'none';
   db.style.display = grp?'none':'';
-  $('#prTitle').textContent = grp ? 'โอนตัวแทนเข้าระดับเขต' : 'ตัวแทนเข้าภาค';
+  /* ระดับกลุ่มโรงเรียน = ส่งตัวแทนขึ้นเขต · ระดับเขต = ส่งตัวแทนขึ้นภาค */
+  const atGroup = grp || (SCOPE && SCOPE!=='ALL');
+  $('#prTitle').textContent = grp ? 'โอนตัวแทนเข้าระดับเขต'
+    : atGroup ? ('ตัวแทนเข้าเขต — ติดตามการโอนของ'+groupName(SCOPE))
+              : 'ตัวแทนเข้าภาค';
   $('#prSub').textContent = grp
     ? 'ทีมที่ติดโควตาของกลุ่มจะถูกส่งขึ้นเป็นผู้สมัครระดับเขต พร้อมป้ายบอกกลุ่มต้นทางและอันดับ'
-    : 'ทีมชนะเลิศเหรียญทองรอบระดับเขต คือตัวแทนเข้าแข่งระดับภาค · หน้านี้ยังใช้ติดตามการโอนตัวแทนของกลุ่มโรงเรียนด้วย';
+    : atGroup ? 'เขตเห็นข้อมูลที่กลุ่มนี้โอนเข้ามา เปิด-ปิดช่วงเวลารับโอน และรีเซ็ตให้โอนใหม่ได้'
+              : 'ทีมชนะเลิศเหรียญทองรอบระดับเขต คือตัวแทนเข้าแข่งระดับภาค · หน้านี้ยังใช้ติดตามการโอนตัวแทนของกลุ่มโรงเรียนด้วย';
+  /* การ์ดตัวแทนเข้าภาคมีเฉพาะตอนดูระดับเขต */
+  const rc=$('#prRegion'); if(rc && rc.closest('.card')) rc.closest('.card').style.display = atGroup? 'none':'';
   if(!ME) return;
   if(grp){ await loadPromotable(); return; }
   try{
     PRB = await api('promotionBoard', {group: SCOPE==='ALL'?'':SCOPE});
   }catch(e){ PRB=null; return; }
   drawPromoteDistrict();
-  loadRegionReps();
+  if(SCOPE==='ALL') loadRegionReps();
 }
 /* ---------- ทีมตัวแทนของเขตที่จะไปแข่งระดับภาค ---------- */
 let PRREG=[];
