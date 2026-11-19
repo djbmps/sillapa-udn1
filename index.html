@@ -29,7 +29,7 @@
 body[data-scope="group"]{--pri:#9C3A12;--pri-2:#7E2E0C;--pri-soft:#F8EBE3}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{font-family:'IBM Plex Sans Thai','Sarabun',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{font-family:'IBM Plex Sans Thai','Sarabun',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:16.3px;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button,input,select,textarea{font-family:inherit;font-size:inherit}
 button{cursor:pointer;border:0;background:none;color:inherit}
@@ -41,44 +41,44 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 /* โลโก้มุมซ้ายบน — เอากล่องพื้นขาวออก ใช้โลโก้เวอร์ชันสีอ่อนวางบนพื้นเข้มตรง ๆ
    เว็บกลุ่มโรงเรียนยังใช้ชิปสีประจำกลุ่ม + อีโมจิ 🏁 (ดู setBrand) จึงแยกคลาส .chip ไว้ */
 .brand .mk{width:44px;height:44px;border-radius:11px;background:transparent;display:grid;place-items:center;
-  font-size:19px;flex:none;overflow:hidden}
+  font-size:20.3px;flex:none;overflow:hidden}
 .brand .mk.chip{box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .brand .mk img{width:100%;height:100%;object-fit:contain;display:block}
-.brand h1{font-size:14px;color:#fff}
-.brand p{margin:2px 0 0;font-size:11px;color:#E7BACC}
+.brand h1{font-size:15.3px;color:#fff}
+.brand p{margin:2px 0 0;font-size:12.3px;color:#E7BACC}
 .ng{padding:13px 11px 0}
-.ng>span{display:block;padding:0 8px 6px;font-size:10.5px;letter-spacing:.05em;color:#8CA0C4;font-weight:600}
-.nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;font-size:13.5px;color:#C3D2EC;width:100%;text-align:left}
+.ng>span{display:block;padding:0 8px 6px;font-size:11.8px;letter-spacing:.05em;color:#8CA0C4;font-weight:600}
+.nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;font-size:14.8px;color:#C3D2EC;width:100%;text-align:left}
 .nv:hover{background:rgba(255,255,255,.07);color:#fff}
 .nv.on{background:rgba(38,86,201,.2);color:#A8C6FF;font-weight:600;box-shadow:inset 3px 0 0 var(--pri)}
-.nv i{width:18px;text-align:center;font-style:normal;font-size:14px}
+.nv i{width:18px;text-align:center;font-style:normal;font-size:15.3px}
 /* แถบเมนูหลังบ้านแบบจัดหมวด — พับเก็บได้ และมีช่องค้นหาเมนู */
 .ngb{display:flex;flex-direction:column;gap:1px}
 .ng>span.ngh{display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;
   user-select:none;border-radius:8px;margin:0 0 4px;padding:5px 8px;transition:color .15s,background .15s}
 .ng>span.ngh:hover{background:rgba(255,255,255,.05);color:#C3D2EC}
-.ng>span.ngh .cv{font-style:normal;font-size:9px;opacity:.55;transition:transform .18s}
+.ng>span.ngh .cv{font-style:normal;font-size:10.3px;opacity:.55;transition:transform .18s}
 .ng.cl>.ngb{display:none}
 .ng.cl>span.ngh .cv{transform:rotate(-90deg)}
 .ng.act>span.ngh{color:#C9A227}
 .navfind{position:relative;padding:12px 13px 2px}
-.navfind input{width:100%;padding:7px 26px 7px 27px;border-radius:9px;font-family:inherit;font-size:12.5px;
+.navfind input{width:100%;padding:7px 26px 7px 27px;border-radius:9px;font-family:inherit;font-size:13.8px;
   border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#E8E0D9}
 .navfind input:focus{outline:none;border-color:rgba(245,128,33,.6);background:rgba(255,255,255,.1)}
 .navfind input::placeholder{color:#8CA0C4}
-.navfind:before{content:"🔍";position:absolute;left:20px;top:19px;font-size:10.5px;opacity:.65;pointer-events:none}
-.navx{position:absolute;right:19px;top:17px;color:#8CA0C4;font-size:12px;display:none;line-height:1}
+.navfind:before{content:"🔍";position:absolute;left:20px;top:19px;font-size:11.8px;opacity:.65;pointer-events:none}
+.navx{position:absolute;right:19px;top:17px;color:#8CA0C4;font-size:13.3px;display:none;line-height:1}
 .navfind.has .navx{display:block}
 .nv.hide{display:none!important}
 /* ช่องรหัสผ่าน — ปุ่มเปิด-ปิดตาเพื่อดูรหัสที่พิมพ์ */
 .pwwrap{position:relative}
 .pwwrap input{width:100%;padding-right:44px}
 .pweye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;
-  display:grid;place-items:center;border-radius:9px;font-size:16px;line-height:1;opacity:.65;
+  display:grid;place-items:center;border-radius:9px;font-size:17.3px;line-height:1;opacity:.65;
   background:transparent;border:0;cursor:pointer}
 .pweye:hover{opacity:1;background:rgba(0,0,0,.05)}
 /* ระบบขอเปลี่ยนตัว */
-.steps{margin:0;padding-left:20px;line-height:1.85;font-size:14px}
+.steps{margin:0;padding-left:20px;line-height:1.85;font-size:15.3px}
 .steps li{margin-bottom:8px}
 .steps b{color:var(--ink)}
 .sigbox{border:1px solid var(--line);border-radius:11px;background:#FAFCFF;overflow:hidden;
@@ -86,30 +86,30 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .sigbox canvas{display:block;width:100%;height:180px;touch-action:none;cursor:crosshair}
 .subdoc{max-width:360px;border-radius:10px;border:1px solid var(--line)}
 .e5{border:1px solid var(--line);border-radius:12px;padding:18px 20px;background:#fff}
-.e5 h4{margin:0 0 4px;font-size:16px}
-.e5 .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:13.5px;margin-top:10px}
+.e5 h4{margin:0 0 4px;font-size:17.3px}
+.e5 .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;font-size:14.8px;margin-top:10px}
 .e5 .kv span{color:var(--ink-3)}
 .subqr{width:104px;height:104px;border:1px solid var(--line);border-radius:8px;background:#fff}
 .main{padding:0 26px 60px;max-width:1240px;min-width:0}
 .top{display:flex;align-items:center;gap:11px;padding:13px 0 13px;border-bottom:1px solid var(--line);margin-bottom:16px;position:sticky;top:0;background:var(--bg);z-index:20}
-.top .bc{font-size:13px;color:var(--ink-3)}
+.top .bc{font-size:14.3px;color:var(--ink-3)}
 .top .bc b{color:var(--ink)}
 .sp{flex:1}
-.tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:12.3px;font-weight:700;padding:4px 10px;border-radius:999px}
 .tag.demo{color:#96660A;background:var(--warn-soft);border:1px solid #EFDFB6}
 .tag.live{color:#1B7A56;background:var(--ok-soft);border:1px solid #C4E5D8}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
 .ch{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line-2)}
-.ch h3{font-size:15px}
+.ch h3{font-size:16.3px}
 .cb{padding:16px}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;font-size:13.5px;font-weight:600;background:var(--pri);color:#fff}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;font-size:14.8px;font-weight:600;background:var(--pri);color:#fff}
 .btn:hover{background:var(--pri-2)}
 .btn.g{background:#fff;color:var(--pri);border:1px solid var(--line)}
 .btn.g:hover{background:var(--pri-soft)}
 .btn.d{background:var(--black);color:#fff}
-.btn.sm{padding:5px 11px;font-size:12.5px}
+.btn.sm{padding:5px 11px;font-size:13.8px}
 .btn[disabled]{opacity:.45;pointer-events:none}
-.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:12.8px;font-weight:600}
 .pill.ok{background:var(--ok-soft);color:var(--ok);box-shadow:inset 0 0 0 1px rgba(27,122,86,.18)}
 .pill.w{background:var(--warn-soft);color:var(--warn);box-shadow:inset 0 0 0 1px rgba(150,102,10,.18)}
 .pill.b{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 1px rgba(179,38,30,.18)}
@@ -119,13 +119,13 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .actrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;
   border-top:1px solid var(--line-2);padding:11px 16px;cursor:pointer;font:inherit;color:inherit}
 .actrow:hover{background:var(--line-2)}
-.actrow .ar{font-size:18px;color:var(--ink-3)}
+.actrow .ar{font-size:19.3px;color:var(--ink-3)}
 .catbox{border:1px solid var(--line);border-radius:var(--r);background:#fff;box-shadow:var(--sh);margin-bottom:12px;overflow:hidden}
-.catsum{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;font-weight:700;font-size:15px;list-style:none}
+.catsum{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;font-weight:700;font-size:16.3px;list-style:none}
 .catsum::-webkit-details-marker{display:none}
 .catsum:hover{background:var(--line-2)}
 .catsum .ic{width:34px;height:26px;border-radius:8px;background:var(--pri-soft);color:var(--pri);
-  display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;flex:none;letter-spacing:.5px}
+  display:flex;align-items:center;justify-content:center;font-size:13.8px;font-weight:700;flex:none;letter-spacing:.5px}
 .rescols{padding:10px 14px 14px;display:grid;grid-template-columns:1fr;gap:6px}
 @media(min-width:980px){.rescols{grid-template-columns:1fr 1fr;gap:6px 18px}}
 .rlink{display:flex;gap:10px;align-items:center;padding:9px 11px;cursor:pointer;width:100%;
@@ -134,25 +134,25 @@ h1,h2,h3,h4{margin:0;line-height:1.35;font-weight:700;letter-spacing:-.01em}
 .rlink:hover{border-color:var(--pri);box-shadow:0 2px 10px rgba(38,86,201,.12);transform:translateY(-1px)}
 .rlink.on{border-color:#F3C6A8;background:linear-gradient(90deg,#FFF6EE,#fff 60%)}
 .rlink .code{flex:none;min-width:40px;height:26px;border-radius:7px;background:var(--line-2);color:var(--ink-2);
-  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+  display:flex;align-items:center;justify-content:center;font-size:13.3px;font-weight:700;font-variant-numeric:tabular-nums}
 .rlink.on .code{background:var(--pri-soft);color:var(--pri)}
-.rlink .nm{font-size:14px;font-weight:600;line-height:1.35}
-.rlink .lv{font-size:11.5px;color:var(--ink-3)}
-.rlink .pub{flex:none;font-size:11px;font-weight:700;color:#C62828;background:#FDECEA;border-radius:999px;
+.rlink .nm{font-size:15.3px;font-weight:600;line-height:1.35}
+.rlink .lv{font-size:12.8px;color:var(--ink-3)}
+.rlink .pub{flex:none;font-size:12.3px;font-weight:700;color:#C62828;background:#FDECEA;border-radius:999px;
   padding:3px 9px;animation:blk 1.15s ease-in-out infinite;white-space:nowrap}
-.rlink .wait{flex:none;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.rlink .wait{flex:none;font-size:12.8px;color:var(--ink-3);white-space:nowrap}
 .catsum .bar{flex:none;width:92px;height:6px;border-radius:999px;background:var(--line-2);overflow:hidden}
 .catsum .bar i{display:block;height:100%;background:var(--ok);border-radius:999px}
 .docsheet{background:#fff}
-.docsheet h4{text-align:center;font-size:15px;margin:0 0 2px;color:#1546A0}
-.docsheet .dhead{text-align:center;font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:12px}
-.docsheet table{width:100%;border-collapse:collapse;font-size:13px}
+.docsheet h4{text-align:center;font-size:16.3px;margin:0 0 2px;color:#1546A0}
+.docsheet .dhead{text-align:center;font-size:14.3px;color:var(--ink-2);line-height:1.6;margin-bottom:12px}
+.docsheet table{width:100%;border-collapse:collapse;font-size:14.3px}
 .docsheet th,.docsheet td{border:1px solid #B9B2AB;padding:6px 8px}
 .docsheet th{background:#F1ECE7;text-align:center;font-weight:700}
 .docsheet td.c{text-align:center}
-.docsheet .note{display:block;font-size:12px;color:var(--ink-2);margin-top:10px;line-height:1.7;background:none;padding:0}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-th{text-align:left;font-weight:600;color:var(--ink-2);font-size:12.5px;padding:9px 11px;border-bottom:1px solid var(--line);background:#FBF8F5;position:sticky;top:0}
+.docsheet .note{display:block;font-size:13.3px;color:var(--ink-2);margin-top:10px;line-height:1.7;background:none;padding:0}
+table{width:100%;border-collapse:collapse;font-size:14.8px}
+th{text-align:left;font-weight:600;color:var(--ink-2);font-size:13.8px;padding:9px 11px;border-bottom:1px solid var(--line);background:#FBF8F5;position:sticky;top:0}
 td{padding:9px 11px;border-bottom:1px solid var(--line-2);vertical-align:middle}
 tbody tr:hover{background:#FCFAF8}
 .num{font-variant-numeric:tabular-nums}
@@ -162,45 +162,45 @@ tbody tr:hover{background:#FCFAF8}
 .stat{position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--r);
   padding:16px 16px 14px;box-shadow:var(--sh);overflow:hidden}
 .stat::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--pri)}
-.stat .l{font-size:12px;color:var(--ink-3);font-weight:600}
-.stat .v{font-size:25px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--pri)}
-.stat .s{font-size:11.5px;color:var(--ink-3)}
+.stat .l{font-size:13.3px;color:var(--ink-3);font-weight:600}
+.stat .v{font-size:26.3px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--pri)}
+.stat .s{font-size:12.8px;color:var(--ink-3)}
 .stat.s1{--pri:var(--c1)}.stat.s1{background:linear-gradient(180deg,var(--c1s) 0,#fff 46px)}
 .stat.s2{--pri:var(--c2)}.stat.s2{background:linear-gradient(180deg,var(--c2s) 0,#fff 46px)}
 .stat.s3{--pri:var(--c3)}.stat.s3{background:linear-gradient(180deg,var(--c3s) 0,#fff 46px)}
 .stat.s4{--pri:var(--c4)}.stat.s4{background:linear-gradient(180deg,var(--c4s) 0,#fff 46px)}
-.note{display:flex;gap:10px;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.55}
+.note{display:flex;gap:10px;padding:12px 14px;border-radius:10px;font-size:14.3px;line-height:1.55}
 .note.i{background:var(--pri-soft);color:#8C4409}.note.w{background:var(--warn-soft);color:#7A5205}
 .note.b{background:var(--bad-soft);color:#8C1D17}.note.g{background:var(--ok-soft);color:#0E5645}
 .fld{margin-bottom:11px}
-.fld label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+.fld label{display:block;font-size:13.8px;font-weight:600;margin-bottom:4px}
 .fld input,.fld select,.fld textarea{width:100%;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .hd{display:flex;align-items:flex-end;gap:13px;flex-wrap:wrap;margin-bottom:16px}
-.hd h2{font-size:22px}.hd p{margin:2px 0 0;color:var(--ink-2);font-size:13.5px}
+.hd h2{font-size:23.3px}.hd p{margin:2px 0 0;color:var(--ink-2);font-size:14.8px}
 .page{display:none}.page.on{display:block}
-.hint{font-size:12px;color:var(--ink-3)}
-.medal{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:700;color:#fff}
+.hint{font-size:13.3px;color:var(--ink-3)}
+.medal{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:11.3px;font-weight:700;color:#fff}
 .m1{background:var(--m-g)}.m2{background:var(--m-s)}.m3{background:var(--m-b)}
 .hero{border-radius:16px;background:linear-gradient(118deg,#151210,#3E2312 44%,#C4560C);color:#fff;padding:28px 30px;position:relative;overflow:hidden}
 body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C 46%,#9C3A12)}
-.hero .kw{font-size:11.5px;letter-spacing:.16em;color:#F5B478;font-weight:600}
-.hero h2{font-size:26px;margin:7px 0 6px;max-width:660px}
-.hero p{margin:0;color:#EBD9CB;font-size:13.5px;max-width:600px}
-.hero::after{content:'🏆';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:110px;opacity:.09}
+.hero .kw{font-size:12.8px;letter-spacing:.16em;color:#F5B478;font-weight:600}
+.hero h2{font-size:27.3px;margin:7px 0 6px;max-width:660px}
+.hero p{margin:0;color:#EBD9CB;font-size:14.8px;max-width:600px}
+.hero::after{content:'🏆';position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:111.3px;opacity:.09}
 .livebar{display:flex;align-items:center;gap:12px;background:#3D0019;color:#F3CEDD;border-radius:12px;padding:12px 15px;margin-bottom:12px}
 .livebar .dt{width:9px;height:9px;border-radius:50%;background:#4ADE80;animation:bl 1.5s infinite}
 @keyframes bl{50%{opacity:.25}}
-.livebar b{display:block;color:#fff;font-size:13.5px}
-.livebar small{color:#DDA6BD;font-size:12px}
+.livebar b{display:block;color:#fff;font-size:14.8px}
+.livebar small{color:#DDA6BD;font-size:13.3px}
 .livebar .a{margin-left:auto;display:flex;gap:8px}
-.livebar .a button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:9px;font-size:12.5px;font-weight:600}
+.livebar .a button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:9px;font-size:13.8px;font-weight:600}
 .livebar .a button:hover{background:var(--pri);border-color:var(--pri)}
-.strip{display:flex;align-items:center;gap:10px;background:var(--black);color:#C3D2EC;font-size:12.5px;padding:9px 15px;border-radius:11px;margin-bottom:12px}
+.strip{display:flex;align-items:center;gap:10px;background:var(--black);color:#C3D2EC;font-size:13.8px;padding:9px 15px;border-radius:11px;margin-bottom:12px}
 .strip b{color:#fff}
-.strip .bk{margin-left:auto;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);color:#fff;padding:4px 12px;border-radius:999px;font-size:12px}
+.strip .bk{margin-left:auto;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);color:#fff;padding:4px 12px;border-radius:999px;font-size:13.3px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.tab{padding:6px 13px;border-radius:999px;font-size:13px;background:#fff;border:1px solid var(--line);color:var(--ink-2)}
+.tab{padding:6px 13px;border-radius:999px;font-size:14.3px;background:#fff;border:1px solid var(--line);color:var(--ink-2)}
 .tab.on{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
 .modal{position:fixed;inset:0;background:rgba(21,18,16,.55);display:none;place-items:center;z-index:300;padding:20px}
 .modal.on{display:grid}
@@ -211,9 +211,9 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .modal .box .ft{padding:14px 20px;border-top:1px solid var(--line-2);display:flex;gap:9px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
 .screen{position:fixed;inset:0;background:#0A0908;color:#fff;display:none;flex-direction:column;padding:24px 28px 60px;overflow:auto;z-index:250}
 .screen.on{display:flex}
-.esc{position:fixed;bottom:16px;right:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 13px;border-radius:999px;font-size:12.5px;z-index:260}
-.lbr{display:grid;grid-template-columns:54px 1fr 88px 88px 88px 100px;align-items:center;gap:10px;padding:13px 17px;border-radius:12px;background:#171310;margin-bottom:8px;font-size:18px}
-.lbr .rk{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;background:#2A2118;font-size:16px}
+.esc{position:fixed;bottom:16px;right:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:6px 13px;border-radius:999px;font-size:13.8px;z-index:260}
+.lbr{display:grid;grid-template-columns:54px 1fr 88px 88px 88px 100px;align-items:center;gap:10px;padding:13px 17px;border-radius:12px;background:#171310;margin-bottom:8px;font-size:19.3px}
+.lbr .rk{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;background:#2A2118;font-size:17.3px}
 .lbr.t1 .rk{background:linear-gradient(140deg,#E5BC59,#B98A22);color:#231A05}
 .lbr.t2 .rk{background:linear-gradient(140deg,#C4CDD8,#8B96A4);color:#1C2430}
 .lbr.t3 .rk{background:linear-gradient(140deg,#CE8B52,#9A5E2C)}
@@ -228,7 +228,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%);
           mask-image:linear-gradient(180deg,transparent,#000 22%);pointer-events:none}
 .login .l>*{position:relative;z-index:1}
-.login .l h2{font-size:30px;margin:14px 0 10px;max-width:380px;text-shadow:0 2px 14px rgba(0,0,0,.45)}
+.login .l h2{font-size:31.3px;margin:14px 0 10px;max-width:380px;text-shadow:0 2px 14px rgba(0,0,0,.45)}
 .login .l p{color:#F6D9E4;max-width:400px;margin:0;text-shadow:0 1px 10px rgba(0,0,0,.45)}
 /* หน้าเข้าสู่ระบบ — เอากล่องพื้นขาวหลังโลโก้ออก ใช้โลโก้สีอ่อนบนภาพพื้นหลังเข้ม
    ใส่เงาอ่อนใต้ภาพแทนกล่อง เพื่อให้ขอบโลโก้ยังอ่านออกเมื่อพื้นหลังสว่างเป็นบางจุด */
@@ -255,42 +255,42 @@ body.login-on{overflow:hidden}
 body[data-scope="group"] .banner{background:linear-gradient(115deg,#141210 0%,#40190A 45%,#9C3A12 100%)}
 .banner .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,8,7,.15),rgba(10,8,7,.82))}
 .banner .bin{position:relative;max-width:1180px;margin:0 auto;padding:26px 26px 22px;width:100%}
-.banner .kw{display:inline-block;font-size:11.5px;letter-spacing:.14em;font-weight:600;
+.banner .kw{display:inline-block;font-size:12.8px;letter-spacing:.14em;font-weight:600;
   background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);padding:4px 12px;border-radius:999px}
-.banner h1{font-size:30px;margin:10px 0 5px;text-shadow:0 2px 14px rgba(0,0,0,.45)}
-.banner p{margin:0;color:#EFDCCC;font-size:14.5px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.banner h1{font-size:31.3px;margin:10px 0 5px;text-shadow:0 2px 14px rgba(0,0,0,.45)}
+.banner p{margin:0;color:#EFDCCC;font-size:15.8px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
 .pnav{background:var(--black);color:#C3D2EC;position:sticky;top:0;z-index:40;box-shadow:0 2px 10px rgba(11,31,77,.22)}
 .pnav-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:2px;padding:0 18px;flex-wrap:wrap}
-.pnav button.pl{padding:12px 12px;font-size:13.5px;color:#C3D2EC;white-space:nowrap;border-bottom:3px solid transparent}
+.pnav button.pl{padding:12px 12px;font-size:14.8px;color:#C3D2EC;white-space:nowrap;border-bottom:3px solid transparent}
 .pnav button.pl:hover{color:#fff;background:rgba(255,255,255,.06)}
 .pnav button.pl.on{color:#A8C6FF;border-bottom-color:var(--pri);font-weight:600}
 
 
-.pnote{background:var(--warn-soft);color:#7A5205;font-size:13px;padding:9px 18px;text-align:center;border-bottom:1px solid #EFDFB6}
-.pfoot{background:var(--black);color:#E7BACC;margin-top:40px;padding:26px 18px;font-size:13px}
+.pnote{background:var(--warn-soft);color:#7A5205;font-size:14.3px;padding:9px 18px;text-align:center;border-bottom:1px solid #EFDFB6}
+.pfoot{background:var(--black);color:#E7BACC;margin-top:40px;padding:26px 18px;font-size:14.3px}
 .pfoot .in{max-width:1180px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
 .pfoot b{color:#fff}
-.pfoot .dev{font-size:12.5px;color:#8E8278}
+.pfoot .dev{font-size:13.8px;color:#8E8278}
 .pfoot .dev a{color:#C3D2EC;text-decoration:underline}
-.sdev{padding:14px 12px 20px;font-size:11.5px;color:#7E736A;line-height:1.7;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
+.sdev{padding:14px 12px 20px;font-size:12.8px;color:#7E736A;line-height:1.7;border-top:1px solid rgba(255,255,255,.08);margin-top:6px}
 .sdev b{color:#A99D93;font-weight:600}
 body[data-view="admin"] .pfoot{display:none}
 .newscard{display:flex;gap:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff;
   box-shadow:var(--sh);margin-bottom:11px;cursor:pointer;transition:.15s}
 .newscard:hover{border-color:var(--pri);transform:translateY(-1px)}
 .newscard .th{width:118px;height:82px;border-radius:9px;flex:none;background:var(--pri-soft) center/cover no-repeat;
-  display:grid;place-items:center;font-size:26px;color:var(--pri)}
-.newscard h4{font-size:15.5px}
-.newscard .mt{font-size:12px;color:var(--ink-3);margin-top:3px}
-.newscard p{margin:6px 0 0;font-size:13px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  display:grid;place-items:center;font-size:27.3px;color:var(--pri)}
+.newscard h4{font-size:16.8px}
+.newscard .mt{font-size:13.3px;color:var(--ink-3);margin-top:3px}
+.newscard p{margin:6px 0 0;font-size:14.3px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .bnprev{height:150px;border-radius:12px;background:linear-gradient(115deg,#141210,#4A2812 45%,#D2620C) center/cover no-repeat;
   display:flex;align-items:flex-end;padding:16px;color:#fff}
-@media(max-width:1000px){.banner h1{font-size:23px}.banner{min-height:150px}}
+@media(max-width:1000px){.banner h1{font-size:24.3px}.banner{min-height:150px}}
 /* ---------- ช่องอัปโหลดรูป ---------- */
 .updrop{border:2px dashed var(--line);border-radius:12px;padding:16px;text-align:center;background:#FCFAF8;
-  cursor:pointer;transition:.15s;font-size:13px;color:var(--ink-2)}
+  cursor:pointer;transition:.15s;font-size:14.3px;color:var(--ink-2)}
 .updrop:hover,.updrop.over{border-color:var(--pri);background:var(--pri-soft);color:var(--pri)}
-.updrop b{display:block;font-size:14px;color:var(--ink);margin-bottom:3px}
+.updrop b{display:block;font-size:15.3px;color:var(--ink);margin-bottom:3px}
 .upthumb{display:flex;gap:11px;align-items:center;padding:10px;border:1px solid var(--line);
   border-radius:11px;background:#fff;margin-top:9px}
 .upthumb img{width:110px;height:62px;object-fit:cover;border-radius:7px;border:1px solid var(--line)}
@@ -299,13 +299,13 @@ body[data-view="admin"] .pfoot{display:none}
 .upbar i{display:block;height:100%;width:40%;background:var(--pri);animation:upmove 1s infinite linear}
 @keyframes upmove{0%{margin-left:-40%}100%{margin-left:100%}}
 /* ---------- ปุ่มแฮมเบอร์เกอร์ (จอเล็ก) ---------- */
-.burger{display:none;align-items:center;gap:9px;padding:12px 4px;font-size:14px;color:#F6D9E4;font-weight:600}
+.burger{display:none;align-items:center;gap:9px;padding:12px 4px;font-size:15.3px;color:#F6D9E4;font-weight:600}
 .burger .bars{display:inline-block;width:20px}
 .burger .bars i{display:block;height:2px;background:#F6D9E4;margin:4px 0;border-radius:2px;transition:.2s}
 .pnav.open .burger .bars i:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .pnav.open .burger .bars i:nth-child(2){opacity:0}
 .pnav.open .burger .bars i:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-.admburger{display:none;background:var(--black);color:#fff;border-radius:9px;padding:7px 11px;font-size:16px}
+.admburger{display:none;background:var(--black);color:#fff;border-radius:9px;padding:7px 11px;font-size:17.3px}
 @media(max-width:860px){
   .burger{display:flex}
   .pnav-in{padding:0 14px}
@@ -318,32 +318,32 @@ body[data-view="admin"] .pfoot{display:none}
   .utilbar .lbl:first-child,.utilbar .who{display:none}
   .utilbar select{flex:1;max-width:none}
   .banner .bin{padding:20px 14px 18px}
-  .banner h1{font-size:20px}
-  .banner p{font-size:12.5px}
+  .banner h1{font-size:21.3px}
+  .banner p{font-size:13.8px}
   .shell{display:block}
   .main{padding:0 14px 50px;max-width:none;width:100%}
   .livebar{flex-wrap:wrap}
   .livebar .a{margin-left:0;width:100%}
   .livebar .a button{flex:1}
   .hd{gap:9px}
-  .hd h2{font-size:19px}
+  .hd h2{font-size:20.3px}
   .row>*{min-width:0}
   .card .cb{overflow-x:auto}
-  .note{font-size:12.5px}
-  table{font-size:12.5px}
+  .note{font-size:13.8px}
+  table{font-size:13.8px}
   .top{flex-wrap:wrap;gap:8px;padding:10px 0}
-  .top .bc{font-size:12px;order:2;width:100%}
+  .top .bc{font-size:13.3px;order:2;width:100%}
   #whoami{display:none}
-  #modeTag{font-size:10px;padding:3px 7px}
-  #scopeSel{max-width:170px;font-size:12px}
+  #modeTag{font-size:11.3px;padding:3px 7px}
+  #scopeSel{max-width:170px;font-size:13.3px}
   .utilbar select{min-width:0}
-  .fld input,.fld select,.fld textarea{font-size:14px}
+  .fld input,.fld select,.fld textarea{font-size:15.3px}
   .modal{padding:8px}
   .modal .box{max-height:94vh}
   .grid{gap:11px}
   .hero{padding:20px 16px}
-  .hero h2{font-size:20px}
-  .stat .v{font-size:22px}
+  .hero h2{font-size:21.3px}
+  .stat .v{font-size:23.3px}
   .pfoot .in{padding:0}
 }
 @media(max-width:1000px){
@@ -355,13 +355,13 @@ body[data-view="admin"] .pfoot{display:none}
   .sideveil.on{display:block}
 }
 /* ---------- แถบเครื่องมือด้านบนสุด ---------- */
-.utilbar{background:#3D0019;color:#E7BACC;font-size:12.5px;border-bottom:1px solid #5E0028}
+.utilbar{background:#3D0019;color:#E7BACC;font-size:13.8px;border-bottom:1px solid #5E0028}
 .utilbar .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:7px 18px;flex-wrap:wrap}
 .utilbar .lbl{color:#E7BACC}
 .utilbar .ulogo{height:26px;width:auto;display:block;flex:none}
 .utilbar select{background:#5E0028;color:#FBE7EF;border:1px solid #7D0036;border-radius:8px;
-  padding:6px 10px;font-size:12.5px;max-width:280px}
-.utilbar .btn{padding:6px 14px;font-size:12.5px;white-space:nowrap}
+  padding:6px 10px;font-size:13.8px;max-width:280px}
+.utilbar .btn{padding:6px 14px;font-size:13.8px;white-space:nowrap}
 .utilbar .who{color:#F6D9E4}
 body[data-view="admin"] .utilbar{display:none}
 @media print{.utilbar{display:none!important}}
@@ -374,22 +374,22 @@ body[data-view="admin"] .utilbar{display:none}
 .idc.noimg{background:linear-gradient(170deg,#FFF7EE 0%,#FDEBDA 55%,#F6D9BE 100%)}
 .idc.noimg::before{content:'';position:absolute;left:0;right:0;top:0;height:16mm;
   background:linear-gradient(100deg,#141210,#C4560C)}
-.idc .hd2{position:absolute;top:3.5mm;left:0;right:0;text-align:center;color:#fff;font-size:11px;font-weight:600;padding:0 6mm}
-.idc .hd2 small{display:block;font-weight:400;opacity:.85;font-size:9.5px}
+.idc .hd2{position:absolute;top:3.5mm;left:0;right:0;text-align:center;color:#fff;font-size:12.3px;font-weight:600;padding:0 6mm}
+.idc .hd2 small{display:block;font-weight:400;opacity:.85;font-size:10.8px}
 .idc .ph{position:absolute;left:50%;transform:translateX(-50%);border-radius:3mm;overflow:hidden;
   border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.18);background:#EFE6DC}
 .idc .ph img{width:100%;height:100%;object-fit:cover;display:block}
-.idc .ph .none{display:grid;place-items:center;height:100%;color:#E7BACC;font-size:11px;text-align:center;padding:4px}
+.idc .ph .none{display:grid;place-items:center;height:100%;color:#E7BACC;font-size:12.3px;text-align:center;padding:4px}
 .idc .l{position:absolute;left:0;right:0;text-align:center;padding:0 7mm}
-.idc .l.nm{font-size:15px;font-weight:700}
-.idc .l.dt{font-size:11.5px;color:#4C433C}
-.idc .l.og{font-size:11px;color:#6A5D53}
+.idc .l.nm{font-size:16.3px;font-weight:700}
+.idc .l.dt{font-size:12.8px;color:#4C433C}
+.idc .l.og{font-size:12.3px;color:#6A5D53}
 .idc .role{position:absolute;left:50%;transform:translateX(-50%);bottom:16mm;background:var(--pri);color:#fff;
-  font-size:10.5px;font-weight:600;padding:3px 12px;border-radius:999px}
-.idc .no{position:absolute;left:0;right:0;bottom:7mm;text-align:center;font-size:9.5px;color:#6A5D53}
+  font-size:11.8px;font-weight:600;padding:3px 12px;border-radius:999px}
+.idc .no{position:absolute;left:0;right:0;bottom:7mm;text-align:center;font-size:10.8px;color:#6A5D53}
 .cardrow{display:flex;gap:10px;align-items:center;padding:8px 11px;border-bottom:1px solid var(--line-2)}
 .cardrow .pv{width:42px;height:54px;border-radius:6px;object-fit:cover;border:1px solid var(--line);background:#F2ECE6}
-.cardrow .pv.none{display:grid;place-items:center;font-size:16px;color:#B7A99C}
+.cardrow .pv.none{display:grid;place-items:center;font-size:17.3px;color:#B7A99C}
 @media print{
   .cardsheet{box-shadow:none;border:0;margin:0;page-break-after:always}
   .idc{border:1px dashed #CCC}
@@ -402,10 +402,10 @@ body[data-view="admin"] .utilbar{display:none}
 .cert.noimg{background:linear-gradient(135deg,#FFFDF6,#FDF3E2)}
 .cert.noimg::before{content:'';position:absolute;inset:9mm;border:3px double #C79A45;border-radius:3mm}
 .cert .ln{position:absolute;left:0;right:0;text-align:center;padding:0 22mm}
-.cert .nm{font-size:30px;font-weight:700}
-.cert .dt{font-size:17px}
-.cert .sm{font-size:15px;color:#4A3A22}
-.cert .seal{position:absolute;left:0;right:0;bottom:13mm;text-align:center;font-size:14px}
+.cert .nm{font-size:31.3px;font-weight:700}
+.cert .dt{font-size:18.3px}
+.cert .sm{font-size:16.3px;color:#4A3A22}
+.cert .seal{position:absolute;left:0;right:0;bottom:13mm;text-align:center;font-size:15.3px}
 .cert .seal .l{border-bottom:1px dotted #6B5A3C;width:70mm;margin:0 auto 4px;height:14mm}
 .certwrap{overflow:auto;padding-bottom:6px}
 .certrow{display:flex;gap:10px;align-items:center;padding:9px 11px;border-bottom:1px solid var(--line-2)}
@@ -414,37 +414,37 @@ body[data-view="admin"] .utilbar{display:none}
 /* ---------- งานพิมพ์ ---------- */
 .sheetdoc{background:#fff;color:#000;font-family:'Sarabun',serif;padding:18mm 16mm;margin:0 auto 14px;width:210mm;min-height:297mm;box-shadow:var(--sh);border:1px solid var(--line)}
 .sheetdoc.land{width:297mm;min-height:210mm}
-.sheetdoc h1{font-size:19px;text-align:center;font-weight:700}
-.sheetdoc h2{font-size:16px;text-align:center;font-weight:600;margin-top:3px}
-.sheetdoc .meta{text-align:center;font-size:13px;margin-top:6px;color:#333}
-.sheetdoc table{font-size:13px;margin-top:14px}
+.sheetdoc h1{font-size:20.3px;text-align:center;font-weight:700}
+.sheetdoc h2{font-size:17.3px;text-align:center;font-weight:600;margin-top:3px}
+.sheetdoc .meta{text-align:center;font-size:14.3px;margin-top:6px;color:#333}
+.sheetdoc table{font-size:14.3px;margin-top:14px}
 .sheetdoc th,.sheetdoc td{border:1px solid #444;padding:6px 8px;background:none!important;position:static}
-.sheetdoc .sign{display:flex;flex-wrap:wrap;justify-content:space-around;row-gap:30px;margin-top:36px;font-size:13px;text-align:center;page-break-inside:avoid}
+.sheetdoc .sign{display:flex;flex-wrap:wrap;justify-content:space-around;row-gap:30px;margin-top:36px;font-size:14.3px;text-align:center;page-break-inside:avoid}
 .sheetdoc .sign>div{width:31%}
 .sheetdoc .ln{border-bottom:1px dotted #333;height:22px;margin-bottom:5px}
 /* เส้นลงลายมือชื่อกว้างเท่าช่องชื่อ และอยู่กึ่งกลางของที่นั่งนั้น */
 .sheetdoc .sign .ln{width:76%;margin:0 auto 5px}
 .sheetdoc .dochd{display:flex;gap:14px;align-items:flex-start;border-bottom:1px solid #000;padding-bottom:8px}
-.sheetdoc .dochd .dt{flex:1;font-size:13.5px;line-height:1.6}
-.sheetdoc .dochd .dtag{border:1px solid #b00;color:#b00;font-weight:700;font-size:12px;padding:3px 10px;border-radius:4px;white-space:nowrap}
-.sheetdoc .dsub{display:flex;justify-content:space-between;font-size:12.5px;margin-top:5px;color:#222}
-.sheetdoc .dline{font-size:14.5px;margin-top:9px}
-.sheetdoc table.sm{font-size:11.5px}
+.sheetdoc .dochd .dt{flex:1;font-size:14.8px;line-height:1.6}
+.sheetdoc .dochd .dtag{border:1px solid #b00;color:#b00;font-weight:700;font-size:13.3px;padding:3px 10px;border-radius:4px;white-space:nowrap}
+.sheetdoc .dsub{display:flex;justify-content:space-between;font-size:13.8px;margin-top:5px;color:#222}
+.sheetdoc .dline{font-size:15.8px;margin-top:9px}
+.sheetdoc table.sm{font-size:12.8px}
 .sheetdoc table.sm th,.sheetdoc table.sm td{padding:4px 5px}
 /* ตารางอธิบายหัวข้อประเมินบนใบให้คะแนน — ข้อความชิดซ้ายและไม่ตัดคำกลางบรรทัด */
 .sheetdoc table.legend td{text-align:left;vertical-align:top;line-height:1.45}
 .sheetdoc table.legend{page-break-inside:avoid}
-.sheetdoc .tiny{font-size:10.5px;color:#333}
+.sheetdoc .tiny{font-size:11.8px;color:#333}
 .sheetdoc .num{text-align:center}
-.sheetdoc .dfoot{margin-top:26px;font-size:13px}
-.sheetdoc ol{font-size:13px}
+.sheetdoc .dfoot{margin-top:26px;font-size:14.3px}
+.sheetdoc ol{font-size:14.3px}
 .prtdoc{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--line);
   border-radius:11px;cursor:pointer;background:#fff;transition:border-color .15s,background .15s}
 .prtdoc:hover{border-color:var(--pri);background:#F4F8FF}
 .prtdoc input{width:19px;height:19px;margin-top:2px;flex:none}
 .prtdoc span{display:block;line-height:1.45}
-.prtdoc b{display:block;font-size:14px}
-.prtdoc i{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:2px}
+.prtdoc b{display:block;font-size:15.3px}
+.prtdoc i{display:block;font-style:normal;font-size:13.3px;color:var(--ink-3);margin-top:2px}
 .prtdoc:has(input:checked){border-color:var(--pri);background:#FCE7EF}
 /* การ์ดกลุ่มโรงเรียน — แต่ละกลุ่มมีสีประจำกลุ่มของตัวเอง */
 .gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:14px}
@@ -462,21 +462,21 @@ body[data-view="admin"] .utilbar{display:none}
 .gcard .gicon{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.22);
   display:flex;align-items:center;justify-content:center;flex:none}
 .gcard .gicon svg{width:20px;height:20px;stroke:#fff}
-.gcard .gcode{font-size:11px;letter-spacing:.09em;font-weight:700;opacity:.85;text-transform:uppercase}
-.gcard h4{margin:10px 0 0;font-size:16px;font-weight:700;line-height:1.3}
-.gcard .gam{font-size:12.5px;opacity:.88;margin-top:2px}
-.gcard .gstat{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:12px;font-size:12px;opacity:.92}
-.gcard .gstat b{display:block;font-size:16.5px;font-weight:700;opacity:1;
+.gcard .gcode{font-size:12.3px;letter-spacing:.09em;font-weight:700;opacity:.85;text-transform:uppercase}
+.gcard h4{margin:10px 0 0;font-size:17.3px;font-weight:700;line-height:1.3}
+.gcard .gam{font-size:13.8px;opacity:.88;margin-top:2px}
+.gcard .gstat{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:12px;font-size:13.3px;opacity:.92}
+.gcard .gstat b{display:block;font-size:17.8px;font-weight:700;opacity:1;
   font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.15}
 .gcard .gpill{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
-  font-size:11.5px;font-weight:600;background:rgba(255,255,255,.2);border-radius:999px;
+  font-size:12.8px;font-weight:600;background:rgba(255,255,255,.2);border-radius:999px;
   padding:4px 11px;margin-top:12px}
 .gcard .gpill i{width:7px;height:7px;border-radius:50%;background:#fff;flex:none;
   box-shadow:0 0 0 3px rgba(255,255,255,.25)}
 .gcard .gpill.off i{background:rgba(255,255,255,.45);box-shadow:none}
 .gcard .gfoot{margin-top:auto;padding-top:13px}
 .gcard .gbtn{background:#fff;color:var(--gc,#A00040);border-radius:10px;padding:9px 10px;
-  font-size:13px;font-weight:700;text-align:center;cursor:pointer;transition:transform .12s}
+  font-size:14.3px;font-weight:700;text-align:center;cursor:pointer;transition:transform .12s}
 .gcard .gbtn:hover{transform:translateY(-1px)}
 .gdot{width:11px;height:11px;border-radius:50%;background:var(--gc,#A00040);flex:none;display:inline-block}
 /* การ์ดเกณฑ์การแข่งขันรายกลุ่มสาระ */
@@ -487,20 +487,20 @@ body[data-view="admin"] .utilbar{display:none}
   display:flex;align-items:center;justify-content:center;margin-bottom:11px}
 .rcard .ricon svg{width:21px;height:21px}
 .rcard.na .ricon svg{stroke:var(--ink-3)}
-.rcard h4{margin:0;font-size:15.5px;font-weight:700;line-height:1.3;color:var(--ink)}
-.rcard .rmeta{font-size:12.5px;color:var(--ink-3);margin-top:4px;line-height:1.55}
+.rcard h4{margin:0;font-size:16.8px;font-weight:700;line-height:1.3;color:var(--ink)}
+.rcard .rmeta{font-size:13.8px;color:var(--ink-3);margin-top:4px;line-height:1.55}
 .rcard .rbtns{display:flex;gap:8px;margin-top:13px;padding-top:0}
 .rcard .rbtns>*{flex:1;text-align:center}
-.rcard .rna{margin-top:13px;font-size:12.5px;color:var(--ink-3);background:var(--line-2);
+.rcard .rna{margin-top:13px;font-size:13.8px;color:var(--ink-3);background:var(--line-2);
   border-radius:9px;padding:9px;text-align:center}
 .rcard.na{border-left-color:var(--line);box-shadow:none;background:#FBFCFE}
 .rcard.na .ricon{background:var(--line);color:var(--ink-3)}
 .rbook{background:linear-gradient(135deg,var(--pri-2),var(--pri));color:#fff;border-radius:14px;
   padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
   box-shadow:0 8px 24px rgba(96,8,48,.18)}
-.rbook .bk{font-size:34px;line-height:1;flex:none}
-.rbook h3{margin:0;font-size:17px;font-weight:700}
-.rbook p{margin:3px 0 0;font-size:13px;opacity:.9}
+.rbook .bk{font-size:35.3px;line-height:1;flex:none}
+.rbook h3{margin:0;font-size:18.3px;font-weight:700}
+.rbook p{margin:3px 0 0;font-size:14.3px;opacity:.9}
 .rbook .sp{flex:1}
 .rbook .btn{background:#fff;color:var(--pri-2);border:0;font-weight:700}
 .rbook .btn.o{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5)}
@@ -525,7 +525,7 @@ body[data-view="admin"] .utilbar{display:none}
   <div class="login">
     <div class="l">
       <div class="lgo"><img src="logo-light.webp" alt="SILLAPA 74 UDON1" onerror="this.closest('.lgo').remove()"></div>
-      <span style="font-size:11px;letter-spacing:.14em;background:rgba(255,255,255,.18);padding:4px 12px;border-radius:999px;align-self:flex-start;font-weight:600" id="loginKw">งานศิลปหัตถกรรมนักเรียน</span>
+      <span style="font-size:12.3px;letter-spacing:.14em;background:rgba(255,255,255,.18);padding:4px 12px;border-radius:999px;align-self:flex-start;font-weight:600" id="loginKw">งานศิลปหัตถกรรมนักเรียน</span>
       <h2 id="loginTitle">ระบบจัดการแข่งขัน<br>งานศิลปหัตถกรรมนักเรียน</h2>
       <p id="loginSub">สพป.อุดรธานี เขต 1 · ปีการศึกษา 2569 — รับสมัคร จัดตาราง ให้คะแนน ประกาศผล และโอนตัวแทนเข้าระดับเขต</p>
     </div>
@@ -551,7 +551,7 @@ body[data-view="admin"] .utilbar{display:none}
         <a href="#" onclick="toggleForgot();return false" style="color:var(--pri);font-weight:700">ลืมรหัสผ่าน? ขอให้เขตรีเซ็ตให้</a></p>
 
       <div id="forgotBox" style="display:none;margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#F8FBFF">
-        <b style="font-size:14.5px">ขอให้สำนักงานเขตรีเซ็ตรหัสผ่าน</b>
+        <b style="font-size:15.8px">ขอให้สำนักงานเขตรีเซ็ตรหัสผ่าน</b>
         <div class="hint" style="margin:4px 0 10px">กรอกชื่อผู้ใช้ที่ลืมรหัส และช่องทางติดต่อกลับ เขตจะรีเซ็ตให้แล้วแจ้งรหัสใหม่</div>
         <div class="fld"><label>ชื่อผู้ใช้ *</label><input id="fgUser" placeholder="เช่น admin-g06 หรือ sc0001"></div>
         <div class="fld"><label>เบอร์โทร / อีเมลที่ติดต่อกลับ *</label><input id="fgContact" placeholder="0812345678"></div>
@@ -675,11 +675,11 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="bc" id="bc">สพป.อุดรธานี เขต 1 › <b>หน้าหลัก</b></div>
       <span class="sp"></span>
       <span class="tag" id="modeTag"></span>
-      <select id="scopeSel" onchange="setScope(this.value)" style="padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px"></select>
+      <select id="scopeSel" onchange="setScope(this.value)" style="padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:14.3px"></select>
       <span id="scopeChip" style="display:none;padding:6px 12px;border-radius:9px;background:var(--brand,#A00040);
-            color:#fff;font-size:13px;font-weight:700;white-space:nowrap"></span>
+            color:#fff;font-size:14.3px;font-weight:700;white-space:nowrap"></span>
       <span id="whoami" class="hint" style="max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-      <button class="btn g" id="admLogout" style="display:none;padding:5px 12px;font-size:12.5px"
+      <button class="btn g" id="admLogout" style="display:none;padding:5px 12px;font-size:13.8px"
               onclick="logoutNow()">ออกจากระบบ</button>
     </div>
 
@@ -707,7 +707,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="grid g4" style="margin-top:16px" id="homeStats"></div>
       <div id="homeNewsWrap" style="margin-top:20px;display:none">
         <div style="display:flex;align-items:center;gap:10px;margin:0 0 12px">
-          <h3 style="font-size:17px">ข่าวประชาสัมพันธ์</h3><span class="sp" style="flex:1"></span>
+          <h3 style="font-size:18.3px">ข่าวประชาสัมพันธ์</h3><span class="sp" style="flex:1"></span>
           <span class="hint" id="homeNewsCount"></span></div>
         <div id="homeNews"></div>
       </div>
@@ -727,7 +727,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="row" style="margin-bottom:12px;flex-wrap:wrap">
         <input id="resQ" placeholder="ค้นหารายการแข่งขัน / กลุ่มสาระ" oninput="drawResults()"
                style="flex:1;min-width:240px;padding:9px 12px;border:1px solid var(--line);border-radius:10px">
-        <label style="display:flex;gap:8px;align-items:center;font-size:13.5px;font-weight:600;cursor:pointer">
+        <label style="display:flex;gap:8px;align-items:center;font-size:14.8px;font-weight:600;cursor:pointer">
           <input type="checkbox" id="resOnlyPub" onchange="drawResults()" style="width:18px;height:18px">
           เฉพาะรายการที่ประกาศผลแล้ว</label>
         <span class="hint" id="resCount"></span>
@@ -896,7 +896,7 @@ body[data-view="admin"] .utilbar{display:none}
 
         <div class="card" style="margin-bottom:14px">
           <div class="ch"><h3>รายการที่รอโอน</h3><span class="sp"></span>
-            <label style="display:flex;gap:8px;align-items:center;font-size:13.5px;cursor:pointer">
+            <label style="display:flex;gap:8px;align-items:center;font-size:14.8px;cursor:pointer">
               <input type="checkbox" id="prOnlyReady" checked onchange="drawPromoteGroup()" style="width:17px;height:17px">
               แสดงเฉพาะรายการที่พร้อมโอน</label>
             <span class="hint" id="prPendSum"></span></div>
@@ -920,7 +920,7 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="card" style="margin-bottom:14px">
           <div class="ch"><h3>ช่วงเวลารับโอนตัวแทน</h3><span class="sp"></span><span id="prWinState"></span></div>
           <div class="cb">
-            <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+            <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:16.3px;cursor:pointer">
               <input type="checkbox" id="pw_open" style="width:20px;height:20px">
               เปิดให้กลุ่มโรงเรียนโอนตัวแทนเข้าเขต</label>
             <div class="row" style="margin-top:12px">
@@ -998,7 +998,7 @@ body[data-view="admin"] .utilbar{display:none}
 
           <label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;cursor:pointer">
             <input type="checkbox" id="ap_confirm" style="width:20px;height:20px;margin-top:2px">
-            <span style="font-size:14.5px">ข้าพเจ้าขอรับรองว่าข้อมูลข้างต้นเป็นความจริง และยินดีปฏิบัติหน้าที่กรรมการตัดสินตามที่ได้รับมอบหมาย</span></label>
+            <span style="font-size:15.8px">ข้าพเจ้าขอรับรองว่าข้อมูลข้างต้นเป็นความจริง และยินดีปฏิบัติหน้าที่กรรมการตัดสินตามที่ได้รับมอบหมาย</span></label>
 
           <div class="row" style="margin-top:14px"><span class="sp"></span>
             <button class="btn g" onclick="apClear()">ล้างฟอร์ม</button>
@@ -1026,7 +1026,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="card" id="jaWinCard" style="margin-bottom:14px">
         <div class="ch"><h3>ช่วงเวลารับสมัคร</h3><span class="sp"></span><span id="jaWinState"></span></div>
         <div class="cb">
-          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:16.3px;cursor:pointer">
             <input type="checkbox" id="ja_open" style="width:20px;height:20px"> เปิดรับสมัครคณะกรรมการตัดสิน</label>
           <div class="row" style="margin-top:12px">
             <div class="fld" style="margin:0"><label>เปิดรับตั้งแต่วันที่</label><div id="ja_from_wrap"></div></div>
@@ -1085,7 +1085,7 @@ body[data-view="admin"] .utilbar{display:none}
             <div class="fld"><label>รายการแข่งขัน</label>
               <select id="prtAct"></select></div>
           </div>
-          <label style="display:flex;gap:9px;align-items:center;font-weight:600;font-size:14.5px;cursor:pointer;margin-top:2px">
+          <label style="display:flex;gap:9px;align-items:center;font-weight:600;font-size:15.8px;cursor:pointer;margin-top:2px">
             <input type="checkbox" id="prtAllAct" style="width:18px;height:18px">
             พิมพ์ <b>ทุกรายการในหมวดหมู่นี้</b> ต่อกันทีเดียว (แยกซองละรายการ)</label>
         </div></div>
@@ -1162,9 +1162,9 @@ body[data-view="admin"] .utilbar{display:none}
               <input id="st_banner_url" placeholder="https://…" oninput="previewBanner()" style="margin-top:7px"></details></div>
           <div class="fld"><label>ข้อความใหญ่บนแบนเนอร์</label><input id="st_banner_title" oninput="previewBanner()"></div>
           <div class="fld"><label>ข้อความรอง</label><input id="st_banner_subtitle" oninput="previewBanner()"></div>
-          <label style="font-size:12.5px;font-weight:600">ตัวอย่าง</label>
-          <div class="bnprev" id="bnPrev"><div><div id="pvT" style="font-size:20px;font-weight:700"></div>
-            <div id="pvS" style="font-size:13px;color:#EFDCCC"></div></div></div>
+          <label style="font-size:13.8px;font-weight:600">ตัวอย่าง</label>
+          <div class="bnprev" id="bnPrev"><div><div id="pvT" style="font-size:21.3px;font-weight:700"></div>
+            <div id="pvS" style="font-size:14.3px;color:#EFDCCC"></div></div></div>
         </div></div>
         <div class="card"><div class="ch"><h3>ข้อความและการติดต่อ</h3></div><div class="cb">
           <div class="fld"><label>แถบประกาศใต้แบนเนอร์ <span class="hint">(เว้นว่าง = ไม่แสดง)</span></label>
@@ -1248,12 +1248,12 @@ body[data-view="admin"] .utilbar{display:none}
                   <option value="Y">แสดง</option><option value="N">ไม่แสดง</option></select></div>
               </div>
             </div>
-            <div><label style="font-size:12.5px;font-weight:600">ตัวอย่างบัตร</label>
+            <div><label style="font-size:13.8px;font-weight:600">ตัวอย่างบัตร</label>
               <div id="cdPrev" style="overflow:hidden"></div></div>
           </div></div></div>
 
       <div class="card"><div class="ch"><h3>② รายชื่อ และ 📷 อัปโหลดรูปถ่ายรายคน</h3><span class="sp"></span>
-        <label style="font-size:12.5px"><input type="checkbox" id="cdAll" onchange="cdToggleAll()"> เลือกทั้งหมดในหน้านี้</label></div>
+        <label style="font-size:13.8px"><input type="checkbox" id="cdAll" onchange="cdToggleAll()"> เลือกทั้งหมดในหน้านี้</label></div>
         <div class="cb">
           <div class="row" style="margin-bottom:11px">
             <select id="cd_school" onchange="renderCardList()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;max-width:300px"></select>
@@ -1328,7 +1328,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>บัตรประจำตัว</h3>
         <span class="sp"></span><span id="pmCardState"></span></div>
         <div class="cb">
-          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:16.3px;cursor:pointer">
             <input type="checkbox" id="pm_card" onchange="renderPerm(1)" style="width:20px;height:20px">
             อนุญาตให้กลุ่มโรงเรียนและโรงเรียนพิมพ์บัตรประจำตัว</label>
           <div class="fld" style="margin-top:12px"><label>ข้อความที่แสดงเมื่อยังปิดอยู่</label>
@@ -1338,7 +1338,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>เอกสารการแข่งขัน</h3>
         <span class="sp"></span><span id="pmPrintState"></span></div>
         <div class="cb">
-          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:16.3px;cursor:pointer">
             <input type="checkbox" id="pm_print" onchange="renderPerm(1)" style="width:20px;height:20px">
             อนุญาตให้พิมพ์เอกสารการแข่งขัน (ใบรายชื่อ ใบให้คะแนน ใบเซ็นชื่อ ฯลฯ)</label>
           <div class="fld" style="margin-top:12px"><label>ข้อความที่แสดงเมื่อยังปิดอยู่</label>
@@ -1350,7 +1350,7 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="cb">
           <div id="pmSubRead" style="display:none"></div>
           <div id="pmSubEdit">
-            <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+            <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:16.3px;cursor:pointer">
               <input type="checkbox" id="sw_open" onchange="renderSubWinUI()" style="width:20px;height:20px">
               เปิดระบบให้โรงเรียนยื่นคำขอเปลี่ยนตัวออนไลน์</label>
             <div class="g2" style="margin-top:12px">
@@ -1450,7 +1450,7 @@ body[data-view="admin"] .utilbar{display:none}
                 <div class="fld"><label>ชื่อ-สกุล ผู้ลงนาม</label><input id="sb_signname" placeholder="เช่น นายสมชาย ใจดี"></div>
                 <div class="fld"><label>ตำแหน่ง</label><input id="sb_signpos" value="ผู้อำนวยการโรงเรียน"></div>
               </div>
-              <label style="display:block;font-size:13px;color:var(--ink-3);margin-bottom:5px">
+              <label style="display:block;font-size:14.3px;color:var(--ink-3);margin-bottom:5px">
                 เซ็นชื่อในกรอบด้านล่าง (ใช้นิ้วบนมือถือ หรือเมาส์บนคอมพิวเตอร์)</label>
               <div class="sigbox"><canvas id="sb_sig" width="620" height="180"></canvas></div>
               <div class="row" style="margin-top:7px"><button type="button" class="btn g sm" onclick="sigClear('sb_sig')">ล้างลายเซ็น</button>
@@ -1497,7 +1497,7 @@ body[data-view="admin"] .utilbar{display:none}
             ระบบจะออกรหัสใหม่และแสดงให้เห็นครั้งเดียว กรุณาคัดลอกส่งให้เจ้าตัวทันที
             <div class="hint" id="adScopeNote" style="margin-top:6px"></div></div></div>
           <div class="row" style="margin-bottom:10px" id="adPassTools">
-            <label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;cursor:pointer">
+            <label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:15.3px;cursor:pointer">
               <input type="checkbox" id="ac_showpass" onchange="searchAccounts()" style="width:18px;height:18px">
               แสดงรหัสผ่าน</label>
             <span class="sp"></span>
@@ -1509,7 +1509,7 @@ body[data-view="admin"] .utilbar{display:none}
 
       <div class="card" id="rqCard" style="margin-top:14px">
         <div class="ch"><h3 id="rqTitle">คำขอรีเซ็ตรหัสผ่านจากกลุ่มโรงเรียน</h3><span class="sp"></span>
-          <label id="rqIncWrap" style="display:none;gap:7px;align-items:center;font-size:13px;cursor:pointer">
+          <label id="rqIncWrap" style="display:none;gap:7px;align-items:center;font-size:14.3px;cursor:pointer">
             <input type="checkbox" id="rqIncSchool" onchange="loadResetRequests()" style="width:16px;height:16px">
             รวมคำขอจากโรงเรียน</label>
           <span id="rqBadge"></span>
@@ -1547,7 +1547,7 @@ body[data-view="admin"] .utilbar{display:none}
           <div id="ad_permbox">
             <div class="fld"><label>ชุดสิทธิ์สำเร็จรูป</label>
               <select id="ad_preset" onchange="adPreset()"></select></div>
-            <label style="font-size:12.5px;font-weight:600">เปิด-ปิดรายเมนู (ปรับเพิ่มจากชุดด้านบนได้)</label>
+            <label style="font-size:13.8px;font-weight:600">เปิด-ปิดรายเมนู (ปรับเพิ่มจากชุดด้านบนได้)</label>
             <div class="grid g3" id="ad_perms" style="margin-top:8px"></div>
           </div>
 
@@ -1659,7 +1659,7 @@ body[data-view="admin"] .utilbar{display:none}
             </select></div>
           <div id="ssKeep" class="note i" style="margin-bottom:12px"></div>
           <div id="ssOpts" style="display:none;margin-bottom:12px">
-            <label style="font-size:12.5px;font-weight:600">ล้างเพิ่มเติมด้วยหรือไม่ (ติ๊กเฉพาะที่ต้องการ)</label>
+            <label style="font-size:13.8px;font-weight:600">ล้างเพิ่มเติมด้วยหรือไม่ (ติ๊กเฉพาะที่ต้องการ)</label>
             <div class="grid g2" style="margin-top:7px">
               <label class="hint"><input type="checkbox" id="ss_news"> ข่าวประชาสัมพันธ์และเอกสารดาวน์โหลด</label>
               <label class="hint"><input type="checkbox" id="ss_people"> ทำเนียบกรรมการตัดสินและคณะกรรมการดำเนินงาน</label>
@@ -1672,7 +1672,7 @@ body[data-view="admin"] .utilbar{display:none}
             </div>
           </div>
           <div class="note b" style="margin-bottom:12px"><span>⚠️</span><div id="ssWarn"></div></div>
-          <label style="display:flex;gap:9px;align-items:center;font-size:13px;margin-bottom:11px;cursor:pointer">
+          <label style="display:flex;gap:9px;align-items:center;font-size:14.3px;margin-bottom:11px;cursor:pointer">
             <input type="checkbox" id="ss_ack" style="width:18px;height:18px">
             ข้าพเจ้าสำรองข้อมูลเรียบร้อยแล้ว และเข้าใจว่าการล้างข้อมูลย้อนกลับไม่ได้</label>
           <div class="row">
@@ -1692,7 +1692,7 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>เปิด / ปิด การดาวน์โหลด</h3>
         <span class="sp"></span><span id="caState"></span></div>
         <div class="cb">
-          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:15px;cursor:pointer">
+          <label style="display:flex;gap:10px;align-items:center;font-weight:600;font-size:16.3px;cursor:pointer">
             <input type="checkbox" id="ca_open" onchange="caToggle()" style="width:20px;height:20px">
             เปิดให้ดาวน์โหลดเกียรติบัตรบนหน้าเว็บสาธารณะ</label>
           <div class="fld" style="margin-top:12px"><label>ข้อความที่แสดงเมื่อยังปิดอยู่</label>
@@ -1736,7 +1736,7 @@ body[data-view="admin"] .utilbar{display:none}
               <div class="row"><button class="btn" onclick="saveTpl()">บันทึกเทมเพลตนี้</button>
                 <span class="hint">ตัวแปรที่ใช้ได้: {ชื่อผู้รับ} {โรงเรียน} {รายการแข่งขัน} {ระดับชั้น} {ผล} {คะแนน} {อันดับ} {หน่วยงาน} {หน้าที่} {วันที่} {เลขที่}</span></div>
             </div>
-            <div><label style="font-size:12.5px;font-weight:600">ตัวอย่าง (ย่อขนาด)</label>
+            <div><label style="font-size:13.8px;font-weight:600">ตัวอย่าง (ย่อขนาด)</label>
               <div id="tplPrev" style="transform-origin:top left;overflow:hidden"></div></div>
           </div>
         </div></div>
@@ -1766,7 +1766,7 @@ body[data-view="admin"] .utilbar{display:none}
         <div class="card"><div class="ch"><h3>สถานะระบบ</h3></div><div class="cb" id="sysInfo"></div></div>
       </div>
       <div class="card" style="margin-top:14px"><div class="ch"><h3>ขั้นตอนติดตั้ง (ย่อ)</h3></div><div class="cb">
-        <ol style="margin:0;padding-left:20px;font-size:13.5px;line-height:1.9">
+        <ol style="margin:0;padding-left:20px;font-size:14.8px;line-height:1.9">
           <li>อัปโหลดไฟล์ <b>sillapa-udn1-database.xlsx</b> ขึ้น Google Drive แล้วเปิดด้วย Google Sheets</li>
           <li>ในชีตนั้นเลือก <b>ส่วนขยาย → Apps Script</b> วางโค้ดจาก <b>Code.gs</b> แล้วแก้ <code>SHEET_ID</code> และ <code>SECRET</code></li>
           <li>กด <b>Deploy → New deployment → Web app</b> · Execute as: <i>Me</i> · Who has access: <i>Anyone</i> แล้วคัดลอก URL</li>
@@ -1795,18 +1795,18 @@ body[data-view="admin"] .utilbar{display:none}
 <div class="screen" id="s-live">
   <button class="esc" onclick="closeScreen()">✕ ออกจากโหมดจอฉาย (Esc)</button>
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
-    <div><h2 style="font-size:25px" id="liveTitle">ตารางเหรียญรางวัล</h2>
-      <div style="color:#B39C88;font-size:14px" id="liveSub"></div></div>
-    <span class="tag live" style="font-size:13px;padding:6px 13px">● LIVE</span>
-    <div style="margin-left:auto;font-size:36px;font-weight:700;font-variant-numeric:tabular-nums" id="clk1">--:--</div>
+    <div><h2 style="font-size:26.3px" id="liveTitle">ตารางเหรียญรางวัล</h2>
+      <div style="color:#B39C88;font-size:15.3px" id="liveSub"></div></div>
+    <span class="tag live" style="font-size:14.3px;padding:6px 13px">● LIVE</span>
+    <div style="margin-left:auto;font-size:37.3px;font-weight:700;font-variant-numeric:tabular-nums" id="clk1">--:--</div>
   </div>
   <div id="liveBoard"></div>
 </div>
 <div class="screen" id="s-queue">
   <button class="esc" onclick="closeScreen()">✕ ออกจากโหมดจอฉาย (Esc)</button>
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
-    <div><h2 style="font-size:25px">คิวการแข่งขัน</h2><div style="color:#B39C88;font-size:14px">NOW / NEXT รายสนาม</div></div>
-    <div style="margin-left:auto;font-size:36px;font-weight:700;font-variant-numeric:tabular-nums" id="clk2">--:--</div>
+    <div><h2 style="font-size:26.3px">คิวการแข่งขัน</h2><div style="color:#B39C88;font-size:15.3px">NOW / NEXT รายสนาม</div></div>
+    <div style="margin-left:auto;font-size:37.3px;font-weight:700;font-variant-numeric:tabular-nums" id="clk2">--:--</div>
   </div>
   <div id="queueBoard"></div>
 </div>
@@ -3052,7 +3052,7 @@ function revToast(){
   let t=$('#revToast');
   if(!t){ t=document.createElement('div'); t.id='revToast';
     t.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:9999;'+
-      'background:var(--ink,#1f2937);color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;'+
+      'background:var(--ink,#1f2937);color:#fff;padding:11px 18px;border-radius:12px;font-size:15.3px;'+
       'box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transition:opacity .25s';
     document.body.appendChild(t); }
   t.textContent='🔄 รายการแข่งขันมีการอัปเดตจากสำนักงานเขต — ปรับให้เป็นรายการล่าสุดแล้ว';
@@ -3486,7 +3486,7 @@ function openNews(i){
   openModal(n.title,
     `<div class="hint" style="margin-bottom:10px">${dstr(n.date)} · ${n.scope==='ALL'?'ประกาศจากสำนักงานเขต':'ข่าวของ '+groupName(n.scope)}</div>`+
     (n.image?`<img src="${imgSrc(n.image)}" style="width:100%;border-radius:10px;margin-bottom:12px">`:'')+
-    `<div style="white-space:pre-wrap;font-size:14px;line-height:1.75">${n.body||'(ไม่มีรายละเอียดเพิ่มเติม)'}</div>`,
+    `<div style="white-space:pre-wrap;font-size:15.3px;line-height:1.75">${n.body||'(ไม่มีรายละเอียดเพิ่มเติม)'}</div>`,
     ()=>false);
   $('#mOk').style.display='none';
 }
@@ -3800,7 +3800,7 @@ function editNews(id){
        <div id="n_imgprev" style="margin-top:8px"></div></div>
      <div class="fld"><label>รายละเอียด</label>
        <textarea id="n_body" rows="7" style="resize:vertical">${n.body||''}</textarea></div>
-     <label style="font-size:13px"><input type="checkbox" id="n_pin" ${n.pin==='Y'?'checked':''}> ปักหมุดไว้บนสุด</label>`,
+     <label style="font-size:14.3px"><input type="checkbox" id="n_pin" ${n.pin==='Y'?'checked':''}> ปักหมุดไว้บนสุด</label>`,
     async()=>{
       const o={id:id||'', title:$('#n_title').value.trim(), date:dateSelVal('n_date'),
         scope:$('#n_scope').value, image:$('#n_image').value.trim(),
@@ -3960,7 +3960,7 @@ function showThumb(thumbId,url,info,demo){
   const el=$('#'+thumbId); if(!el) return;
   el.style.display='flex';
   el.innerHTML=`<img src="${imgSrc(url)}" alt="">
-    <div style="flex:1;font-size:12.5px"><b>อัปโหลดแล้ว</b>
+    <div style="flex:1;font-size:13.8px"><b>อัปโหลดแล้ว</b>
       <div class="hint">${info? info.w+'×'+info.h+' px · '+info.kb+' KB':''}${demo?' · โหมดตัวอย่าง (เก็บในเครื่อง)':' · เก็บใน Google Drive'}</div></div>
     <button class="btn g sm" onclick="clearImg('${thumbId}')">ลบรูป</button>`;
 }
@@ -4082,7 +4082,7 @@ function cardEmpty(){
              '🎖️ ไปหน้าระบบเกียรติบัตร','certadm']
   }[CURCARD]||['ยังไม่มีรายชื่อในประเภทนี้','','',''];
   return `<div style="padding:30px 22px;text-align:center">
-    <div style="font-size:30px">📷</div>
+    <div style="font-size:31.3px">📷</div>
     <div style="font-weight:700;margin-top:6px">${m[0]}</div>
     <div class="hint" style="max-width:520px;margin:6px auto 0">${m[1]}</div>
     <div class="hint" style="max-width:520px;margin:10px auto 0">
@@ -4488,7 +4488,7 @@ function subOpen(ref){
           <div class="fld"><label>ตำแหน่ง</label><input id="dc_pos" value="${ME.role==='group_admin'?'ประธานกลุ่มโรงเรียน':'ผู้อำนวยการสำนักงานเขตพื้นที่การศึกษา'}"></div>
         </div>
         <div class="fld"><label>หมายเหตุ / เหตุผลกรณีไม่อนุมัติ</label><input id="dc_note" placeholder="ไม่บังคับ"></div>
-        <label style="display:block;font-size:13px;color:var(--ink-3);margin-bottom:5px">ลงลายมือชื่อผู้พิจารณา</label>
+        <label style="display:block;font-size:14.3px;color:var(--ink-3);margin-bottom:5px">ลงลายมือชื่อผู้พิจารณา</label>
         <div class="sigbox"><canvas id="dc_sig" width="620" height="180"></canvas></div>
         <div class="row" style="margin-top:7px"><button class="btn g sm" onclick="sigClear('dc_sig')">ล้างลายเซ็น</button></div>
         <div class="row" style="margin-top:14px">
@@ -4714,7 +4714,7 @@ function drawAdmins(){
     const nm=String(x.name||x.username).replace(/'/g,'');
     return `<tr><td><b>${cleanTxt(x.name||'')}</b></td>
       <td style="font-family:ui-monospace,monospace">${x.username}</td>
-      ${show? `<td><code style="font-size:14px;font-weight:700;letter-spacing:.5px">${x.pass_code||''}</code></td>`:''}
+      ${show? `<td><code style="font-size:15.3px;font-weight:700;letter-spacing:.5px">${x.pass_code||''}</code></td>`:''}
       <td>${AD_LVTXT[x.role]||x.role}</td>
       <td>${cleanTxt(x.where||'')}</td>
       <td style="max-width:300px">${a? (a.is_owner==='Y'?'<span class="pill w">ผู้ดูแลหลัก</span> ':'<span class="hint">ผู้ดูแลรอง</span> ')+permChips(a)
@@ -5148,7 +5148,7 @@ function certHTML(it,tpl,cfg){
     <div class="ln sm" style="top:${tpl.y_org||60}%">${fillCert(tpl.line_org,it,cfg)}</div>
     <div class="ln sm" style="top:70%">${fillCert(tpl.line_date,it,cfg)}</div>
     <div class="seal"><div class="l"></div>(${tpl.sign_name||''})<br>${tpl.sign_position||''}</div>
-    <div style="position:absolute;left:14mm;bottom:10mm;font-size:11px;color:#6B5A3C">เลขที่ ${certNo(it,cfg)}</div>
+    <div style="position:absolute;left:14mm;bottom:10mm;font-size:12.3px;color:#6B5A3C">เลขที่ ${certNo(it,cfg)}</div>
   </div>`;
 }
 
@@ -5314,7 +5314,7 @@ function editStaff(id){
       <div class="fld"><label>หน่วยงาน</label>${selOther('s_org', orgOptions(), x.org||'', 'ชื่อหน่วยงาน')}</div></div>
      <div class="fld"><label>หน้าที่ในงาน (พิมพ์ลงเกียรติบัตร)</label>
        ${selOther('s_duty', OPT_DUTY, x.duty||'', 'ระบุหน้าที่')}</div>
-     <label style="font-size:13px"><input type="checkbox" id="s_ok" ${String(x.cert_ok||'Y')!=='N'?'checked':''}> เปิดให้ดาวน์โหลดเกียรติบัตรของคนนี้</label>`,
+     <label style="font-size:14.3px"><input type="checkbox" id="s_ok" ${String(x.cert_ok||'Y')!=='N'?'checked':''}> เปิดให้ดาวน์โหลดเกียรติบัตรของคนนี้</label>`,
     async()=>{
       const rk2=selVal('s_rank');
       const o={staff_id:id||'', scope:SCOPE, prefix:selVal('s_prefix'), name:$('#s_name').value.trim(),
@@ -5941,7 +5941,7 @@ async function editCrit(actId){
        <button class="btn g sm" onclick="fillEven()">เฉลี่ยเท่ากันให้ครบ 100</button>
        <span class="sp" style="flex:1"></span>
        <div style="text-align:right"><div class="hint">คะแนนเต็มรวม</div>
-         <div id="critSum" style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums">0</div></div></div>
+         <div id="critSum" style="font-size:23.3px;font-weight:700;font-variant-numeric:tabular-nums">0</div></div></div>
      <div class="mini" style="height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px">
        <i id="critBar" style="display:block;height:100%;width:0;background:var(--pri)"></i></div>
      <div class="note b" id="critWarn" style="display:none;margin-top:10px"></div>
@@ -5974,7 +5974,7 @@ function critRow(it){
     <td><input value="${it.item_name||''}" placeholder="เช่น ความคิดสร้างสรรค์"
         style="width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px" data-n>
       <input value="${(it.note||'').replace(/"/g,'&quot;')}" placeholder="หมายเหตุ / ข้อย่อยตามเล่มเกณฑ์ (ไม่บังคับ)"
-        style="width:100%;margin-top:5px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;color:var(--ink-2)" data-note></td>
+        style="width:100%;margin-top:5px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:13.8px;color:var(--ink-2)" data-note></td>
     <td><input value="${it.max_score||''}" type="number" min="0" max="100" placeholder="0"
         style="width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px" data-s></td>
     <td class="num" data-pct style="color:var(--ink-3)">—</td>
@@ -6007,7 +6007,7 @@ function critSum(){
     const has=r.querySelector('[data-n]').value.trim();
     const v=Number(r.querySelector('[data-s]').value||0);
     const cell=r.querySelector('[data-pct]');
-    if(!has){ cell.innerHTML='<span style="color:var(--bad);font-size:11px">ไม่มีชื่อ</span>';
+    if(!has){ cell.innerHTML='<span style="color:var(--bad);font-size:12.3px">ไม่มีชื่อ</span>';
               r.querySelector('[data-n]').style.borderColor='var(--bad)'; }
     else { r.querySelector('[data-n]').style.borderColor='var(--line)';
            cell.textContent = tot? Math.round(v/tot*100)+'%' : '—'; cell.style.color='var(--ink-3)'; }
@@ -6117,8 +6117,8 @@ function editEntry(id){
     `<div class="fld"><label>โรงเรียน</label><select id="f_sch">${S.map(s=>`<option value="${s.smis}" ${String(cur.school_smis)===String(s.smis)?'selected':''}>${s.school_name} (${s.tambon})</option>`).join('')}</select></div>
      <div class="note i" style="margin-bottom:12px"><span>ℹ️</span><div>รายการนี้ต้องมีนักเรียน <b>${act.team_min==act.team_max?act.team_min:act.team_min+"-"+act.team_max}</b> คน · ครูผู้ฝึกสอน ${act.coaches||1} คน
        ${/^ม\./.test(String(act.level))?'· แสดงเฉพาะโรงเรียนขยายโอกาส':''}</div></div>
-     <label style="font-size:12.5px;font-weight:600">นักเรียน</label><div id="stList">${stRows}</div>
-     <label style="font-size:12.5px;font-weight:600;display:block;margin-top:12px">ครูผู้ฝึกสอน</label>
+     <label style="font-size:13.8px;font-weight:600">นักเรียน</label><div id="stList">${stRows}</div>
+     <label style="font-size:13.8px;font-weight:600;display:block;margin-top:12px">ครูผู้ฝึกสอน</label>
      <div id="coList">${coachRows}</div>`,
     async()=>{
       const st=[...document.querySelectorAll('#stList [data-st]')].map(r=>({
@@ -6691,7 +6691,7 @@ async function doResetReq(id, decision){
     const r=await api('handleResetRequest',{req_id:id, decision:'reset'});
     $('#rqMsg').innerHTML=`<div class="note g"><span>🔑</span><div>
       รีเซ็ตให้ <b>${r.name||r.username}</b> แล้ว · ชื่อผู้ใช้ <b>${r.username}</b> ·
-      รหัสผ่านใหม่ <b style="font-size:17px;letter-spacing:1px">${r.pass_code}</b>
+      รหัสผ่านใหม่ <b style="font-size:18.3px;letter-spacing:1px">${r.pass_code}</b>
       <div class="hint" style="margin-top:4px">แจ้งกลับไปที่ ${r.contact||'ช่องทางที่ผู้ขอให้ไว้'} — ระบบจะไม่แสดงรหัสนี้อีก</div></div></div>`;
     loadResetRequests(); searchAccounts();
   }catch(e){ alert(e.message); }
@@ -6738,7 +6738,7 @@ async function resetPass(id,name){
     const r=await api('resetPassword',{user_id:id});
     $('#acMsg').innerHTML=`<div class="note g"><span>🔑</span><div>
       รีเซ็ตรหัสผ่านของ <b>${r.name||r.username}</b> แล้ว ·
-      ชื่อผู้ใช้ <b>${r.username}</b> · รหัสผ่านใหม่ <b style="font-size:17px;letter-spacing:1px">${r.pass_code}</b>
+      ชื่อผู้ใช้ <b>${r.username}</b> · รหัสผ่านใหม่ <b style="font-size:18.3px;letter-spacing:1px">${r.pass_code}</b>
       <div class="hint" style="margin-top:4px">คัดลอกส่งให้เจ้าตัวทันที — ระบบจะไม่แสดงรหัสนี้อีก</div></div></div>`;
     searchAccounts();
   }catch(e){ $('#acMsg').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
@@ -6956,7 +6956,7 @@ async function submitApply(){
     const r=await api('applyJudge',{apply:body});
     $('#apMsg').innerHTML=`<div class="note g"><span>✅</span><div>
       <b>${r.updated?'แก้ไขใบสมัครเรียบร้อย':'ส่งใบสมัครเรียบร้อยแล้ว'}</b>
-      <div style="margin-top:6px;font-size:18px">รหัสอ้างอิงของท่านคือ
+      <div style="margin-top:6px;font-size:19.3px">รหัสอ้างอิงของท่านคือ
         <b style="letter-spacing:1px">${r.ref_code}</b></div>
       <div class="hint" style="margin-top:6px">กรุณาบันทึกรหัสนี้ไว้ ใช้คู่กับเบอร์โทรศัพท์เพื่อตรวจสอบสถานะหรือแก้ไขใบสมัคร ·
         ผลการคัดเลือกจะแจ้งไปที่อีเมลที่กรอกไว้</div></div></div>`;
@@ -7048,17 +7048,17 @@ function drawApplications(){
     <div class="card" style="margin-bottom:12px"><div class="cb">
       <div class="row" style="align-items:flex-start">
         <div style="flex:1;min-width:260px">
-          <div style="font-size:16px;font-weight:700">${x.prefix||''}${x.full_name}
+          <div style="font-size:17.3px;font-weight:700">${x.prefix||''}${x.full_name}
             <span class="pill ${pill[x.status]||''}">${x.status}</span></div>
           <div class="hint">${x.position||''} · ${x.org_name||''} ${x.group_code? '· '+groupName(x.group_code):''}</div>
           <div class="hint">รหัส ${x.ref_code} · สมัคร ${x.created_at||''} · ${x.phone} · ${x.email||'(ไม่มีอีเมล)'}</div>
-          <div style="margin-top:8px;font-size:14.5px"><b>กลุ่มสาระ:</b> ${x.category||'-'}
+          <div style="margin-top:8px;font-size:15.8px"><b>กลุ่มสาระ:</b> ${x.category||'-'}
             &nbsp;·&nbsp; <b>วุฒิ:</b> ${x.education||'-'} ${x.major? '('+x.major+')':''}
             &nbsp;·&nbsp; <b>ประสบการณ์:</b> ${x.experience_years||'-'} ปี</div>
           ${x.past_judge? `<div class="hint">เคยเป็นกรรมการ: ${x.past_judge}</div>`:''}
-          ${x.expertise? `<div style="margin-top:6px;font-size:14px">${x.expertise}</div>`:''}
+          ${x.expertise? `<div style="margin-top:6px;font-size:15.3px">${x.expertise}</div>`:''}
           ${x.doc_url? `<div style="margin-top:6px"><a href="${x.doc_url}" target="_blank" rel="noopener">เอกสารประกอบ ↗</a></div>`:''}
-          <div style="margin-top:8px;font-size:14.5px">${x.choices.map(c=>`อันดับ ${c.order} — ${c.act_name}`).join('<br>')}</div>
+          <div style="margin-top:8px;font-size:15.8px">${x.choices.map(c=>`อันดับ ${c.order} — ${c.act_name}`).join('<br>')}</div>
           ${x.decided_act_name? `<div style="margin-top:6px"><b>มอบหมาย:</b> ${x.decided_act_name}</div>`:''}
           ${x.decided_by? `<div class="hint">พิจารณาโดย ${x.decided_by} ${x.decided_at||''}</div>`:''}
         </div>
@@ -7272,7 +7272,7 @@ function openActResult(actId){
   const when  = eventDateLine().replace(/^\s*·\s*/,'') || '';
   const head=`<div class="docsheet" id="docResult">
     <h4>ผลการแข่งขัน · ${a.category||''}</h4>
-    <h4 style="font-size:17px;margin-bottom:8px">${a.act_name||''} ${a.level||''}</h4>
+    <h4 style="font-size:18.3px;margin-bottom:8px">${a.act_name||''} ${a.level||''}</h4>
     <div class="dhead">${eventName()}<br>${SCOPE==='ALL'?'ระดับเขตพื้นที่การศึกษา':'รอบคัดเลือกระดับกลุ่มโรงเรียน'} · ${where}
       ${when? '<br>'+when : ''}
       ${a.act_code? '<br>รหัสกิจกรรม : '+a.act_code : ''}</div>`;
@@ -7453,15 +7453,15 @@ function prtSheet(kind, act, pack, pub){
       <div class="meta">${eventName()}<br>${districtName()}<br>${prtDateLine()}</div>
       <hr style="margin:16px 0;border:0;border-top:1px dashed #666">
       <div style="text-align:center;line-height:1.9">
-        <div style="font-size:18px"><b>หมวดหมู่ :</b> ${act.category||''}</div>
-        <div style="font-size:18px"><b>รหัสกิจกรรม :</b> ${act.act_id||''}</div>
-        <div style="font-size:19px;font-weight:700">กิจกรรม ${title}</div>
-        <div style="font-size:17px">แข่งขันวันที่ <b>${sc.date||'.............................'}</b></div>
-        <div style="font-size:17px">เวลา ${sc.time||'...............'} น. เป็นต้นไป</div>
-        <div style="font-size:17px">ณ ${sc.venue||'.............................................'}</div>
-        <div style="font-size:16px;margin-top:6px">จำนวนทีมที่เข้าแข่งขัน <b>${ent.length}</b> ทีม</div>
+        <div style="font-size:19.3px"><b>หมวดหมู่ :</b> ${act.category||''}</div>
+        <div style="font-size:19.3px"><b>รหัสกิจกรรม :</b> ${act.act_id||''}</div>
+        <div style="font-size:20.3px;font-weight:700">กิจกรรม ${title}</div>
+        <div style="font-size:18.3px">แข่งขันวันที่ <b>${sc.date||'.............................'}</b></div>
+        <div style="font-size:18.3px">เวลา ${sc.time||'...............'} น. เป็นต้นไป</div>
+        <div style="font-size:18.3px">ณ ${sc.venue||'.............................................'}</div>
+        <div style="font-size:17.3px;margin-top:6px">จำนวนทีมที่เข้าแข่งขัน <b>${ent.length}</b> ทีม</div>
       </div>
-      <div style="margin-top:18px;font-size:13.5px;line-height:1.75">
+      <div style="margin-top:18px;font-size:14.8px;line-height:1.75">
         <b>คำชี้แจง</b>
         <ol style="padding-left:20px;margin:8px 0 0">
           <li><b>เอกสารภายในซองประกอบด้วย</b> แบบลงทะเบียนนักเรียน (DOC.1) · แบบลงทะเบียนครูผู้ฝึกสอน (DOC.2) ·
@@ -7728,16 +7728,16 @@ function openScreen(k){
         `<div class="lbr ${i<3?'t'+(i+1):''}"><span class="rk">${i+1}</span><span>${m.school}</span>
          <span class="c gc">${m.g}</span><span class="c sc">${m.s}</span><span class="c bc">${m.b}</span>
          <span class="c">${m.g+m.s+m.b}</span></div>`).join('')
-        : `<div style="padding:70px;text-align:center;color:#8D7C6D"><div style="font-size:44px">🏅</div>
-           <div style="font-size:22px;font-weight:700;color:#fff;margin-top:10px">ยังไม่มีผลการแข่งขันที่ประกาศ</div>
+        : `<div style="padding:70px;text-align:center;color:#8D7C6D"><div style="font-size:45.3px">🏅</div>
+           <div style="font-size:23.3px;font-weight:700;color:#fff;margin-top:10px">ยังไม่มีผลการแข่งขันที่ประกาศ</div>
            <div style="margin-top:6px">หน้าจอนี้จะอัปเดตอัตโนมัติทันทีที่กรรมการประกาศผลรายการแรก</div></div>`;
     });
   } else {
     api('queue',{group:SCOPE==='ALL'?'':SCOPE}).then(q=>{
       $('#queueBoard').innerHTML = q.length? q.map(x=>`<div class="lbr"><span></span><span>${x.act}</span>
         <span class="c">${x.start||''}</span><span class="c">${x.venue||''}</span><span class="c">${x.status||''}</span><span></span></div>`).join('')
-        : `<div style="padding:70px;text-align:center;color:#8D7C6D"><div style="font-size:44px">🗓️</div>
-           <div style="font-size:22px;font-weight:700;color:#fff;margin-top:10px">ยังไม่มีรายการที่จัดตารางแข่งขัน</div>
+        : `<div style="padding:70px;text-align:center;color:#8D7C6D"><div style="font-size:45.3px">🗓️</div>
+           <div style="font-size:23.3px;font-weight:700;color:#fff;margin-top:10px">ยังไม่มีรายการที่จัดตารางแข่งขัน</div>
            <div style="margin-top:6px">หน้าจอนี้จะแสดงคิวแต่ละสนามทันทีที่แอดมินจัดตารางเวลาให้รายการแข่งขัน</div></div>`;
     });
   }
