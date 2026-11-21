@@ -679,9 +679,10 @@ body[data-view="admin"] .utilbar{display:none}
         <button class="nv" data-p="submgr" data-role="district_admin,group_admin,school"><i>🔁</i>ขอเปลี่ยนตัวนักเรียน</button>
       </div></div>
 
-      <div class="ng" data-sec="jd"><span class="ngh" onclick="togSec(this)">คณะกรรมการตัดสิน<i class="cv">▾</i></span><div class="ngb">
+      <div class="ng" data-sec="jd"><span class="ngh" onclick="togSec(this)">คณะกรรมการ<i class="cv">▾</i></span><div class="ngb">
         <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกกรรมการ</button>
         <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
+        <button class="nv" data-p="staff" data-role="district_admin,group_admin" data-perm="certadm"><i>👥</i>คณะกรรมการดำเนินงาน</button>
       </div></div>
 
       <div class="ng" data-sec="sc"><span class="ngh" onclick="togSec(this)">บันทึกคะแนน &amp; ประกาศผล<i class="cv">▾</i></span><div class="ngb">
@@ -1836,9 +1837,31 @@ body[data-view="admin"] .utilbar{display:none}
         <span class="sp"></span><button class="btn g sm" onclick="countCerts()">↻ นับใหม่</button></div>
         <div class="cb"><div class="grid g4" id="caCount"><div class="hint">กด “นับใหม่” เพื่อดึงจากผลการแข่งขันที่ประกาศแล้ว</div></div></div></div>
 
-      <div class="card"><div class="ch"><h3>คณะกรรมการดำเนินงาน</h3><span class="sp"></span>
-        <button class="btn g sm" onclick="editStaff(null)">+ เพิ่มรายชื่อ</button></div>
-        <div class="cb" style="padding:0;overflow:auto;max-height:50vh"><table id="stTbl"></table></div></div>
+      <div class="note i"><span>👥</span><div>รายชื่อ<b>คณะกรรมการดำเนินงาน</b>ย้ายไปอยู่ที่เมนูของตัวเองแล้ว
+        <button class="btn g sm" style="margin-left:8px" onclick="go('staff')">ไปหน้าคณะกรรมการดำเนินงาน</button></div></div>
+    </section>
+
+    <!-- ---------- คณะกรรมการดำเนินงาน (หลังบ้าน) ---------- -->
+    <section class="page" id="p-staff">
+      <div class="hd"><div><h2>คณะกรรมการดำเนินงาน</h2><p id="stSub"></p></div>
+        <span class="sp"></span>
+        <button class="btn g" onclick="go('cards')">🪪 พิมพ์บัตรประจำตัว</button>
+        <button class="btn g" onclick="goStaffCert()">🎖️ พิมพ์เกียรติบัตร</button>
+        <button class="btn" onclick="editStaff(null)">+ เพิ่มรายชื่อ</button></div>
+
+      <div class="grid g4" id="stStat" style="margin-bottom:14px"></div>
+
+      <div class="card"><div class="ch"><h3>บัญชีรายชื่อ</h3><span class="sp"></span>
+        <select id="st_duty" onchange="drawStaff()"
+                style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;max-width:280px"></select>
+        <input id="st_q" placeholder="ค้นชื่อ / หน่วยงาน / ตำแหน่ง…" oninput="drawStaff()"
+               style="min-width:200px;padding:9px 13px;border:1px solid var(--line);border-radius:10px">
+        <span class="hint" id="stCount"></span></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="stTbl"></table></div></div>
+
+      <div class="note i" style="margin-top:12px"><span>💡</span><div>
+        ช่อง <b>หน้าที่ในงาน</b> คือข้อความที่พิมพ์ลงเกียรติบัตรและขึ้นบนบัตรประจำตัว ·
+        ปุ่ม <b>🎖️</b> ท้ายแถวจะพาไปหน้าออกเกียรติบัตรของคนนั้นทันที (ต้องเปิดระบบเกียรติบัตรก่อน)</div></div>
     </section>
 
     <!-- ---------- ตั้งค่า ---------- -->
@@ -3309,7 +3332,7 @@ function promoteLabel(){
 function canDo(key){ return !!(ME && (ME.own || (ME.perm||[]).indexOf(key)>=0)); }
 const PERM_LABEL={actedit:'จัดการรายการ & เกณฑ์',entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',
   publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',judges:'ทำเนียบกรรมการตัดสิน',
-  certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',newsmgr:'ประชาสัมพันธ์',
+  certadm:'ระบบเกียรติบัตร & คณะกรรมการดำเนินงาน',cards:'บัตรประจำตัว',newsmgr:'ประชาสัมพันธ์',
   site:'หน้าเว็บ & แบนเนอร์',print:'พิมพ์เอกสาร',perm:'เปิด-ปิดสิทธิ์การพิมพ์',
   sched:'ตารางแข่งขัน & สนามแข่งขัน'};
 const PERM_PRESET={
@@ -3337,11 +3360,11 @@ const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการ
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','rulesmgr','entries','score','publish','promote','certadm','cards',
-  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr','schedmgr','region'];
+  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr','schedmgr','region','staff'];
 /** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
 const PAGE_PERM={actedit:'actedit',rulesmgr:'actedit',entries:'entries',score:'score',publish:'publish',
   promote:'promote',judges:'judges',judgeapp:'judges',certadm:'certadm',cards:'cards',
-  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm',schedmgr:'sched',region:'promote'};
+  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm',schedmgr:'sched',region:'promote',staff:'certadm'};
 const OWNER_PAGES=['admins','season','backup'];
 function isAdminPage(p){ return ADMIN_PAGES.indexOf(p)>=0; }
 /** ผู้ที่ยังไม่เข้าสู่ระบบ: บังคับให้อยู่หน้าสาธารณะ และถ้าค้างอยู่ที่หน้าหลังบ้าน (เช่นลิงก์เก่าในช่อง URL)
@@ -4201,8 +4224,8 @@ function cardEmpty(){
              '📝 ไปหน้าผู้สมัครแข่งขัน','entries'],
     judge:['ยังไม่มีรายชื่อคณะกรรมการตัดสิน','เพิ่มรายชื่อกรรมการที่หน้าทำเนียบกรรมการตัดสินก่อน แล้วกลับมาอัปโหลดรูปที่นี่',
              '⚖️ ไปหน้าทำเนียบกรรมการตัดสิน','judges'],
-    staff:['ยังไม่มีรายชื่อคณะกรรมการดำเนินงาน','เพิ่มรายชื่อได้ที่หน้าระบบเกียรติบัตร หัวข้อ “คณะกรรมการดำเนินงาน”',
-             '🎖️ ไปหน้าระบบเกียรติบัตร','certadm']
+    staff:['ยังไม่มีรายชื่อคณะกรรมการดำเนินงาน','เพิ่มรายชื่อได้ที่เมนู “คณะกรรมการดำเนินงาน” แล้วกลับมาอัปโหลดรูปที่นี่',
+             '👥 ไปหน้าคณะกรรมการดำเนินงาน','staff']
   }[CURCARD]||['ยังไม่มีรายชื่อในประเภทนี้','','',''];
   return `<div style="padding:30px 22px;text-align:center">
     <div style="font-size:31.3px">📷</div>
@@ -5543,6 +5566,9 @@ function renderCert(){
           <b>เปิดให้ดาวน์โหลดเกียรติบัตรแล้ว</b> — เลือกประเภท ค้นหาชื่อ แล้วกด “ออกเกียรติบัตร”
           จากนั้นกด <b>Ctrl/⌘ + P</b> เพื่อพิมพ์หรือบันทึกเป็น PDF</div></div>`;
     $('#certBody').style.display='';
+    /* มาจากหน้าคณะกรรมการดำเนินงาน — ตั้งประเภทและชื่อที่จะค้นให้เลย */
+    const pre=window.CERT_PRESET; window.CERT_PRESET=null;
+    if(pre){ if(pre.type) $('#cf_type').value=pre.type; if(pre.q!==undefined) $('#cf_q').value=pre.q; }
     const sc=$('#cf_school');
     if(!sc.options.length){
       const list=schoolsOf(SCOPE);
@@ -5594,16 +5620,57 @@ function renderCertAdm(){
       `<button class="tab ${t===CURTPL?'on':''}" onclick="pickTpl(this,'${t}')">${TYPE_TH[t]}</button>`).join('');
     loadTpl();
   });
-  api('listStaff',{scope:SCOPE}).then(rows=>{
-    window.__STAFF=rows;
-    tbl($('#stTbl'),['ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','หน้าที่ในงาน','ออกเกียรติบัตร','จัดการ'],
-      rows.map(x=>`<tr><td><b>${(x.prefix||'')+x.name}</b></td><td>${x.position||''}</td>
-        <td>${x.org||''}</td><td>${x.duty||''}</td>
-        <td>${String(x.cert_ok||'Y')==='N'?'<span class="pill b">ปิด</span>':'<span class="pill ok">เปิด</span>'}</td>
-        <td style="white-space:nowrap"><button class="btn g sm" onclick="editStaff('${x.staff_id}')">แก้ไข</button>
-          <button class="btn g sm" onclick="delStaff('${x.staff_id}')">ลบ</button></td></tr>`).join(''));
-  });
 }
+
+/* ---------- คณะกรรมการดำเนินงาน — หน้าของตัวเอง แยกออกจากระบบเกียรติบัตร ---------- */
+function renderStaff(){
+  $('#stSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
+    ' · บัญชีรายชื่อนี้ใช้ออกบัตรประจำตัวและเกียรติบัตรของคณะกรรมการดำเนินงาน';
+  $('#stCount').textContent='กำลังโหลด…';
+  api('listStaff',{scope:SCOPE}).then(rows=>{
+    window.__STAFF=rows||[]; fillStaffDuty(); drawStaff();
+  }).catch(e=>{ $('#stCount').textContent='โหลดไม่สำเร็จ: '+e.message; });
+}
+function fillStaffDuty(){
+  const sel=$('#st_duty'); if(!sel) return;
+  const keep=sel.value;
+  const ds=[...new Set((window.__STAFF||[]).map(x=>String(x.duty||'').trim()).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,'th'));
+  sel.innerHTML='<option value="">ทุกฝ่าย / คณะ</option>'+ds.map(d=>`<option value="${d}">${d}</option>`).join('');
+  if(keep && ds.indexOf(keep)>=0) sel.value=keep;
+}
+function drawStaff(){
+  const all=(window.__STAFF||[]);
+  const q=($('#st_q').value||'').trim(), d=$('#st_duty').value;
+  let rows=all;
+  if(d) rows=rows.filter(x=>String(x.duty||'').trim()===d);
+  if(q) rows=rows.filter(x=>((x.prefix||'')+(x.name||'')+' '+(x.org||'')+' '+(x.duty||'')+' '+(x.position||'')).indexOf(q)>=0);
+  const nDuty=new Set(all.map(x=>String(x.duty||'').trim()).filter(Boolean)).size;
+  const nOk=all.filter(x=>String(x.cert_ok||'Y')!=='N').length;
+  const nPhoto=all.filter(x=>x.photo_url).length;
+  $('#stStat').innerHTML=[['รายชื่อทั้งหมด',all.length,'คน'],['ฝ่าย / คณะ',nDuty,'ฝ่าย'],
+    ['เปิดออกเกียรติบัตร',nOk,'คน'],['มีรูปทำบัตรแล้ว',nPhoto,'คน']]
+    .map(([l,v,s])=>`<div class="stat"><div class="l">${l}</div><div class="v">${Number(v).toLocaleString()}</div><div class="s">${s}</div></div>`).join('');
+  $('#stCount').innerHTML='แสดง <b>'+rows.length+'</b> จาก '+all.length+' คน';
+  tbl($('#stTbl'),['ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','หน้าที่ในงาน','ออกเกียรติบัตร','จัดการ'],
+    rows.length? rows.map(x=>`<tr><td><b>${(x.prefix||'')+(x.name||'')}</b></td><td>${x.position||''}</td>
+      <td>${cleanTxt(x.org||'')}</td><td>${x.duty||''}</td>
+      <td>${String(x.cert_ok||'Y')==='N'?'<span class="pill b">ปิด</span>':'<span class="pill ok">เปิด</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn g sm" title="ออกเกียรติบัตรของคนนี้" onclick='goStaffCert(${JSON.stringify(String(x.name||''))})'>🎖️</button>
+        <button class="btn g sm" onclick="editStaff('${x.staff_id}')">แก้ไข</button>
+        <button class="btn g sm" onclick="delStaff('${x.staff_id}')">ลบ</button></td></tr>`).join('')
+    : `<tr><td colspan="6" style="padding:26px;text-align:center;color:var(--ink-3)">${
+        all.length? 'ไม่พบรายชื่อตามที่ค้นหา'
+                  : 'ยังไม่มีรายชื่อ — กดปุ่ม “+ เพิ่มรายชื่อ” มุมขวาบนเพื่อเริ่มได้เลย'}</td></tr>`);
+}
+/** จากหน้าคณะกรรมการดำเนินงาน → ไปออกเกียรติบัตรของคนนั้นที่หน้าเกียรติบัตร */
+function goStaffCert(name){
+  window.CERT_PRESET={type:'staff', q:name||''};
+  setView('public'); go('cert');
+}
+/** หลังบันทึกหรือลบรายชื่อ ให้รีเฟรชหน้าที่เปิดอยู่ */
+function refreshStaff(){ if(PAGE==='certadm') renderCertAdm(); else renderStaff(); }
 function caToggle(){
   const on=$('#ca_open').checked;
   $('#caState').innerHTML = on? '<span class="pill ok">เปิดดาวน์โหลดอยู่</span>'
@@ -5696,12 +5763,12 @@ function editStaff(id){
         position:[selVal('s_position'), (rk2&&rk2!=='ไม่มีวิทยฐานะ')?rk2:''].filter(Boolean).join(' '),
         org:selVal('s_org'), duty:selVal('s_duty'), cert_ok:$('#s_ok').checked?'Y':'N'};
       if(!o.name) throw new Error('กรุณากรอกชื่อ-สกุล');
-      await api('saveStaff',{staff:o}); renderCertAdm();
+      await api('saveStaff',{staff:o}); refreshStaff();
     });
 }
 async function delStaff(id){
   if(!confirm('ลบรายชื่อนี้?')) return;
-  try{ await api('deleteStaff',{staff_id:id}); renderCertAdm(); }catch(e){ alert(e.message); }
+  try{ await api('deleteStaff',{staff_id:id}); refreshStaff(); }catch(e){ alert(e.message); }
 }
 
 /* ============================ nav ============================ */
@@ -5736,7 +5803,7 @@ function go(p){
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
-    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',
+    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',staff:'คณะกรรมการดำเนินงาน',
     rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
@@ -5802,7 +5869,7 @@ function renderPage(p){
     actedit:renderActEdit, entries:renderEntries, score:renderScore, publish:renderPublish,
     promote:renderPromote, print:renderPrint, setup:renderSetup, results:renderResults, medals:renderMedals,
     sched:renderSched, news:renderNews, docs:renderDocs, site:renderSite,
-    newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards,
+    newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards, staff:renderStaff,
     judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
     apply:renderApply, judgeapp:renderJudgeApp,
     subs:renderSubsPublic, submgr:renderSubMgr, gsites:renderGSites, schedmgr:renderSchedMgr, region:renderRegion,
