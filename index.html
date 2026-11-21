@@ -1870,7 +1870,6 @@ body[data-view="admin"] .utilbar{display:none}
           <span class="sp" style="flex:1"></span>
           <span class="hint" id="stCount"></span>
         </div>
-        <p class="hint" id="stDutyNote" style="margin:10px 0 0"></p>
       </div></div>
 
       <div class="card"><div class="ch"><h3 id="stTblTitle">บัญชีรายชื่อ</h3><span class="sp"></span>
@@ -1894,6 +1893,10 @@ body[data-view="admin"] .utilbar{display:none}
         หน้านี้ใช้ <b>ตั้งชื่อคณะ</b> และ <b>ดาวน์โหลดบัญชีรายชื่อ</b> ไปแปะในบันทึกข้อความหรือคำสั่งที่พิมพ์เอง<br>
         ไฟล์ Word ที่ได้มีเฉพาะ <b>ชื่อคณะ</b> และ <b>รายชื่อพร้อมตำแหน่งและบทบาท</b> เรียงเลขไทย ๑.๑ ๑.๒
         ไม่มีหัวคำสั่งและไม่มีบล็อกลงนาม เปิดใน Word แล้วคัดลอกไปวางได้ทันที</div></div>
+
+      <div class="card" style="margin-bottom:14px"><div class="ch"><h3>จุดแข่งขัน</h3><span class="sp"></span>
+        <button class="btn g sm" onclick="editUnit(null)">+ เพิ่มจุดแข่งขัน</button></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="odUnitTbl"></table></div></div>
 
       <div class="card"><div class="ch"><h3>คณะกรรมการ</h3><span class="sp"></span>
         <button class="btn g sm" onclick="seedCommittee()">✨ สร้างชุดคณะตั้งต้น</button>
@@ -5750,10 +5753,6 @@ function fillStaffDuty(){
   sel.value=STAFF_DUTY;
 }
 function stPickUnit(){ STAFF_UNIT=$('#st_unit').value; STAFF_DUTY=''; fillStaffDuty(); drawStaff(); }
-function dutyTextOf(unit,name){
-  const c=committeesOf(unit).find(x=>String(x.name)===String(name));
-  return c? String(c.duty_text||'') : '';
-}
 function drawStaff(){
   const all=(window.__STAFF||[]);
   STAFF_UNIT=$('#st_unit').value; STAFF_DUTY=$('#st_duty').value;
@@ -5773,9 +5772,6 @@ function drawStaff(){
   $('#stCount').innerHTML='แสดง <b>'+rows.length+'</b> รายการ';
   $('#stTblTitle').textContent = (STAFF_DUTY==='*'||!STAFF_DUTY)? 'บัญชีรายชื่อ · '+unitLabel(STAFF_UNIT)
     : 'บัญชีรายชื่อ · '+STAFF_DUTY;
-  const dt=(STAFF_DUTY&&STAFF_DUTY!=='*')? dutyTextOf(STAFF_UNIT,STAFF_DUTY):'';
-  $('#stDutyNote').innerHTML = dt? '<b>หน้าที่ของคณะนี้ (บันทึกไว้ใช้เอง):</b> '+esc(dt)+
-      ' <button class="btn g sm" style="margin-left:6px" onclick="go(\'order\')">แก้ข้อความ</button>' : '';
 
   let last=null, body='';
   rows.forEach(x=>{
@@ -6089,29 +6085,80 @@ function countIn(unit,name){
   return (window.__STAFF||[]).filter(x=>String(x.unit||'')===String(unit||'')&&String(x.duty||'')===String(name)).length;
 }
 function drawCommittees(){
+  drawUnits();
   const list=((ORDER&&ORDER.committees)||[]).slice();
+  const HEAD=['ชุด / จุด','ที่','ชื่อคณะ','รายชื่อ','จัดการ'];
   if(!list.length){
-    tbl($('#odTbl'),['ชุด / จุด','ที่','ชื่อคณะ','หน้าที่','รายชื่อ','จัดการ'],
-      `<tr><td colspan="6" style="padding:26px;text-align:center;color:var(--ink-3)">
-        ยังไม่มีคณะกรรมการ — กด “✨ สร้างชุดคณะตั้งต้น” เพื่อสร้าง 13 คณะของเขต และคณะประจำจุดแข่งขันให้อัตโนมัติ</td></tr>`);
+    tbl($('#odTbl'),HEAD,
+      `<tr><td colspan="5" style="padding:26px;text-align:center;color:var(--ink-3)">
+        ยังไม่มีคณะกรรมการ — กด “✨ สร้างชุดคณะตั้งต้น” เพื่อสร้างคณะของเขตและคณะประจำจุดแข่งขันให้อัตโนมัติ</td></tr>`);
     return;
   }
   let last=null, body='';
   list.forEach(c=>{
     const u=String(c.unit||'');
     if(u!==last){ last=u;
-      body+=`<tr><td colspan="6" style="background:var(--line-2);font-weight:700">${esc(unitLabel(u))}</td></tr>`; }
+      body+=`<tr><td colspan="5" style="background:var(--line-2);font-weight:700">${esc(unitLabel(u))}</td></tr>`; }
     const n=countIn(u,c.name);
-    body+=`<tr><td style="white-space:nowrap">${esc(unitLabel(u)).slice(0,18)}</td>
+    body+=`<tr><td style="white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(unitLabel(u))}</td>
       <td>${thNum(Number(c.no)||'')}</td><td><b>${esc(c.name)}</b></td>
-      <td style="max-width:420px;font-size:13.8px">${esc(String(c.duty_text||'').slice(0,160))}${String(c.duty_text||'').length>160?'…':''}</td>
       <td style="white-space:nowrap">${n? '<span class="pill ok">'+n+' คน</span>' : '<span class="pill b">ยังไม่มี</span>'}</td>
       <td style="white-space:nowrap">
         <button class="btn g sm" onclick='goStaffDuty(${JSON.stringify(u)},${JSON.stringify(String(c.name))})'>📥 ใส่รายชื่อ</button>
         <button class="btn g sm" onclick="editCommittee('${c.committee_id}')">แก้ไข</button>
         <button class="btn g sm" onclick="delCommittee('${c.committee_id}')">ลบ</button></td></tr>`;
   });
-  tbl($('#odTbl'),['ชุด / จุด','ที่','ชื่อคณะ','หน้าที่','รายชื่อ','จัดการ'], body);
+  tbl($('#odTbl'),HEAD, body);
+}
+/** ตารางจุดแข่งขัน — เพิ่ม แก้ชื่อ ลบได้ */
+function drawUnits(){
+  const us=staffUnits();
+  const body=us.map(u=>{
+    const nk=committeesOf(u).length;
+    const np=(window.__STAFF||[]).filter(x=>String(x.unit||'')===String(u||'')).length;
+    const isDistrict=String(u||'')==='';
+    return `<tr><td><b>${esc(unitLabel(u))}</b>${isDistrict?' <span class="hint">(ชุดหลักของเขต)</span>':''}</td>
+      <td style="white-space:nowrap">${nk} คณะ</td><td style="white-space:nowrap">${np} รายชื่อ</td>
+      <td style="white-space:nowrap">${isDistrict? '<span class="hint">แก้ชื่อ/ลบไม่ได้</span>'
+        : `<button class="btn g sm" onclick='editUnit(${JSON.stringify(String(u))})'>แก้ชื่อ</button>
+           <button class="btn g sm" onclick='delUnit(${JSON.stringify(String(u))})'>ลบ</button>`}</td></tr>`;
+  }).join('');
+  tbl($('#odUnitTbl'),['ชุด / จุดแข่งขัน','คณะ','รายชื่อ','จัดการ'], body);
+}
+/** เพิ่มจุดแข่งขันใหม่ (สร้างคณะประจำจุดให้ด้วย) หรือแก้ชื่อจุดเดิม */
+function editUnit(old){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const isNew = (old===null||old===undefined);
+  openModal(isNew?'เพิ่มจุดแข่งขัน':'แก้ชื่อจุดแข่งขัน',
+    `<div class="fld"><label>ชื่อจุดแข่งขัน</label>
+       <input id="u_name" value="${esc(isNew?'':String(old))}" placeholder="เช่น จุดแข่งขันที่ 5 โรงเรียนบ้านเลื่อม"></div>
+     ${isNew? `<label style="font-size:14.3px"><input type="checkbox" id="u_seed" checked>
+        สร้างคณะประจำจุดให้อัตโนมัติ (ดำเนินงาน · อาคารสถานที่ · ประชาสัมพันธ์ · จราจร · พยาบาล · ยานพาหนะ · พิธีเปิด-ปิด · ปฏิคม)</label>`
+      : `<div class="note i"><span>✏️</span><div>เปลี่ยนชื่อแล้ว ระบบจะตามไปแก้ให้ทั้งคณะกรรมการและรายชื่อของจุดนี้</div></div>`}`,
+    async()=>{
+      const name=$('#u_name').value.trim();
+      if(!name) throw new Error('กรุณากรอกชื่อจุดแข่งขัน');
+      if(isNew){
+        if(staffUnits().indexOf(name)>=0) throw new Error('มีจุดแข่งขันชื่อนี้อยู่แล้ว');
+        if($('#u_seed').checked){ await api('seedCommittees',{units:[name]}); }
+        else { await api('saveCommittee',{committee:{scope:SCOPE, unit:name, no:1,
+          name:'คณะกรรมการดำเนินงาน', duty_text:'', active:'Y'}}); }
+      } else {
+        const r=await api('renameUnit',{old:String(old), name:name});
+        if(STAFF_UNIT===String(old)) STAFF_UNIT=name;
+      }
+      renderOrder();
+    });
+}
+async function delUnit(unit){
+  const np=(window.__STAFF||[]).filter(x=>String(x.unit||'')===String(unit)).length;
+  const nk=committeesOf(unit).length;
+  if(!confirm('ลบจุดแข่งขัน “'+unit+'” ?\n\nจะลบคณะ '+nk+' คณะ'+(np? ' และรายชื่อ '+np+' รายการ':'')+' ของจุดนี้ด้วย')) return;
+  try{ const r=await api('deleteUnit',{unit:unit, confirm:'Y'});
+    if(STAFF_UNIT===String(unit)) STAFF_UNIT='';
+    renderOrder();
+    alert('ลบแล้ว — คณะ '+r.committees+' คณะ · รายชื่อ '+r.staff+' รายการ');
+  }catch(e){ alert(e.message); }
 }
 function goStaffDuty(unit,name){ STAFF_UNIT=unit; STAFF_DUTY=name; go('staff'); }
 function editCommittee(id){
@@ -6125,12 +6172,11 @@ function editCommittee(id){
         <div class="hint">เว้นว่างไว้ = ชุดของสำนักงานเขต</div></div>
       <div class="fld"><label>ลำดับคณะ</label><input id="c_no" type="number" min="1" value="${Number(c.no)||''}"></div></div>
      <div class="fld"><label>ชื่อคณะ</label><input id="c_name" value="${esc(c.name||'')}"
-        placeholder="เช่น คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง"></div>
-     <div class="fld"><label>หน้าที่ของคณะ (บันทึกไว้ใช้เอง — ไม่ถูกพิมพ์ลงไฟล์รายชื่อ)</label>
-       <textarea id="c_duty" rows="5">${esc(c.duty_text||'')}</textarea></div>`,
+        placeholder="เช่น คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง"></div>`,
     async()=>{
       const o={committee_id:id||'', scope:SCOPE, unit:selVal('c_unit'),
-        no:Number($('#c_no').value)||0, name:$('#c_name').value.trim(), duty_text:$('#c_duty').value.trim(), active:'Y'};
+        no:Number($('#c_no').value)||0, name:$('#c_name').value.trim(),
+        duty_text:(c.duty_text||''), active:'Y'};
       if(!o.name) throw new Error('กรุณากรอกชื่อคณะ');
       if(!o.no) o.no=committeesOf(o.unit).length+1;
       await api('saveCommittee',{committee:o}); renderOrder();
@@ -6167,7 +6213,7 @@ function orderData(){
   o.units=units.map(u=>({
     unit:u, label:unitLabel(u),
     committees:committeesOf(u).map(c=>({
-      name:String(c.name), duty:String(c.duty_text||''),
+      name:String(c.name),
       members:(window.__STAFF||[])
         .filter(x=>String(x.unit||'')===String(u||'')&&String(x.duty||'')===String(c.name))
         .sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0))
@@ -6208,10 +6254,7 @@ function orderXlsx(){
     rows.push([u.label, ci+1, c.name, (ci+1)+'.'+(mi+1), m.prefix||'', m.name||'',
       m.position||'', cleanTxt(m.org||''), m.role||'กรรมการ']);
   })));
-  const duty=[['ชุด / จุดแข่งขัน','ที่','คณะกรรมการ','หน้าที่','จำนวนคน']];
-  o.units.forEach(u=>u.committees.forEach((c,ci)=>duty.push([u.label,ci+1,c.name,c.duty,c.members.length])));
-  saveBlob('คำสั่งคณะกรรมการดำเนินงาน.xlsx',
-    xlsxBlob([{name:'รายชื่อตามคำสั่ง', rows:rows},{name:'คณะและหน้าที่', rows:duty}]));
+  saveBlob('บัญชีรายชื่อคณะกรรมการ.xlsx', xlsxBlob([{name:'รายชื่อ', rows:rows}]));
 }
 
 /* ---------- ไฟล์ Word (.docx) — สร้างเองในเบราว์เซอร์ ---------- */
