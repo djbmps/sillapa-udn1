@@ -1898,6 +1898,8 @@ body[data-view="admin"] .utilbar{display:none}
             <div class="fld"><label>ปี พ.ศ.</label><input id="od_year" placeholder="2569"></div>
             <div class="fld"><label>สั่ง ณ วันที่</label><input id="od_date" placeholder="เช่น 12 กุมภาพันธ์ พ.ศ. 2569"></div>
           </div>
+          <div class="fld"><label>ชื่อหน่วยงานในหัวคำสั่ง</label>
+            <input id="od_office" placeholder="สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1"></div>
           <div class="fld"><label>เรื่อง</label>
             <input id="od_subject" placeholder="แต่งตั้งคณะกรรมการจัดการแข่งขันงานศิลปหัตถกรรมนักเรียน ระดับเขตพื้นที่การศึกษา ครั้งที่ 74 ปีการศึกษา 2569"></div>
           <div class="fld"><label>ย่อหน้านำ (เหตุผลและความเป็นมา)</label>
@@ -6116,6 +6118,8 @@ function renderOrder(){
     const v=(k)=>o[k]!==undefined&&o[k]!==''? o[k] : (ORDER_DEFAULT[k]||'');
     $('#od_no').value=o.order_no||''; $('#od_year').value=o.order_year||String(beYear());
     $('#od_date').value=o.order_date||'';
+    $('#od_office').value=o.order_office||'สำนักงานเขตพื้นที่การศึกษาประถมศึกษา'+
+      String(districtName()).replace(/^สพป\./,'').trim();
     $('#od_subject').value=v('order_subject'); $('#od_intro').value=v('order_intro');
     $('#od_tail').value=v('order_tail');
     $('#od_set1').value=v('order_set1'); $('#od_set2').value=v('order_set2');
@@ -6207,8 +6211,10 @@ async function saveOrderCfg(){
       order_date:$('#od_date').value.trim(), order_subject:$('#od_subject').value.trim(),
       order_intro:$('#od_intro').value.trim(), order_tail:$('#od_tail').value.trim(),
       order_set1:$('#od_set1').value.trim(), order_set2:$('#od_set2').value.trim(),
+      order_office:$('#od_office').value.trim(),
       order_sign_name:$('#od_sign').value.trim(), order_sign_position:$('#od_signpos').value.trim()});
     ORDER.order=Object.assign(ORDER.order||{},{
+      order_office:$('#od_office').value.trim(),
       order_no:$('#od_no').value.trim(), order_year:$('#od_year').value.trim(),
       order_date:$('#od_date').value.trim(), order_subject:$('#od_subject').value.trim(),
       order_intro:$('#od_intro').value.trim(), order_tail:$('#od_tail').value.trim(),
@@ -6225,7 +6231,8 @@ function orderData(){
     intro:$('#od_intro').value.trim(), tail:$('#od_tail').value.trim(),
     set1:$('#od_set1').value.trim(), set2:$('#od_set2').value.trim(),
     sign:$('#od_sign').value.trim(), signpos:$('#od_signpos').value.trim(),
-    office:(SCOPE==='ALL'? districtName() : groupName(SCOPE)), event:eventName()
+    office:($('#od_office').value.trim() || (SCOPE==='ALL'? districtName() : groupName(SCOPE))),
+    event:eventName()
   };
   const units=staffUnits();
   o.units=units.map(u=>({
@@ -6252,11 +6259,16 @@ function orderPreview(){
       <h2>เรื่อง ${esc(o.subject)}</h2>
       <div style="border-top:1px dotted #444;margin:10px 0 14px"></div>
       <p style="text-indent:2.5em;line-height:1.75">${esc(o.intro)}</p>`;
-  let setNo=0;
+  let set2done=false;
+  const venues=o.units.filter(u=>u.unit!=='').map(u=>u.label);
   o.units.forEach(u=>{
-    const head = u.unit===''? (o.set1||'ชุดที่ 1') : (setNo++? '' : null);
     if(u.unit===''){ h+=`<h3 style="margin-top:14px">${esc(o.set1||'ชุดที่ 1')}</h3>`; }
-    else { h+=`<h3 style="margin-top:14px">${esc(u.label)}</h3>`; }
+    else {
+      if(!set2done){ set2done=true;
+        h+=`<h3 style="margin-top:14px">${esc(o.set2||'ชุดที่ 2')} ${thNum(venues.length)} จุด ได้แก่</h3>
+            <div style="margin:0 0 8px 2.5em">${venues.map(v=>esc(v)).join('<br>')}</div>`; }
+      h+=`<h3 style="margin-top:14px">${esc(u.label)}</h3>`;
+    }
     u.committees.forEach((c,ci)=>{
       h+=`<p style="margin:12px 0 4px"><b>${thNum(ci+1)}. ${esc(c.name)}</b> ${esc(c.duty)} ประกอบด้วย</p>
           <table style="width:100%;border-collapse:collapse;font-size:14.3px">`;
@@ -6356,7 +6368,14 @@ function orderDocx(){
   b+=_dxP('เรื่อง  '+o.subject,{align:'center',b:true,sz:36,after:120});
   b+=_dxP('----------------------------------------------------------------',{align:'center',after:160});
   b+=_dxP(o.intro,{indent:720,after:160});
+  let set2done=false;
+  const venues=o.units.filter(u=>u.unit!=='').map(u=>u.label);
   o.units.forEach(u=>{
+    if(u.unit!=='' && !set2done){ set2done=true;
+      b+=_dxP((o.set2||'ชุดที่ 2')+' '+thNum(venues.length)+' จุด ได้แก่',{b:true,after:40});
+      venues.forEach(v=>{ b+=_dxP(v,{left:720,after:0}); });
+      b+=_dxP('',{after:60});
+    }
     b+=_dxP(u.unit===''? (o.set1||'ชุดที่ 1') : u.label,{b:true,after:80});
     u.committees.forEach((c,ci)=>{
       b+=_dxP(thNum(ci+1)+'. '+c.name+' '+c.duty+' ประกอบด้วย',{b:false,after:40,left:0});
