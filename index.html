@@ -683,6 +683,7 @@ body[data-view="admin"] .utilbar{display:none}
         <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกกรรมการ</button>
         <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
         <button class="nv" data-p="staff" data-role="district_admin,group_admin" data-perm="certadm"><i>👥</i>คณะกรรมการดำเนินงาน</button>
+        <button class="nv" data-p="order" data-role="district_admin,group_admin" data-perm="certadm"><i>📄</i>คำสั่งแต่งตั้งคณะกรรมการ</button>
       </div></div>
 
       <div class="ng" data-sec="sc"><span class="ngh" onclick="togSec(this)">บันทึกคะแนน &amp; ประกาศผล<i class="cv">▾</i></span><div class="ngb">
@@ -1845,23 +1846,80 @@ body[data-view="admin"] .utilbar{display:none}
     <section class="page" id="p-staff">
       <div class="hd"><div><h2>คณะกรรมการดำเนินงาน</h2><p id="stSub"></p></div>
         <span class="sp"></span>
-        <button class="btn g" onclick="go('cards')">🪪 พิมพ์บัตรประจำตัว</button>
-        <button class="btn g" onclick="goStaffCert()">🎖️ พิมพ์เกียรติบัตร</button>
-        <button class="btn" onclick="editStaff(null)">+ เพิ่มรายชื่อ</button></div>
+        <button class="btn g" onclick="go('order')">📄 คำสั่งแต่งตั้ง</button>
+        <button class="btn g" onclick="go('cards')">🪪 บัตรประจำตัว</button>
+        <button class="btn g" onclick="goStaffCert()">🎖️ เกียรติบัตร</button>
+        <button class="btn" onclick="openStaffImport()">📥 นำเข้าหลายคน</button></div>
 
       <div class="grid g4" id="stStat" style="margin-bottom:14px"></div>
 
-      <div class="card"><div class="ch"><h3>บัญชีรายชื่อ</h3><span class="sp"></span>
-        <select id="st_duty" onchange="drawStaff()"
-                style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;max-width:280px"></select>
-        <input id="st_q" placeholder="ค้นชื่อ / หน่วยงาน / ตำแหน่ง…" oninput="drawStaff()"
-               style="min-width:200px;padding:9px 13px;border:1px solid var(--line);border-radius:10px">
-        <span class="hint" id="stCount"></span></div>
+      <div class="card" style="margin-bottom:14px"><div class="cb">
+        <div class="row">
+          <div class="fld" style="flex:1;min-width:210px;margin:0"><label>ชุด / จุดแข่งขัน</label>
+            <select id="st_unit" onchange="stPickUnit()"></select></div>
+          <div class="fld" style="flex:2;min-width:260px;margin:0"><label>คณะกรรมการ</label>
+            <select id="st_duty" onchange="drawStaff()"></select></div>
+          <div class="fld" style="flex:1;min-width:180px;margin:0"><label>ค้นหา</label>
+            <input id="st_q" placeholder="ชื่อ / หน่วยงาน / ตำแหน่ง…" oninput="drawStaff()"></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm" onclick="editStaff(null)">+ เพิ่มรายชื่อทีละคน</button>
+          <button class="btn g sm" onclick="openStaffImport()">📥 วางรายชื่อจาก Word / Excel</button>
+          <button class="btn g sm" onclick="staffTemplateXlsx()">⬇ เทมเพลตนำเข้า (Excel)</button>
+          <button class="btn g sm" onclick="staffXlsx()">⬇ รายชื่อทั้งหมด (Excel)</button>
+          <span class="sp" style="flex:1"></span>
+          <span class="hint" id="stCount"></span>
+        </div>
+        <p class="hint" id="stDutyNote" style="margin:10px 0 0"></p>
+      </div></div>
+
+      <div class="card"><div class="ch"><h3 id="stTblTitle">บัญชีรายชื่อ</h3><span class="sp"></span>
+        <button class="btn g sm" onclick="clearStaffGroup()">🗑️ ล้างรายชื่อในคณะนี้</button></div>
         <div class="cb" style="padding:0;overflow:auto"><table id="stTbl"></table></div></div>
 
       <div class="note i" style="margin-top:12px"><span>💡</span><div>
-        ช่อง <b>หน้าที่ในงาน</b> คือข้อความที่พิมพ์ลงเกียรติบัตรและขึ้นบนบัตรประจำตัว ·
-        ปุ่ม <b>🎖️</b> ท้ายแถวจะพาไปหน้าออกเกียรติบัตรของคนนั้นทันที (ต้องเปิดระบบเกียรติบัตรก่อน)</div></div>
+        <b>คณะ</b> คือฝ่ายที่พิมพ์ลงคำสั่ง เกียรติบัตร และบัตรประจำตัว · คนเดียวอยู่ได้หลายคณะ (เพิ่มคนละแถว) ·
+        ปุ่ม <b>🎖️</b> ท้ายแถวพาไปออกเกียรติบัตรของคนนั้นทันที</div></div>
+    </section>
+
+    <!-- ---------- คำสั่งแต่งตั้งคณะกรรมการ (หลังบ้าน) ---------- -->
+    <section class="page" id="p-order">
+      <div class="hd"><div><h2>คำสั่งแต่งตั้งคณะกรรมการ</h2><p id="odSub"></p></div>
+        <span class="sp"></span>
+        <button class="btn g" onclick="orderXlsx()">⬇ Excel</button>
+        <button class="btn g" onclick="orderDocx()">⬇ ไฟล์ Word</button>
+        <button class="btn" onclick="orderPreview()">👁️ ดูตัวอย่าง / พิมพ์</button></div>
+
+      <div class="card" style="margin-bottom:14px"><div class="ch"><h3>① ข้อความส่วนหัวคำสั่ง</h3>
+        <span class="sp"></span><button class="btn sm" onclick="saveOrderCfg()">บันทึกข้อความ</button></div>
+        <div class="cb">
+          <div class="grid g3">
+            <div class="fld"><label>คำสั่งที่</label><input id="od_no" placeholder="เช่น 123"></div>
+            <div class="fld"><label>ปี พ.ศ.</label><input id="od_year" placeholder="2569"></div>
+            <div class="fld"><label>สั่ง ณ วันที่</label><input id="od_date" placeholder="เช่น 12 กุมภาพันธ์ พ.ศ. 2569"></div>
+          </div>
+          <div class="fld"><label>เรื่อง</label>
+            <input id="od_subject" placeholder="แต่งตั้งคณะกรรมการจัดการแข่งขันงานศิลปหัตถกรรมนักเรียน ระดับเขตพื้นที่การศึกษา ครั้งที่ 74 ปีการศึกษา 2569"></div>
+          <div class="fld"><label>ย่อหน้านำ (เหตุผลและความเป็นมา)</label>
+            <textarea id="od_intro" rows="5" placeholder="ด้วย สำนักงานคณะกรรมการการศึกษาขั้นพื้นฐาน…"></textarea></div>
+          <div class="fld"><label>ย่อหน้าปิดท้าย</label>
+            <textarea id="od_tail" rows="2" placeholder="ทั้งนี้ ให้คณะกรรมการทุกคณะ ทุกคน ปฏิบัติหน้าที่ตามคำสั่งที่ได้รับมอบหมาย…"></textarea></div>
+          <div class="grid g2">
+            <div class="fld"><label>หัวข้อชุดที่ 1</label><input id="od_set1" placeholder="ชุดที่ 1 คณะกรรมการบริหารของสำนักงานเขตพื้นที่การศึกษา"></div>
+            <div class="fld"><label>หัวข้อชุดที่ 2</label><input id="od_set2" placeholder="ชุดที่ 2 คณะกรรมการจัดการแข่งขัน ณ จุดแข่งขัน"></div>
+          </div>
+          <div class="grid g2">
+            <div class="fld"><label>ผู้ลงนาม</label><input id="od_sign" placeholder="(นางชฎากรณ์ บรรเลงรมย์)"></div>
+            <div class="fld"><label>ตำแหน่งผู้ลงนาม</label><input id="od_signpos" placeholder="ผอ.สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1"></div>
+          </div>
+        </div></div>
+
+      <div class="card"><div class="ch"><h3>② คณะกรรมการและหน้าที่</h3><span class="sp"></span>
+        <button class="btn g sm" onclick="seedCommittee()">✨ สร้างชุดคณะตั้งต้น</button>
+        <button class="btn g sm" onclick="editCommittee(null)">+ เพิ่มคณะ</button></div>
+        <div class="cb" style="padding:0;overflow:auto"><table id="odTbl"></table></div></div>
+
+      <div id="orderArea" class="printarea" style="margin-top:16px"></div>
     </section>
 
     <!-- ---------- ตั้งค่า ---------- -->
@@ -2028,6 +2086,14 @@ function memSave(){ LS.setItem(K.demo, JSON.stringify(MEM)); }
 function demoBeToday(){ const d=new Date();
   return (d.getFullYear()+543)+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 const JA_STATUS=['รอพิจารณา','ผ่านคุณสมบัติ','สำรอง','ไม่ผ่าน','บรรจุแล้ว'];
+const DEMO_SEED_K1=[['คณะกรรมการอำนวยการ','มีหน้าที่ ให้คำปรึกษา แนะนำ อำนวยความสะดวก กำกับ ดูแล ส่งเสริม สนับสนุน'],
+ ['คณะกรรมการดำเนินงาน','มีหน้าที่ กำกับ ติดตาม ดูแล เป็นที่ปรึกษา ประสานงานกับคณะกรรมการชุดอื่น ๆ'],
+ ['คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง','มีหน้าที่ วางแผนดำเนินงานฝ่ายสถานที่/อุปกรณ์/แสง เสียง'],
+ ['คณะกรรมการฝ่ายประชาสัมพันธ์','มีหน้าที่ ประสานงาน เผยแพร่ข่าวสารเกี่ยวกับการจัดงาน'],
+ ['คณะกรรมการฝ่ายทะเบียนและ ICT','มีหน้าที่ ลงทะเบียน จัดการระบบบันทึกคะแนน เกียรติบัตรและบัตรประจำตัว']];
+const DEMO_SEED_K2=[['คณะกรรมการดำเนินงาน','มีหน้าที่ กำกับ ติดตาม ดูแล ประสานงาน ณ จุดแข่งขัน'],
+ ['คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง','มีหน้าที่ วางแผนดำเนินงานฝ่ายสถานที่ ณ จุดแข่งขัน'],
+ ['คณะกรรมการฝ่ายปฏิคมและการต้อนรับ','มีหน้าที่ ต้อนรับและอำนวยความสะดวก ณ จุดแข่งขัน']];
 function demoJaWin(){
   const c=MEM.japply_win||{};
   const flag=String(c.flag||'N').toUpperCase(), from=c.open_at||'', to=c.close_at||'', note=c.open_note||'';
@@ -2392,6 +2458,35 @@ function demoApi(action,p){
       else Object.assign(MEM.staff.find(x=>x.staff_id===st.staff_id), st);
       memSave(); return st; }
     case 'deleteStaff':{ MEM.staff=(MEM.staff||[]).filter(x=>x.staff_id!==p.staff_id); memSave(); return true; }
+    case 'importStaff':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.staff=MEM.staff||[];
+      if(p.replace==='Y') MEM.staff=MEM.staff.filter(x=>!(String(x.unit||'')===String(p.unit||'')&&String(x.duty||'')===String(p.duty||'')));
+      let n=0; (p.rows||[]).forEach(r=>{ if(!r.name) return; n++;
+        MEM.staff.push(Object.assign({staff_id:'F'+String(MEM.staff.length+1).padStart(4,'0'),
+          scope:p.scope||'ALL',unit:p.unit||'',duty:p.duty||'',seq:n,cert_ok:'Y'}, r)); });
+      memSave(); return {added:n, removed:0, skipped:0}; }
+    case 'clearStaffGroup':{ const before=(MEM.staff||[]).length;
+      MEM.staff=(MEM.staff||[]).filter(x=>!(String(x.unit||'')===String(p.unit||'')&&String(x.duty||'')===String(p.duty||'')));
+      memSave(); return {removed:before-(MEM.staff||[]).length}; }
+    case 'orderSetup':{ MEM.committees=MEM.committees||[]; MEM.orderCfg=MEM.orderCfg||{};
+      return {committees:MEM.committees.slice().sort((a,b)=>String(a.unit||'')<String(b.unit||'')?-1:
+        (String(a.unit||'')>String(b.unit||'')?1:(Number(a.no)||0)-(Number(b.no)||0))), order:MEM.orderCfg}; }
+    case 'saveCommittee':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.committees=MEM.committees||[]; const c=p.committee;
+      if(!c.committee_id){ c.committee_id='K'+String(MEM.committees.length+1).padStart(4,'0'); MEM.committees.push(c); }
+      else Object.assign(MEM.committees.find(x=>x.committee_id===c.committee_id), c);
+      memSave(); return c; }
+    case 'deleteCommittee':{ MEM.committees=(MEM.committees||[]).filter(x=>x.committee_id!==p.committee_id); memSave(); return true; }
+    case 'seedCommittees':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.committees=MEM.committees||[];
+      const have={}; MEM.committees.forEach(c=>have[String(c.unit||'')+'|'+c.name]=1);
+      let n=0; (p.units||['']).forEach(u=>{
+        const list=String(u||'')===''? DEMO_SEED_K1 : DEMO_SEED_K2;
+        list.forEach((row,i)=>{ if(have[String(u||'')+'|'+row[0]]) return; n++;
+          MEM.committees.push({committee_id:'K'+String(MEM.committees.length+1).padStart(4,'0'),
+            scope:'ALL',unit:String(u||''),no:i+1,name:row[0],duty_text:row[1],active:'Y'}); }); });
+      memSave(); return {added:n}; }
+    case 'saveOrderConfig':{ MEM.orderCfg=Object.assign(MEM.orderCfg||{}, p); delete MEM.orderCfg.token; memSave(); return true; }
     case 'listCertificates':{
       const cc=demoApi('certConfig',{scope:p.scope});
       if(!cc.open && !p.preview) throw new Error(cc.note||'ยังไม่เปิดให้ดาวน์โหลดเกียรติบัตร');
@@ -3360,11 +3455,11 @@ const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการ
 
 /** หน้าหลังบ้าน — ต้องเข้าสู่ระบบก่อนเสมอ ผู้ชมทั่วไปเปิดไม่ได้ */
 const ADMIN_PAGES=['dash','actedit','rulesmgr','entries','score','publish','promote','certadm','cards',
-  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr','schedmgr','region','staff'];
+  'judges','judgeapp','perm','season','backup','newsmgr','site','print','groups','admins','submgr','schedmgr','region','staff','order'];
 /** หน้าไหนต้องใช้สิทธิ์อะไร (ไม่อยู่ในนี้ = เปิดได้ทุกแอดมิน) */
 const PAGE_PERM={actedit:'actedit',rulesmgr:'actedit',entries:'entries',score:'score',publish:'publish',
   promote:'promote',judges:'judges',judgeapp:'judges',certadm:'certadm',cards:'cards',
-  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm',schedmgr:'sched',region:'promote',staff:'certadm'};
+  newsmgr:'newsmgr',site:'site',print:'print',perm:'perm',schedmgr:'sched',region:'promote',staff:'certadm',order:'certadm'};
 const OWNER_PAGES=['admins','season','backup'];
 function isAdminPage(p){ return ADMIN_PAGES.indexOf(p)>=0; }
 /** ผู้ที่ยังไม่เข้าสู่ระบบ: บังคับให้อยู่หน้าสาธารณะ และถ้าค้างอยู่ที่หน้าหลังบ้าน (เช่นลิงก์เก่าในช่อง URL)
@@ -5038,7 +5133,7 @@ const _CRC_T=(()=>{ const t=new Uint32Array(256);
   for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = (c&1)? (0xEDB88320^(c>>>1)) : (c>>>1); t[n]=c>>>0; }
   return t; })();
 function _crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c=_CRC_T[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
-function _zipStore(files){
+function _zipStore(files, mime){
   const enc=new TextEncoder(), u16=n=>[n&255,(n>>8)&255], u32=n=>[n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255];
   const parts=[], cent=[]; let off=0;
   files.forEach(f=>{
@@ -5056,7 +5151,7 @@ function _zipStore(files){
     cd.push(new Uint8Array(h), c.name); cdLen += h.length + c.name.length;
   });
   const end=new Uint8Array([].concat([0x50,0x4b,5,6],u16(0),u16(0),u16(cent.length),u16(cent.length),u32(cdLen),u32(off),u16(0)));
-  return new Blob(parts.concat(cd,[end]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  return new Blob(parts.concat(cd,[end]),{type:mime||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
 function _xe(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
   .replace(/"/g,'&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,''); }
@@ -5622,55 +5717,265 @@ function renderCertAdm(){
   });
 }
 
-/* ---------- คณะกรรมการดำเนินงาน — หน้าของตัวเอง แยกออกจากระบบเกียรติบัตร ---------- */
+/* ============================ คณะกรรมการดำเนินงาน & คำสั่งแต่งตั้ง ============================
+   แนวคิด: หนึ่งแถว = คนหนึ่งคนในคณะหนึ่งคณะ คนเดียวอยู่หลายคณะได้ (คนละแถว)
+   unit = ชุด/จุดแข่งขัน ('' = ชุดของสำนักงานเขต) · duty = ชื่อคณะ · role = บทบาท · seq = ลำดับในคณะ */
+let ORDER=null, STAFF_UNIT='', STAFF_DUTY='';
+/** หนีอักขระพิเศษก่อนใส่ลงหน้าเว็บ */
+function esc(v){ return qq(v); }
+const ROLE_OPTS=['ประธานกรรมการ','รองประธานกรรมการ','กรรมการ','กรรมการและเลขานุการ','กรรมการและผู้ช่วยเลขานุการ'];
+const TH_DIGITS='๐๑๒๓๔๕๖๗๘๙';
+function thNum(n){ return String(n==null?'':n).replace(/[0-9]/g,d=>TH_DIGITS[Number(d)]); }
+function unitLabel(u){ return String(u||'')===''? 'ชุดของสำนักงานเขต' : String(u); }
+
 function renderStaff(){
   $('#stSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
-    ' · บัญชีรายชื่อนี้ใช้ออกบัตรประจำตัวและเกียรติบัตรของคณะกรรมการดำเนินงาน';
+    ' · บัญชีรายชื่อนี้ใช้ทำคำสั่งแต่งตั้ง บัตรประจำตัว และเกียรติบัตร';
   $('#stCount').textContent='กำลังโหลด…';
-  api('listStaff',{scope:SCOPE}).then(rows=>{
-    window.__STAFF=rows||[]; fillStaffDuty(); drawStaff();
-  }).catch(e=>{ $('#stCount').textContent='โหลดไม่สำเร็จ: '+e.message; });
+  Promise.all([api('listStaff',{scope:SCOPE}), api('orderSetup',{scope:SCOPE})])
+    .then(([rows,od])=>{ window.__STAFF=rows||[]; ORDER=od||{committees:[],order:{}};
+      fillStaffUnit(); fillStaffDuty(); drawStaff(); })
+    .catch(e=>{ $('#stCount').textContent='โหลดไม่สำเร็จ: '+e.message; });
+}
+/** รายชื่อชุด/จุด — รวมจากคณะที่ตั้งไว้ และจากรายชื่อที่มีอยู่จริง */
+function staffUnits(){
+  const set=new Set();
+  ((ORDER&&ORDER.committees)||[]).forEach(c=>set.add(String(c.unit||'')));
+  (window.__STAFF||[]).forEach(x=>set.add(String(x.unit||'')));
+  const arr=[...set];
+  if(!arr.length) arr.push('');
+  return arr.sort((a,b)=>a===''?-1:(b===''?1:a.localeCompare(b,'th')));
+}
+function committeesOf(unit){
+  return ((ORDER&&ORDER.committees)||[]).filter(c=>String(c.unit||'')===String(unit||''))
+    .sort((a,b)=>(Number(a.no)||0)-(Number(b.no)||0));
+}
+function fillStaffUnit(){
+  const sel=$('#st_unit'); if(!sel) return;
+  const us=staffUnits();
+  if(us.indexOf(STAFF_UNIT)<0) STAFF_UNIT=us[0];
+  sel.innerHTML=us.map(u=>`<option value="${esc(u)}">${esc(unitLabel(u))}</option>`).join('');
+  sel.value=STAFF_UNIT;
 }
 function fillStaffDuty(){
   const sel=$('#st_duty'); if(!sel) return;
-  const keep=sel.value;
-  const ds=[...new Set((window.__STAFF||[]).map(x=>String(x.duty||'').trim()).filter(Boolean))]
-    .sort((a,b)=>a.localeCompare(b,'th'));
-  sel.innerHTML='<option value="">ทุกฝ่าย / คณะ</option>'+ds.map(d=>`<option value="${d}">${d}</option>`).join('');
-  if(keep && ds.indexOf(keep)>=0) sel.value=keep;
+  const names=committeesOf(STAFF_UNIT).map(c=>String(c.name));
+  (window.__STAFF||[]).filter(x=>String(x.unit||'')===String(STAFF_UNIT||''))
+    .forEach(x=>{ const d=String(x.duty||'').trim(); if(d && names.indexOf(d)<0) names.push(d); });
+  if(!names.length){ sel.innerHTML='<option value="">— ยังไม่มีคณะในชุดนี้ —</option>'; STAFF_DUTY=''; return; }
+  if(names.indexOf(STAFF_DUTY)<0) STAFF_DUTY=names[0];
+  sel.innerHTML='<option value="*">ทุกคณะในชุดนี้</option>'+
+    names.map((n,i)=>`<option value="${esc(n)}">${thNum(i+1)}. ${esc(n)}</option>`).join('');
+  sel.value=STAFF_DUTY;
+}
+function stPickUnit(){ STAFF_UNIT=$('#st_unit').value; STAFF_DUTY=''; fillStaffDuty(); drawStaff(); }
+function dutyTextOf(unit,name){
+  const c=committeesOf(unit).find(x=>String(x.name)===String(name));
+  return c? String(c.duty_text||'') : '';
 }
 function drawStaff(){
   const all=(window.__STAFF||[]);
-  const q=($('#st_q').value||'').trim(), d=$('#st_duty').value;
-  let rows=all;
-  if(d) rows=rows.filter(x=>String(x.duty||'').trim()===d);
-  if(q) rows=rows.filter(x=>((x.prefix||'')+(x.name||'')+' '+(x.org||'')+' '+(x.duty||'')+' '+(x.position||'')).indexOf(q)>=0);
-  const nDuty=new Set(all.map(x=>String(x.duty||'').trim()).filter(Boolean)).size;
-  const nOk=all.filter(x=>String(x.cert_ok||'Y')!=='N').length;
-  const nPhoto=all.filter(x=>x.photo_url).length;
-  $('#stStat').innerHTML=[['รายชื่อทั้งหมด',all.length,'คน'],['ฝ่าย / คณะ',nDuty,'ฝ่าย'],
-    ['เปิดออกเกียรติบัตร',nOk,'คน'],['มีรูปทำบัตรแล้ว',nPhoto,'คน']]
-    .map(([l,v,s])=>`<div class="stat"><div class="l">${l}</div><div class="v">${Number(v).toLocaleString()}</div><div class="s">${s}</div></div>`).join('');
-  $('#stCount').innerHTML='แสดง <b>'+rows.length+'</b> จาก '+all.length+' คน';
-  tbl($('#stTbl'),['ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','หน้าที่ในงาน','ออกเกียรติบัตร','จัดการ'],
-    rows.length? rows.map(x=>`<tr><td><b>${(x.prefix||'')+(x.name||'')}</b></td><td>${x.position||''}</td>
-      <td>${cleanTxt(x.org||'')}</td><td>${x.duty||''}</td>
-      <td>${String(x.cert_ok||'Y')==='N'?'<span class="pill b">ปิด</span>':'<span class="pill ok">เปิด</span>'}</td>
+  STAFF_UNIT=$('#st_unit').value; STAFF_DUTY=$('#st_duty').value;
+  const q=($('#st_q').value||'').trim();
+  const inUnit=all.filter(x=>String(x.unit||'')===String(STAFF_UNIT||''));
+  let rows = (STAFF_DUTY==='*'||!STAFF_DUTY)? inUnit : inUnit.filter(x=>String(x.duty||'')===STAFF_DUTY);
+  if(q) rows=rows.filter(x=>((x.prefix||'')+(x.name||'')+' '+(x.org||'')+' '+(x.duty||'')+' '+(x.position||'')+' '+(x.role||'')).indexOf(q)>=0);
+  rows=rows.slice().sort((a,b)=>{
+    const da=String(a.duty||''), db=String(b.duty||'');
+    if(da!==db) return dutyNo(STAFF_UNIT,da)-dutyNo(STAFF_UNIT,db);
+    return (Number(a.seq)||0)-(Number(b.seq)||0);
+  });
+  const people=new Set(all.map(x=>String((x.prefix||'')+x.name).trim()));
+  $('#stStat').innerHTML=[['รายชื่อทั้งหมด',all.length,'รายการ'],['จำนวนบุคคล',people.size,'คน'],
+    ['คณะที่ตั้งไว้',((ORDER&&ORDER.committees)||[]).length,'คณะ'],['แสดงอยู่',rows.length,'รายการ']]
+    .map(([l,v,u])=>`<div class="stat"><div class="l">${l}</div><div class="v">${Number(v).toLocaleString()}</div><div class="s">${u}</div></div>`).join('');
+  $('#stCount').innerHTML='แสดง <b>'+rows.length+'</b> รายการ';
+  $('#stTblTitle').textContent = (STAFF_DUTY==='*'||!STAFF_DUTY)? 'บัญชีรายชื่อ · '+unitLabel(STAFF_UNIT)
+    : 'บัญชีรายชื่อ · '+STAFF_DUTY;
+  const dt=(STAFF_DUTY&&STAFF_DUTY!=='*')? dutyTextOf(STAFF_UNIT,STAFF_DUTY):'';
+  $('#stDutyNote').innerHTML = dt? '<b>หน้าที่ของคณะนี้:</b> '+esc(dt)+
+      ' <button class="btn g sm" style="margin-left:6px" onclick="go(\'order\')">แก้ข้อความ</button>' : '';
+
+  let last=null, body='';
+  rows.forEach(x=>{
+    const d=String(x.duty||'');
+    if((STAFF_DUTY==='*'||!STAFF_DUTY) && d!==last){
+      last=d;
+      body+=`<tr><td colspan="6" style="background:var(--line-2);font-weight:700">${thNum(dutyNo(STAFF_UNIT,d))}. ${esc(d||'(ยังไม่ระบุคณะ)')}</td></tr>`;
+    }
+    body+=`<tr><td style="white-space:nowrap">${thNum(Number(x.seq)||'')}</td>
+      <td><b>${esc((x.prefix||'')+(x.name||''))}</b></td>
+      <td>${esc(x.position||'')}</td><td>${esc(cleanTxt(x.org||''))}</td>
+      <td style="white-space:nowrap">${esc(x.role||'กรรมการ')}</td>
       <td style="white-space:nowrap">
-        <button class="btn g sm" title="ออกเกียรติบัตรของคนนี้" onclick='goStaffCert(${JSON.stringify(String(x.name||''))})'>🎖️</button>
+        <button class="btn g sm" title="เลื่อนขึ้น" onclick="moveStaff('${x.staff_id}',-1)">▲</button>
+        <button class="btn g sm" title="เลื่อนลง" onclick="moveStaff('${x.staff_id}',1)">▼</button>
+        <button class="btn g sm" title="ออกเกียรติบัตร" onclick='goStaffCert(${JSON.stringify(String(x.name||''))})'>🎖️</button>
         <button class="btn g sm" onclick="editStaff('${x.staff_id}')">แก้ไข</button>
-        <button class="btn g sm" onclick="delStaff('${x.staff_id}')">ลบ</button></td></tr>`).join('')
-    : `<tr><td colspan="6" style="padding:26px;text-align:center;color:var(--ink-3)">${
-        all.length? 'ไม่พบรายชื่อตามที่ค้นหา'
-                  : 'ยังไม่มีรายชื่อ — กดปุ่ม “+ เพิ่มรายชื่อ” มุมขวาบนเพื่อเริ่มได้เลย'}</td></tr>`);
+        <button class="btn g sm" onclick="delStaff('${x.staff_id}')">ลบ</button></td></tr>`;
+  });
+  tbl($('#stTbl'),['ที่','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ','จัดการ'],
+    body || `<tr><td colspan="6" style="padding:26px;text-align:center;color:var(--ink-3)">${
+      all.length? 'ไม่พบรายชื่อตามที่ค้นหา'
+        : 'ยังไม่มีรายชื่อ — กด “📥 นำเข้าหลายคน” เพื่อวางรายชื่อจากคำสั่งเดิมได้ทีเดียวทั้งคณะ'}</td></tr>`);
+}
+function dutyNo(unit,name){
+  const i=committeesOf(unit).findIndex(c=>String(c.name)===String(name));
+  return i<0? 99 : i+1;
+}
+/** สลับลำดับกับรายชื่อที่อยู่ติดกันในคณะเดียวกัน */
+async function moveStaff(id,dir){
+  const all=(window.__STAFF||[]);
+  const me=all.find(x=>x.staff_id===id); if(!me) return;
+  const sib=all.filter(x=>String(x.unit||'')===String(me.unit||'') && String(x.duty||'')===String(me.duty||''))
+    .sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0));
+  const i=sib.findIndex(x=>x.staff_id===id), j=i+dir;
+  if(i<0||j<0||j>=sib.length) return;
+  const a=sib[i], b=sib[j], sa=Number(a.seq)||i+1, sb=Number(b.seq)||j+1;
+  try{
+    await api('saveStaff',{staff:Object.assign({},a,{seq:sb})});
+    await api('saveStaff',{staff:Object.assign({},b,{seq:sa})});
+    renderStaff();
+  }catch(e){ alert(e.message); }
+}
+async function clearStaffGroup(){
+  if(!STAFF_DUTY||STAFF_DUTY==='*') return alert('เลือกคณะที่ต้องการล้างก่อนค่ะ');
+  if(!confirm('ล้างรายชื่อทั้งหมดใน “'+STAFF_DUTY+'” ?\n(คณะและข้อความหน้าที่ยังอยู่เหมือนเดิม)')) return;
+  try{ const r=await api('clearStaffGroup',{scope:SCOPE, unit:STAFF_UNIT, duty:STAFF_DUTY});
+    alert('ล้างแล้ว '+r.removed+' รายชื่อ'); renderStaff();
+  }catch(e){ alert(e.message); }
 }
 /** จากหน้าคณะกรรมการดำเนินงาน → ไปออกเกียรติบัตรของคนนั้นที่หน้าเกียรติบัตร */
 function goStaffCert(name){
   window.CERT_PRESET={type:'staff', q:name||''};
   setView('public'); go('cert');
 }
-/** หลังบันทึกหรือลบรายชื่อ ให้รีเฟรชหน้าที่เปิดอยู่ */
-function refreshStaff(){ if(PAGE==='certadm') renderCertAdm(); else renderStaff(); }
+function refreshStaff(){ if(PAGE==='certadm') renderCertAdm(); else if(PAGE==='order') renderOrder(); else renderStaff(); }
+
+/* ---------- นำเข้ารายชื่อทีละหลายคน ---------- */
+const STAFF_IMPORT_COLS=['คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ'];
+function staffTemplateXlsx(){
+  const rows=[STAFF_IMPORT_COLS,
+    ['นาย','สาคร เสียงเย็น','รอง ผอ.สพป.อุดรธานี เขต 1','สพป.อุดรธานี เขต 1','ประธานกรรมการ'],
+    ['นาง','เอื้อมพรพิชญ์ แสงศิลา','ผอ.กลุ่มนิเทศ ติดตามและประเมินผลฯ','สพป.อุดรธานี เขต 1','รองประธานกรรมการ'],
+    ['นางสาว','ดวงใจ บุญมีประเสริฐ','ศึกษานิเทศก์','สพป.อุดรธานี เขต 1','กรรมการและเลขานุการ'],
+    ['','','','',''],['','','','','']];
+  saveBlob('เทมเพลตนำเข้ารายชื่อคณะกรรมการ.xlsx',
+    xlsxBlob([{name:'รายชื่อ', rows:rows},
+              {name:'คำอธิบาย', rows:[['วิธีใช้'],
+                ['1) กรอกรายชื่อทีละแถว หนึ่งแถวต่อหนึ่งคน'],
+                ['2) ช่องบทบาทในคณะ ใช้คำว่า '+ROLE_OPTS.join(' / ')],
+                ['3) คัดลอกทั้งตาราง (ไม่ต้องเอาหัวคอลัมน์ก็ได้) ไปวางในช่องนำเข้าของระบบ'],
+                ['4) เลือกชุด/จุด และคณะที่จะนำเข้า แล้วกดตรวจสอบ → บันทึก']]}]));
+}
+function staffXlsx(){
+  const all=(window.__STAFF||[]).slice().sort((a,b)=>{
+    const ua=String(a.unit||''), ub=String(b.unit||'');
+    if(ua!==ub) return ua<ub?-1:1;
+    const da=dutyNo(ua,String(a.duty||'')), db=dutyNo(ub,String(b.duty||''));
+    if(da!==db) return da-db;
+    return (Number(a.seq)||0)-(Number(b.seq)||0);
+  });
+  const rows=[['ชุด / จุดแข่งขัน','คณะกรรมการ','ที่','คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ']];
+  all.forEach(x=>rows.push([unitLabel(x.unit), x.duty||'', Number(x.seq)||'', x.prefix||'', x.name||'',
+    x.position||'', cleanTxt(x.org||''), x.role||'กรรมการ']));
+  saveBlob('รายชื่อคณะกรรมการดำเนินงาน.xlsx', xlsxBlob([{name:'รายชื่อ', rows:rows}]));
+}
+function openStaffImport(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const us=staffUnits();
+  const names=committeesOf(STAFF_UNIT).map(c=>String(c.name));
+  openModal('นำเข้ารายชื่อทีละหลายคน',
+    `<div class="grid g2">
+      <div class="fld"><label>ชุด / จุดแข่งขัน</label>
+        <select id="im_unit" onchange="imFillDuty()">${us.map(u=>`<option value="${esc(u)}" ${u===STAFF_UNIT?'selected':''}>${esc(unitLabel(u))}</option>`).join('')}</select></div>
+      <div class="fld"><label>นำเข้าเข้าคณะ</label><select id="im_duty"></select></div>
+     </div>
+     <div class="note i" style="margin-bottom:10px"><span>📋</span><div>
+       คัดลอกตารางรายชื่อจาก <b>Word</b> หรือ <b>Excel</b> มาวางในช่องด้านล่างได้เลย ระบบแยกคอลัมน์ให้เอง<br>
+       ลำดับคอลัมน์: <b>คำนำหน้า · ชื่อ-สกุล · ตำแหน่ง · หน่วยงาน · บทบาท</b>
+       (ถ้าวางมา 3 ช่องจะอ่านเป็น ชื่อ-สกุล · ตำแหน่ง · บทบาท)<br>
+       คำนำหน้าเขียนติดกับชื่อก็ได้ เช่น “นายสาคร เสียงเย็น” ระบบแยกให้</div></div>
+     <div class="fld"><label>วางรายชื่อตรงนี้</label>
+       <textarea id="im_text" rows="9" oninput="imPreview()" placeholder="นายสาคร เสียงเย็น\tรอง ผอ.สพป.อุดรธานี เขต 1\tประธานกรรมการ
+นางเอื้อมพรพิชญ์ แสงศิลา\tผอ.กลุ่มนิเทศ ติดตามและประเมินผลฯ\tรองประธานกรรมการ"></textarea></div>
+     <label style="font-size:14.3px"><input type="checkbox" id="im_replace"> ล้างรายชื่อเดิมในคณะนี้ก่อนนำเข้า</label>
+     <div id="imPrev" style="margin-top:10px"></div>`,
+    async()=>{
+      const rows=imParse();
+      if(!rows.length) throw new Error('ยังไม่มีรายชื่อให้นำเข้า');
+      const r=await api('importStaff',{scope:SCOPE, unit:$('#im_unit').value, duty:$('#im_duty').value,
+        replace:$('#im_replace').checked?'Y':'N', rows:rows});
+      STAFF_UNIT=$('#im_unit').value; STAFF_DUTY=$('#im_duty').value;
+      renderStaff();
+      alert('นำเข้าแล้ว '+r.added+' รายชื่อ'+(r.removed?' · ลบของเดิม '+r.removed+' รายชื่อ':'')+
+        (r.skipped?' · ข้าม '+r.skipped+' แถวที่ไม่มีชื่อ':''));
+    }, 'นำเข้ารายชื่อ');
+  imFillDuty();
+}
+function imFillDuty(){
+  const u=$('#im_unit').value;
+  const names=committeesOf(u).map(c=>String(c.name));
+  (window.__STAFF||[]).filter(x=>String(x.unit||'')===String(u||''))
+    .forEach(x=>{ const d=String(x.duty||'').trim(); if(d&&names.indexOf(d)<0) names.push(d); });
+  const sel=$('#im_duty');
+  sel.innerHTML = names.length? names.map(n=>`<option value="${esc(n)}" ${n===STAFF_DUTY?'selected':''}>${esc(n)}</option>`).join('')
+    : '<option value="">— ยังไม่มีคณะ ให้ไปตั้งคณะที่หน้าคำสั่งแต่งตั้งก่อน —</option>';
+  imPreview();
+}
+/** แยกคำนำหน้าออกจากชื่อ */
+const PREFIX_LIST=['เด็กชาย','เด็กหญิง','นางสาว','นาง','นาย','ว่าที่ ร.ต.หญิง','ว่าที่ ร.ต.','ว่าที่ร้อยตรีหญิง','ว่าที่ร้อยตรี',
+  'ว่าที่ร้อยเอก','ดร.','ผศ.ดร.','รศ.ดร.','ศ.ดร.','ส.ต.ต.','จ.ส.อ.','ร.ต.อ.','พ.ต.ท.'];
+function splitPrefix(full){
+  let t=String(full||'').trim().replace(/\s+/g,' ');
+  for(const p of PREFIX_LIST.slice().sort((a,b)=>b.length-a.length)){
+    if(t.indexOf(p)===0) return {prefix:p, name:t.slice(p.length).trim()};
+  }
+  return {prefix:'', name:t};
+}
+function imParse(){
+  const raw=($('#im_text')&&$('#im_text').value)||'';
+  const out=[];
+  raw.split(/\r?\n/).forEach(line=>{
+    let t=line.replace(/ /g,' ').trim();
+    if(!t) return;
+    /* ตัดเลขลำดับหน้าแถว เช่น ๑.๑ หรือ 1.1 หรือ 1) */
+    t=t.replace(/^[๐-๙0-9]+[.．)]\s*[๐-๙0-9]*[.．)]?\s*/,'');
+    let cells=t.split(/\t+|\s{2,}|\s*\|\s*|\s*,(?=\s*\S)/).map(x=>x.trim()).filter(x=>x!=='');
+    if(!cells.length) return;
+    if(/^(คำนำหน้า|ชื่อ|ลำดับ|ที่)$/.test(cells[0])) return;   /* แถวหัวตาราง */
+    let o={};
+    if(cells.length>=5){ o={prefix:cells[0], name:cells[1], position:cells[2], org:cells[3], role:cells[4]}; }
+    else if(cells.length===4){ const s=splitPrefix(cells[0]); o={prefix:s.prefix, name:s.name, position:cells[1], org:cells[2], role:cells[3]}; }
+    else if(cells.length===3){ const s=splitPrefix(cells[0]); o={prefix:s.prefix, name:s.name, position:cells[1], org:'', role:cells[2]}; }
+    else if(cells.length===2){ const s=splitPrefix(cells[0]); o={prefix:s.prefix, name:s.name, position:cells[1], org:'', role:'กรรมการ'}; }
+    else { const s=splitPrefix(cells[0]); o={prefix:s.prefix, name:s.name, position:'', org:'', role:'กรรมการ'}; }
+    if(PREFIX_LIST.indexOf(String(o.prefix||''))<0 && String(o.prefix||'')!==''){
+      const s=splitPrefix(String(o.prefix)+' '+String(o.name)); o.prefix=s.prefix; o.name=s.name;
+    }
+    o.role=normRole(o.role);
+    if(o.name) out.push(o);
+  });
+  return out;
+}
+function normRole(r){
+  const t=String(r||'').replace(/\s+/g,'').replace(/\//g,'และ').replace(/ผช\.|ผู้ช่วย/g,'ผู้ช่วย');
+  if(/ประธาน/.test(t) && /รอง/.test(t)) return 'รองประธานกรรมการ';
+  if(/ประธาน/.test(t)) return 'ประธานกรรมการ';
+  if(/ผู้ช่วยเลขา/.test(t)) return 'กรรมการและผู้ช่วยเลขานุการ';
+  if(/เลขา/.test(t)) return 'กรรมการและเลขานุการ';
+  return 'กรรมการ';
+}
+function imPreview(){
+  const rows=imParse(), box=$('#imPrev'); if(!box) return;
+  if(!rows.length){ box.innerHTML='<p class="hint">ยังไม่มีข้อมูล — วางรายชื่อในช่องด้านบน</p>'; return; }
+  box.innerHTML='<p class="hint" style="margin:0 0 6px">ตรวจสอบก่อนบันทึก — พบ <b>'+rows.length+'</b> รายชื่อ</p>'+
+    '<div style="max-height:34vh;overflow:auto;border:1px solid var(--line);border-radius:10px">'+
+    '<table><thead><tr><th>ที่</th><th>คำนำหน้า</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>หน่วยงาน</th><th>บทบาท</th></tr></thead><tbody>'+
+    rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.prefix)}</td><td><b>${esc(r.name)}</b></td>
+      <td>${esc(r.position)}</td><td>${esc(r.org)}</td><td>${esc(r.role)}</td></tr>`).join('')+
+    '</tbody></table></div>';
+}
 function caToggle(){
   const on=$('#ca_open').checked;
   $('#caState').innerHTML = on? '<span class="pill ok">เปิดดาวน์โหลดอยู่</span>'
@@ -5745,30 +6050,330 @@ function countCerts(){
 }
 function editStaff(id){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
-  const x=(window.__STAFF||[]).find(v=>v.staff_id===id)||{scope:SCOPE,cert_ok:'Y'};
-  openModal(id?'แก้ไขรายชื่อคณะกรรมการดำเนินงาน':'เพิ่มคณะกรรมการดำเนินงาน',
-    `<div class="grid g3">
+  const x=(window.__STAFF||[]).find(v=>v.staff_id===id)
+    ||{scope:SCOPE,cert_ok:'Y',unit:STAFF_UNIT,duty:(STAFF_DUTY&&STAFF_DUTY!=='*')?STAFF_DUTY:'',role:'กรรมการ'};
+  const us=staffUnits();
+  const dutyNames=()=>{ const n=committeesOf(x.unit||STAFF_UNIT).map(c=>String(c.name));
+    (window.__STAFF||[]).forEach(v=>{ const d=String(v.duty||'').trim(); if(d&&n.indexOf(d)<0) n.push(d); });
+    if(x.duty && n.indexOf(String(x.duty))<0) n.push(String(x.duty)); return n; };
+  openModal(id?'แก้ไขรายชื่อคณะกรรมการ':'เพิ่มรายชื่อคณะกรรมการ',
+    `<div class="grid g2">
+      <div class="fld"><label>ชุด / จุดแข่งขัน</label><select id="s_unit">${
+        us.map(u=>`<option value="${esc(u)}" ${String(u)===String(x.unit||'')?'selected':''}>${esc(unitLabel(u))}</option>`).join('')}</select></div>
+      <div class="fld"><label>คณะกรรมการ</label>${selOther('s_duty', dutyNames(), x.duty||'', 'ชื่อคณะอื่น ๆ')}</div></div>
+     <div class="grid g3">
       <div class="fld"><label>คำนำหน้า</label>${selOther('s_prefix', OPT_PREFIX_ADULT, x.prefix||'', 'คำนำหน้าอื่น ๆ')}</div>
-      <div class="fld" style="grid-column:span 2"><label>ชื่อ-สกุล</label><input id="s_name" value="${(x.name||'').replace(/"/g,'&quot;')}"></div></div>
+      <div class="fld" style="grid-column:span 2"><label>ชื่อ-สกุล</label><input id="s_name" value="${esc(x.name||'')}"></div></div>
      <div class="grid g3">
       <div class="fld"><label>ตำแหน่ง</label>${selOther('s_position', OPT_POSITION, String(x.position||'').replace(/\s*(ชำนาญการพิเศษ|ชำนาญการ|เชี่ยวชาญพิเศษ|เชี่ยวชาญ)\s*/,'').trim(), 'ตำแหน่งอื่น ๆ')}</div>
       <div class="fld"><label>วิทยฐานะ</label>${selOther('s_rank', OPT_RANK, (String(x.position||'').match(/(ชำนาญการพิเศษ|ชำนาญการ|เชี่ยวชาญพิเศษ|เชี่ยวชาญ)/)||[''])[0], '', false)}</div>
       <div class="fld"><label>หน่วยงาน</label>${selOther('s_org', orgOptions(), x.org||'', 'ชื่อหน่วยงาน')}</div></div>
-     <div class="fld"><label>หน้าที่ในงาน (พิมพ์ลงเกียรติบัตร)</label>
-       ${selOther('s_duty', OPT_DUTY, x.duty||'', 'ระบุหน้าที่')}</div>
+     <div class="grid g2">
+      <div class="fld"><label>บทบาทในคณะ (พิมพ์ลงคำสั่ง)</label><select id="s_role">${
+        ROLE_OPTS.map(r=>`<option ${String(x.role||'กรรมการ')===r?'selected':''}>${r}</option>`).join('')}</select></div>
+      <div class="fld"><label>ลำดับในคณะ</label><input id="s_seq" type="number" min="1" value="${Number(x.seq)||''}"
+        placeholder="เว้นว่างให้ต่อท้าย"></div></div>
      <label style="font-size:14.3px"><input type="checkbox" id="s_ok" ${String(x.cert_ok||'Y')!=='N'?'checked':''}> เปิดให้ดาวน์โหลดเกียรติบัตรของคนนี้</label>`,
     async()=>{
       const rk2=selVal('s_rank');
-      const o={staff_id:id||'', scope:SCOPE, prefix:selVal('s_prefix'), name:$('#s_name').value.trim(),
+      const o={staff_id:id||'', scope:SCOPE, unit:$('#s_unit').value,
+        prefix:selVal('s_prefix'), name:$('#s_name').value.trim(),
         position:[selVal('s_position'), (rk2&&rk2!=='ไม่มีวิทยฐานะ')?rk2:''].filter(Boolean).join(' '),
-        org:selVal('s_org'), duty:selVal('s_duty'), cert_ok:$('#s_ok').checked?'Y':'N'};
+        org:selVal('s_org'), duty:selVal('s_duty'), role:$('#s_role').value,
+        seq:Number($('#s_seq').value)||'', cert_ok:$('#s_ok').checked?'Y':'N'};
       if(!o.name) throw new Error('กรุณากรอกชื่อ-สกุล');
-      await api('saveStaff',{staff:o}); refreshStaff();
+      if(!o.duty) throw new Error('กรุณาเลือกหรือพิมพ์ชื่อคณะ');
+      await api('saveStaff',{staff:o});
+      STAFF_UNIT=o.unit; STAFF_DUTY=o.duty;
+      refreshStaff();
     });
 }
 async function delStaff(id){
   if(!confirm('ลบรายชื่อนี้?')) return;
   try{ await api('deleteStaff',{staff_id:id}); refreshStaff(); }catch(e){ alert(e.message); }
+}
+
+/* ============================ คำสั่งแต่งตั้งคณะกรรมการ ============================ */
+const ORDER_DEFAULT={
+  order_subject:'แต่งตั้งคณะกรรมการจัดการแข่งขันงานศิลปหัตถกรรมนักเรียน ระดับเขตพื้นที่การศึกษา',
+  order_intro:'ด้วย สำนักงานคณะกรรมการการศึกษาขั้นพื้นฐาน ในฐานะหน่วยงานหลักในการจัดการศึกษาขั้นพื้นฐานสำหรับเด็กและเยาวชน '+
+    'ได้กำหนดจัดงานศิลปหัตถกรรมนักเรียน เพื่อให้เด็กไทยเอาใจใส่ฝึกหัดศิลปหัตถกรรมซึ่งเป็นทางเลี้ยงอาชีพต่าง ๆ '+
+    'ดังนั้น สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1 จึงกำหนดจัดการแข่งขันงานศิลปหัตถกรรมนักเรียน ระดับเขตพื้นที่การศึกษา '+
+    'เพื่อให้การดำเนินงาน การบริหารจัดการและการดำเนินการแข่งขันรวมทั้งการประกาศผลการแข่งขันให้เป็นไปด้วยความเรียบร้อย บริสุทธิ์ ยุติธรรม '+
+    'จึงแต่งตั้งคณะกรรมการจัดงานตามเอกสารแนบท้าย',
+  order_tail:'ทั้งนี้ ให้คณะกรรมการทุกคณะ ทุกคน ปฏิบัติหน้าที่ตามคำสั่งที่ได้รับมอบหมาย เพื่อให้การดำเนินงานมีประสิทธิภาพ '+
+    'บรรลุสำเร็จตามวัตถุประสงค์ของโครงการที่กำหนดไว้ต่อไป',
+  order_set1:'ชุดที่ 1 คณะกรรมการบริหารของสำนักงานเขตพื้นที่การศึกษา',
+  order_set2:'ชุดที่ 2 คณะกรรมการจัดการแข่งขัน ณ จุดแข่งขัน'
+};
+function renderOrder(){
+  $('#odSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
+    ' · ตั้งชื่อคณะ หน้าที่ และข้อความหัวคำสั่ง แล้วออกเป็นไฟล์ Word ได้เลย';
+  $('#orderArea').innerHTML='';
+  Promise.all([api('orderSetup',{scope:SCOPE}), api('listStaff',{scope:SCOPE})]).then(([od,rows])=>{
+    ORDER=od||{committees:[],order:{}}; window.__STAFF=rows||[];
+    const o=ORDER.order||{};
+    const v=(k)=>o[k]!==undefined&&o[k]!==''? o[k] : (ORDER_DEFAULT[k]||'');
+    $('#od_no').value=o.order_no||''; $('#od_year').value=o.order_year||String(beYear());
+    $('#od_date').value=o.order_date||'';
+    $('#od_subject').value=v('order_subject'); $('#od_intro').value=v('order_intro');
+    $('#od_tail').value=v('order_tail');
+    $('#od_set1').value=v('order_set1'); $('#od_set2').value=v('order_set2');
+    $('#od_sign').value=o.order_sign_name||''; $('#od_signpos').value=o.order_sign_position||'';
+    drawCommittees();
+  }).catch(e=>{ $('#odSub').textContent='โหลดไม่สำเร็จ: '+e.message; });
+}
+function beYear(){ const d=new Date(); return d.getFullYear()+543; }
+function countIn(unit,name){
+  return (window.__STAFF||[]).filter(x=>String(x.unit||'')===String(unit||'')&&String(x.duty||'')===String(name)).length;
+}
+function drawCommittees(){
+  const list=((ORDER&&ORDER.committees)||[]).slice();
+  if(!list.length){
+    tbl($('#odTbl'),['ชุด / จุด','ที่','ชื่อคณะ','หน้าที่','รายชื่อ','จัดการ'],
+      `<tr><td colspan="6" style="padding:26px;text-align:center;color:var(--ink-3)">
+        ยังไม่มีคณะกรรมการ — กด “✨ สร้างชุดคณะตั้งต้น” เพื่อสร้าง 13 คณะของเขต และคณะประจำจุดแข่งขันให้อัตโนมัติ</td></tr>`);
+    return;
+  }
+  let last=null, body='';
+  list.forEach(c=>{
+    const u=String(c.unit||'');
+    if(u!==last){ last=u;
+      body+=`<tr><td colspan="6" style="background:var(--line-2);font-weight:700">${esc(unitLabel(u))}</td></tr>`; }
+    const n=countIn(u,c.name);
+    body+=`<tr><td style="white-space:nowrap">${esc(unitLabel(u)).slice(0,18)}</td>
+      <td>${thNum(Number(c.no)||'')}</td><td><b>${esc(c.name)}</b></td>
+      <td style="max-width:420px;font-size:13.8px">${esc(String(c.duty_text||'').slice(0,160))}${String(c.duty_text||'').length>160?'…':''}</td>
+      <td style="white-space:nowrap">${n? '<span class="pill ok">'+n+' คน</span>' : '<span class="pill b">ยังไม่มี</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn g sm" onclick='goStaffDuty(${JSON.stringify(u)},${JSON.stringify(String(c.name))})'>📥 ใส่รายชื่อ</button>
+        <button class="btn g sm" onclick="editCommittee('${c.committee_id}')">แก้ไข</button>
+        <button class="btn g sm" onclick="delCommittee('${c.committee_id}')">ลบ</button></td></tr>`;
+  });
+  tbl($('#odTbl'),['ชุด / จุด','ที่','ชื่อคณะ','หน้าที่','รายชื่อ','จัดการ'], body);
+}
+function goStaffDuty(unit,name){ STAFF_UNIT=unit; STAFF_DUTY=name; go('staff'); }
+function editCommittee(id){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const c=((ORDER&&ORDER.committees)||[]).find(x=>x.committee_id===id)||{unit:'',no:'',name:'',duty_text:''};
+  const us=staffUnits();
+  openModal(id?'แก้ไขคณะกรรมการ':'เพิ่มคณะกรรมการ',
+    `<div class="grid g3">
+      <div class="fld" style="grid-column:span 2"><label>ชุด / จุดแข่งขัน</label>
+        ${selOther('c_unit', us.filter(u=>u!==''), String(c.unit||''), 'เช่น จุดแข่งขันที่ 1 โรงเรียนบ้านหมากแข้ง')}
+        <div class="hint">เว้นว่างไว้ = ชุดของสำนักงานเขต</div></div>
+      <div class="fld"><label>ลำดับคณะ</label><input id="c_no" type="number" min="1" value="${Number(c.no)||''}"></div></div>
+     <div class="fld"><label>ชื่อคณะ</label><input id="c_name" value="${esc(c.name||'')}"
+        placeholder="เช่น คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง"></div>
+     <div class="fld"><label>หน้าที่ของคณะ (ข้อความที่พิมพ์ต่อท้ายชื่อคณะในคำสั่ง)</label>
+       <textarea id="c_duty" rows="5">${esc(c.duty_text||'')}</textarea></div>`,
+    async()=>{
+      const o={committee_id:id||'', scope:SCOPE, unit:selVal('c_unit'),
+        no:Number($('#c_no').value)||0, name:$('#c_name').value.trim(), duty_text:$('#c_duty').value.trim(), active:'Y'};
+      if(!o.name) throw new Error('กรุณากรอกชื่อคณะ');
+      if(!o.no) o.no=committeesOf(o.unit).length+1;
+      await api('saveCommittee',{committee:o}); renderOrder();
+    });
+}
+async function delCommittee(id){
+  const c=((ORDER&&ORDER.committees)||[]).find(x=>x.committee_id===id)||{};
+  const n=countIn(c.unit,c.name);
+  if(!confirm('ลบคณะ “'+(c.name||'')+'” ?'+(n? '\n\nคณะนี้มีรายชื่ออยู่ '+n+' คน รายชื่อจะยังอยู่แต่จะไม่ถูกจัดเข้าคณะใด':''))) return;
+  try{ await api('deleteCommittee',{committee_id:id, confirm:'Y'}); renderOrder(); }catch(e){ alert(e.message); }
+}
+async function seedCommittee(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  openModal('สร้างชุดคณะกรรมการตั้งต้น',
+    `<div class="note i" style="margin-bottom:10px"><span>✨</span><div>
+      ระบบจะสร้าง <b>13 คณะของสำนักงานเขต</b> พร้อมข้อความหน้าที่ตามรูปแบบคำสั่งที่ใช้อยู่<br>
+      ถ้าพิมพ์ชื่อจุดแข่งขันไว้ด้วย จะสร้าง <b>8 คณะประจำจุด</b> ให้ทุกจุดอัตโนมัติ · คณะที่มีชื่อซ้ำจะไม่ถูกสร้างทับ</div></div>
+     <div class="fld"><label>จุดแข่งขัน (พิมพ์บรรทัดละ 1 จุด เว้นว่างได้ถ้ายังไม่ต้องการ)</label>
+       <textarea id="sd_units" rows="5" placeholder="จุดแข่งขันที่ 1 โรงเรียนบ้านหมากแข้ง
+จุดแข่งขันที่ 2 โรงเรียนอนุบาลอุดรธานี
+จุดแข่งขันที่ 3 โรงเรียนหนองสำโรงวิทยา
+จุดแข่งขันที่ 4 มหาวิทยาลัยการกีฬาแห่งชาติ (วิทยาเขตอุดรธานี)"></textarea></div>`,
+    async()=>{
+      const units=[''].concat(($('#sd_units').value||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean));
+      const r=await api('seedCommittees',{units:units});
+      renderOrder();
+      alert(r.added? 'สร้างคณะกรรมการแล้ว '+r.added+' คณะ' : 'มีคณะครบแล้ว ไม่มีอะไรต้องสร้างเพิ่ม');
+    });
+}
+async function saveOrderCfg(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  try{
+    await api('saveOrderConfig',{
+      order_no:$('#od_no').value.trim(), order_year:$('#od_year').value.trim(),
+      order_date:$('#od_date').value.trim(), order_subject:$('#od_subject').value.trim(),
+      order_intro:$('#od_intro').value.trim(), order_tail:$('#od_tail').value.trim(),
+      order_set1:$('#od_set1').value.trim(), order_set2:$('#od_set2').value.trim(),
+      order_sign_name:$('#od_sign').value.trim(), order_sign_position:$('#od_signpos').value.trim()});
+    ORDER.order=Object.assign(ORDER.order||{},{
+      order_no:$('#od_no').value.trim(), order_year:$('#od_year').value.trim(),
+      order_date:$('#od_date').value.trim(), order_subject:$('#od_subject').value.trim(),
+      order_intro:$('#od_intro').value.trim(), order_tail:$('#od_tail').value.trim(),
+      order_set1:$('#od_set1').value.trim(), order_set2:$('#od_set2').value.trim(),
+      order_sign_name:$('#od_sign').value.trim(), order_sign_position:$('#od_signpos').value.trim()});
+    alert('บันทึกข้อความคำสั่งแล้ว');
+  }catch(e){ alert(e.message); }
+}
+/** รวบรวมเนื้อคำสั่งเป็นโครงสร้างเดียว ใช้ร่วมกันทั้งพิมพ์ Word และ Excel */
+function orderData(){
+  const o={
+    no:$('#od_no').value.trim(), year:$('#od_year').value.trim()||String(beYear()),
+    date:$('#od_date').value.trim(), subject:$('#od_subject').value.trim(),
+    intro:$('#od_intro').value.trim(), tail:$('#od_tail').value.trim(),
+    set1:$('#od_set1').value.trim(), set2:$('#od_set2').value.trim(),
+    sign:$('#od_sign').value.trim(), signpos:$('#od_signpos').value.trim(),
+    office:(SCOPE==='ALL'? districtName() : groupName(SCOPE)), event:eventName()
+  };
+  const units=staffUnits();
+  o.units=units.map(u=>({
+    unit:u, label:unitLabel(u),
+    committees:committeesOf(u).map(c=>({
+      name:String(c.name), duty:String(c.duty_text||''),
+      members:(window.__STAFF||[])
+        .filter(x=>String(x.unit||'')===String(u||'')&&String(x.duty||'')===String(c.name))
+        .sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0))
+    })).filter(c=>c.members.length)
+  })).filter(u=>u.committees.length);
+  return o;
+}
+function orderPreview(){
+  const o=orderData();
+  if(!o.units.length) return alert('ยังไม่มีรายชื่อในคณะใดเลย — ใส่รายชื่อที่หน้าคณะกรรมการดำเนินงานก่อนค่ะ');
+  let h=`<div class="row noprint" style="margin-bottom:10px">
+      <b>ตัวอย่างคำสั่งก่อนพิมพ์</b><span class="sp" style="flex:1"></span>
+      <button class="btn d" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
+      <button class="btn g" onclick="document.getElementById('orderArea').innerHTML=''">ปิด</button></div>
+    <div class="sheetdoc">
+      <h1>คำสั่ง${esc(o.office)}</h1>
+      <h2>ที่ ${esc(thNum(o.no)||'........')}/${esc(thNum(o.year))}</h2>
+      <h2>เรื่อง ${esc(o.subject)}</h2>
+      <div style="border-top:1px dotted #444;margin:10px 0 14px"></div>
+      <p style="text-indent:2.5em;line-height:1.75">${esc(o.intro)}</p>`;
+  let setNo=0;
+  o.units.forEach(u=>{
+    const head = u.unit===''? (o.set1||'ชุดที่ 1') : (setNo++? '' : null);
+    if(u.unit===''){ h+=`<h3 style="margin-top:14px">${esc(o.set1||'ชุดที่ 1')}</h3>`; }
+    else { h+=`<h3 style="margin-top:14px">${esc(u.label)}</h3>`; }
+    u.committees.forEach((c,ci)=>{
+      h+=`<p style="margin:12px 0 4px"><b>${thNum(ci+1)}. ${esc(c.name)}</b> ${esc(c.duty)} ประกอบด้วย</p>
+          <table style="width:100%;border-collapse:collapse;font-size:14.3px">`;
+      c.members.forEach((m,mi)=>{
+        h+=`<tr><td style="width:46%;padding:1.5px 4px;border:0">${thNum(ci+1)}.${thNum(mi+1)}&nbsp;&nbsp;${esc((m.prefix||'')+(m.name||''))}</td>
+            <td style="width:32%;padding:1.5px 4px;border:0">${esc(m.position||'')}${m.org? ' '+esc(cleanTxt(m.org)):''}</td>
+            <td style="width:22%;padding:1.5px 4px;border:0;text-align:right">${esc(m.role||'กรรมการ')}</td></tr>`;
+      });
+      h+='</table>';
+    });
+  });
+  h+=`<p style="text-indent:2.5em;line-height:1.75;margin-top:14px">${esc(o.tail)}</p>
+      <p style="text-indent:2.5em;margin-top:8px">ทั้งนี้ ตั้งแต่บัดนี้เป็นต้นไป</p>
+      <p style="text-align:center;margin-top:14px">สั่ง ณ วันที่ ${esc(thNum(o.date))}</p>
+      <div style="text-align:center;margin-top:34px">
+        <div>${esc(o.sign||'(.............................................)')}</div>
+        <div>${esc(o.signpos)}</div></div>
+    </div>`;
+  $('#orderArea').innerHTML=h;
+  $('#orderArea').scrollIntoView({behavior:'smooth'});
+}
+function orderXlsx(){
+  const o=orderData();
+  if(!o.units.length) return alert('ยังไม่มีรายชื่อในคณะใดเลยค่ะ');
+  const rows=[['ชุด / จุดแข่งขัน','ที่','คณะกรรมการ','ลำดับ','คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ']];
+  o.units.forEach(u=>u.committees.forEach((c,ci)=>c.members.forEach((m,mi)=>{
+    rows.push([u.label, ci+1, c.name, (ci+1)+'.'+(mi+1), m.prefix||'', m.name||'',
+      m.position||'', cleanTxt(m.org||''), m.role||'กรรมการ']);
+  })));
+  const duty=[['ชุด / จุดแข่งขัน','ที่','คณะกรรมการ','หน้าที่','จำนวนคน']];
+  o.units.forEach(u=>u.committees.forEach((c,ci)=>duty.push([u.label,ci+1,c.name,c.duty,c.members.length])));
+  saveBlob('คำสั่งคณะกรรมการดำเนินงาน.xlsx',
+    xlsxBlob([{name:'รายชื่อตามคำสั่ง', rows:rows},{name:'คณะและหน้าที่', rows:duty}]));
+}
+
+/* ---------- ไฟล์ Word (.docx) — สร้างเองในเบราว์เซอร์ ---------- */
+function _dxT(t, o){
+  o=o||{};
+  const rpr='<w:rPr><w:rFonts w:ascii="TH SarabunPSK" w:hAnsi="TH SarabunPSK" w:cs="TH SarabunPSK"/>'+
+    (o.b?'<w:b/><w:bCs/>':'')+'<w:sz w:val="'+(o.sz||32)+'"/><w:szCs w:val="'+(o.sz||32)+'"/></w:rPr>';
+  return '<w:r>'+rpr+'<w:t xml:space="preserve">'+_xe(t)+'</w:t></w:r>';
+}
+function _dxP(t, o){
+  o=o||{};
+  const pr='<w:pPr>'+(o.align?'<w:jc w:val="'+o.align+'"/>':'')+
+    (o.indent?'<w:ind w:firstLine="'+o.indent+'"/>':'')+
+    (o.left?'<w:ind w:left="'+o.left+'"/>':'')+
+    '<w:spacing w:after="'+(o.after!==undefined?o.after:0)+'" w:line="'+(o.line||276)+'" w:lineRule="auto"/></w:pPr>';
+  return '<w:p>'+pr+(t===''?'':_dxT(t,o))+'</w:p>';
+}
+function _dxCell(w, t, o){
+  o=o||{};
+  return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/></w:tcPr>'+_dxP(t,o)+'</w:tc>';
+}
+function _dxTable(rows){
+  return '<w:tbl><w:tblPr><w:tblW w:w="9600" w:type="dxa"/>'+
+    '<w:tblBorders><w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>'+
+    '<w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/></w:tblBorders>'+
+    '<w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/>'+
+    '<w:left w:w="40" w:type="dxa"/><w:right w:w="40" w:type="dxa"/></w:tblCellMar></w:tblPr>'+
+    rows.join('')+'</w:tbl>';
+}
+function docxBlob(bodyXml){
+  const doc='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+
+    bodyXml+
+    '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>'+
+    '<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1418" w:header="709" w:footer="709" w:gutter="0"/>'+
+    '</w:sectPr></w:body></w:document>';
+  const files=[
+   {name:'[Content_Types].xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+     '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+     '<Default Extension="xml" ContentType="application/xml"/>'+
+     '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'+
+     '</Types>'},
+   {name:'_rels/.rels', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+     '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+     '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>'+
+     '</Relationships>'},
+   {name:'word/_rels/document.xml.rels', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+     '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>'},
+   {name:'word/document.xml', data:doc}
+  ];
+  return _zipStore(files, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+}
+function orderDocx(){
+  const o=orderData();
+  if(!o.units.length) return alert('ยังไม่มีรายชื่อในคณะใดเลย — ใส่รายชื่อที่หน้าคณะกรรมการดำเนินงานก่อนค่ะ');
+  let b='';
+  b+=_dxP('คำสั่ง'+o.office,{align:'center',b:true,sz:36});
+  b+=_dxP('ที่ '+(thNum(o.no)||'........')+'/'+thNum(o.year),{align:'center',b:true,sz:36});
+  b+=_dxP('เรื่อง  '+o.subject,{align:'center',b:true,sz:36,after:120});
+  b+=_dxP('----------------------------------------------------------------',{align:'center',after:160});
+  b+=_dxP(o.intro,{indent:720,after:160});
+  o.units.forEach(u=>{
+    b+=_dxP(u.unit===''? (o.set1||'ชุดที่ 1') : u.label,{b:true,after:80});
+    u.committees.forEach((c,ci)=>{
+      b+=_dxP(thNum(ci+1)+'. '+c.name+' '+c.duty+' ประกอบด้วย',{b:false,after:40,left:0});
+      const rows=c.members.map((m,mi)=>'<w:tr>'+
+        _dxCell(4300, '        '+thNum(ci+1)+'.'+thNum(mi+1)+'  '+(m.prefix||'')+(m.name||''))+
+        _dxCell(3100, (m.position||'')+(m.org? ' '+cleanTxt(m.org):''))+
+        _dxCell(2200, (m.role||'กรรมการ'),{align:'right'})+'</w:tr>');
+      b+=_dxTable(rows);
+      b+=_dxP('',{after:60});
+    });
+  });
+  b+=_dxP(o.tail,{indent:720,after:120});
+  b+=_dxP('ทั้งนี้  ตั้งแต่บัดนี้เป็นต้นไป',{indent:720,after:160});
+  b+=_dxP('สั่ง  ณ  วันที่ '+thNum(o.date),{align:'center',after:480});
+  b+=_dxP(o.sign||'(.............................................)',{align:'center',after:0});
+  b+=_dxP(o.signpos,{align:'center'});
+  saveBlob('คำสั่งแต่งตั้งคณะกรรมการ.docx', docxBlob(b));
 }
 
 /* ============================ nav ============================ */
@@ -5803,7 +6408,7 @@ function go(p){
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
-    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',staff:'คณะกรรมการดำเนินงาน',
+    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',staff:'คณะกรรมการดำเนินงาน',order:'คำสั่งแต่งตั้งคณะกรรมการ',
     rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
@@ -5869,7 +6474,7 @@ function renderPage(p){
     actedit:renderActEdit, entries:renderEntries, score:renderScore, publish:renderPublish,
     promote:renderPromote, print:renderPrint, setup:renderSetup, results:renderResults, medals:renderMedals,
     sched:renderSched, news:renderNews, docs:renderDocs, site:renderSite,
-    newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards, staff:renderStaff,
+    newsmgr:renderNewsMgr, cert:renderCert, certadm:renderCertAdm, cards:renderCards, staff:renderStaff, order:renderOrder,
     judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
     apply:renderApply, judgeapp:renderJudgeApp,
     subs:renderSubsPublic, submgr:renderSubMgr, gsites:renderGSites, schedmgr:renderSchedMgr, region:renderRegion,
