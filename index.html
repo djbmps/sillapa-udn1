@@ -683,7 +683,7 @@ body[data-view="admin"] .utilbar{display:none}
         <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกกรรมการ</button>
         <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
         <button class="nv" data-p="staff" data-role="district_admin,group_admin" data-perm="certadm"><i>👥</i>คณะกรรมการดำเนินงาน</button>
-        <button class="nv" data-p="order" data-role="district_admin,group_admin" data-perm="certadm"><i>📄</i>คำสั่งแต่งตั้งคณะกรรมการ</button>
+        <button class="nv" data-p="order" data-role="district_admin,group_admin" data-perm="certadm"><i>📑</i>คณะกรรมการ &amp; ดาวน์โหลดรายชื่อ</button>
       </div></div>
 
       <div class="ng" data-sec="sc"><span class="ngh" onclick="togSec(this)">บันทึกคะแนน &amp; ประกาศผล<i class="cv">▾</i></span><div class="ngb">
@@ -1846,7 +1846,7 @@ body[data-view="admin"] .utilbar{display:none}
     <section class="page" id="p-staff">
       <div class="hd"><div><h2>คณะกรรมการดำเนินงาน</h2><p id="stSub"></p></div>
         <span class="sp"></span>
-        <button class="btn g" onclick="go('order')">📄 คำสั่งแต่งตั้ง</button>
+        <button class="btn g" onclick="go('order')">📑 ดาวน์โหลดรายชื่อ</button>
         <button class="btn g" onclick="go('cards')">🪪 บัตรประจำตัว</button>
         <button class="btn g" onclick="goStaffCert()">🎖️ เกียรติบัตร</button>
         <button class="btn" onclick="openStaffImport()">📥 นำเข้าหลายคน</button></div>
@@ -1882,41 +1882,20 @@ body[data-view="admin"] .utilbar{display:none}
         ปุ่ม <b>🎖️</b> ท้ายแถวพาไปออกเกียรติบัตรของคนนั้นทันที</div></div>
     </section>
 
-    <!-- ---------- คำสั่งแต่งตั้งคณะกรรมการ (หลังบ้าน) ---------- -->
+    <!-- ---------- คณะกรรมการ & ดาวน์โหลดรายชื่อ (หลังบ้าน) ---------- -->
     <section class="page" id="p-order">
-      <div class="hd"><div><h2>คำสั่งแต่งตั้งคณะกรรมการ</h2><p id="odSub"></p></div>
+      <div class="hd"><div><h2>คณะกรรมการ &amp; ดาวน์โหลดรายชื่อ</h2><p id="odSub"></p></div>
         <span class="sp"></span>
         <button class="btn g" onclick="orderXlsx()">⬇ Excel</button>
-        <button class="btn g" onclick="orderDocx()">⬇ ไฟล์ Word</button>
+        <button class="btn g" onclick="orderDocx()">⬇ รายชื่อ (Word)</button>
         <button class="btn" onclick="orderPreview()">👁️ ดูตัวอย่าง / พิมพ์</button></div>
 
-      <div class="card" style="margin-bottom:14px"><div class="ch"><h3>① ข้อความส่วนหัวคำสั่ง</h3>
-        <span class="sp"></span><button class="btn sm" onclick="saveOrderCfg()">บันทึกข้อความ</button></div>
-        <div class="cb">
-          <div class="grid g3">
-            <div class="fld"><label>คำสั่งที่</label><input id="od_no" placeholder="เช่น 123"></div>
-            <div class="fld"><label>ปี พ.ศ.</label><input id="od_year" placeholder="2569"></div>
-            <div class="fld"><label>สั่ง ณ วันที่</label><input id="od_date" placeholder="เช่น 12 กุมภาพันธ์ พ.ศ. 2569"></div>
-          </div>
-          <div class="fld"><label>ชื่อหน่วยงานในหัวคำสั่ง</label>
-            <input id="od_office" placeholder="สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1"></div>
-          <div class="fld"><label>เรื่อง</label>
-            <input id="od_subject" placeholder="แต่งตั้งคณะกรรมการจัดการแข่งขันงานศิลปหัตถกรรมนักเรียน ระดับเขตพื้นที่การศึกษา ครั้งที่ 74 ปีการศึกษา 2569"></div>
-          <div class="fld"><label>ย่อหน้านำ (เหตุผลและความเป็นมา)</label>
-            <textarea id="od_intro" rows="5" placeholder="ด้วย สำนักงานคณะกรรมการการศึกษาขั้นพื้นฐาน…"></textarea></div>
-          <div class="fld"><label>ย่อหน้าปิดท้าย</label>
-            <textarea id="od_tail" rows="2" placeholder="ทั้งนี้ ให้คณะกรรมการทุกคณะ ทุกคน ปฏิบัติหน้าที่ตามคำสั่งที่ได้รับมอบหมาย…"></textarea></div>
-          <div class="grid g2">
-            <div class="fld"><label>หัวข้อชุดที่ 1</label><input id="od_set1" placeholder="ชุดที่ 1 คณะกรรมการบริหารของสำนักงานเขตพื้นที่การศึกษา"></div>
-            <div class="fld"><label>หัวข้อชุดที่ 2</label><input id="od_set2" placeholder="ชุดที่ 2 คณะกรรมการจัดการแข่งขัน ณ จุดแข่งขัน"></div>
-          </div>
-          <div class="grid g2">
-            <div class="fld"><label>ผู้ลงนาม</label><input id="od_sign" placeholder="(นางชฎากรณ์ บรรเลงรมย์)"></div>
-            <div class="fld"><label>ตำแหน่งผู้ลงนาม</label><input id="od_signpos" placeholder="ผอ.สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1"></div>
-          </div>
-        </div></div>
+      <div class="note i" style="margin-bottom:14px"><span>📎</span><div>
+        หน้านี้ใช้ <b>ตั้งชื่อคณะ</b> และ <b>ดาวน์โหลดบัญชีรายชื่อ</b> ไปแปะในบันทึกข้อความหรือคำสั่งที่พิมพ์เอง<br>
+        ไฟล์ Word ที่ได้มีเฉพาะ <b>ชื่อคณะ</b> และ <b>รายชื่อพร้อมตำแหน่งและบทบาท</b> เรียงเลขไทย ๑.๑ ๑.๒
+        ไม่มีหัวคำสั่งและไม่มีบล็อกลงนาม เปิดใน Word แล้วคัดลอกไปวางได้ทันที</div></div>
 
-      <div class="card"><div class="ch"><h3>② คณะกรรมการและหน้าที่</h3><span class="sp"></span>
+      <div class="card"><div class="ch"><h3>คณะกรรมการ</h3><span class="sp"></span>
         <button class="btn g sm" onclick="seedCommittee()">✨ สร้างชุดคณะตั้งต้น</button>
         <button class="btn g sm" onclick="editCommittee(null)">+ เพิ่มคณะ</button></div>
         <div class="cb" style="padding:0;overflow:auto"><table id="odTbl"></table></div></div>
@@ -5795,7 +5774,7 @@ function drawStaff(){
   $('#stTblTitle').textContent = (STAFF_DUTY==='*'||!STAFF_DUTY)? 'บัญชีรายชื่อ · '+unitLabel(STAFF_UNIT)
     : 'บัญชีรายชื่อ · '+STAFF_DUTY;
   const dt=(STAFF_DUTY&&STAFF_DUTY!=='*')? dutyTextOf(STAFF_UNIT,STAFF_DUTY):'';
-  $('#stDutyNote').innerHTML = dt? '<b>หน้าที่ของคณะนี้:</b> '+esc(dt)+
+  $('#stDutyNote').innerHTML = dt? '<b>หน้าที่ของคณะนี้ (บันทึกไว้ใช้เอง):</b> '+esc(dt)+
       ' <button class="btn g sm" style="margin-left:6px" onclick="go(\'order\')">แก้ข้อความ</button>' : '';
 
   let last=null, body='';
@@ -6096,34 +6075,12 @@ async function delStaff(id){
 }
 
 /* ============================ คำสั่งแต่งตั้งคณะกรรมการ ============================ */
-const ORDER_DEFAULT={
-  order_subject:'แต่งตั้งคณะกรรมการจัดการแข่งขันงานศิลปหัตถกรรมนักเรียน ระดับเขตพื้นที่การศึกษา',
-  order_intro:'ด้วย สำนักงานคณะกรรมการการศึกษาขั้นพื้นฐาน ในฐานะหน่วยงานหลักในการจัดการศึกษาขั้นพื้นฐานสำหรับเด็กและเยาวชน '+
-    'ได้กำหนดจัดงานศิลปหัตถกรรมนักเรียน เพื่อให้เด็กไทยเอาใจใส่ฝึกหัดศิลปหัตถกรรมซึ่งเป็นทางเลี้ยงอาชีพต่าง ๆ '+
-    'ดังนั้น สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1 จึงกำหนดจัดการแข่งขันงานศิลปหัตถกรรมนักเรียน ระดับเขตพื้นที่การศึกษา '+
-    'เพื่อให้การดำเนินงาน การบริหารจัดการและการดำเนินการแข่งขันรวมทั้งการประกาศผลการแข่งขันให้เป็นไปด้วยความเรียบร้อย บริสุทธิ์ ยุติธรรม '+
-    'จึงแต่งตั้งคณะกรรมการจัดงานตามเอกสารแนบท้าย',
-  order_tail:'ทั้งนี้ ให้คณะกรรมการทุกคณะ ทุกคน ปฏิบัติหน้าที่ตามคำสั่งที่ได้รับมอบหมาย เพื่อให้การดำเนินงานมีประสิทธิภาพ '+
-    'บรรลุสำเร็จตามวัตถุประสงค์ของโครงการที่กำหนดไว้ต่อไป',
-  order_set1:'ชุดที่ 1 คณะกรรมการบริหารของสำนักงานเขตพื้นที่การศึกษา',
-  order_set2:'ชุดที่ 2 คณะกรรมการจัดการแข่งขัน ณ จุดแข่งขัน'
-};
 function renderOrder(){
   $('#odSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
-    ' · ตั้งชื่อคณะ หน้าที่ และข้อความหัวคำสั่ง แล้วออกเป็นไฟล์ Word ได้เลย';
+    ' · ตั้งชื่อคณะ ใส่รายชื่อ แล้วดาวน์โหลดไปแปะในบันทึกข้อความ';
   $('#orderArea').innerHTML='';
   Promise.all([api('orderSetup',{scope:SCOPE}), api('listStaff',{scope:SCOPE})]).then(([od,rows])=>{
     ORDER=od||{committees:[],order:{}}; window.__STAFF=rows||[];
-    const o=ORDER.order||{};
-    const v=(k)=>o[k]!==undefined&&o[k]!==''? o[k] : (ORDER_DEFAULT[k]||'');
-    $('#od_no').value=o.order_no||''; $('#od_year').value=o.order_year||String(beYear());
-    $('#od_date').value=o.order_date||'';
-    $('#od_office').value=o.order_office||'สำนักงานเขตพื้นที่การศึกษาประถมศึกษา'+
-      String(districtName()).replace(/^สพป\./,'').trim();
-    $('#od_subject').value=v('order_subject'); $('#od_intro').value=v('order_intro');
-    $('#od_tail').value=v('order_tail');
-    $('#od_set1').value=v('order_set1'); $('#od_set2').value=v('order_set2');
-    $('#od_sign').value=o.order_sign_name||''; $('#od_signpos').value=o.order_sign_position||'';
     drawCommittees();
   }).catch(e=>{ $('#odSub').textContent='โหลดไม่สำเร็จ: '+e.message; });
 }
@@ -6169,7 +6126,7 @@ function editCommittee(id){
       <div class="fld"><label>ลำดับคณะ</label><input id="c_no" type="number" min="1" value="${Number(c.no)||''}"></div></div>
      <div class="fld"><label>ชื่อคณะ</label><input id="c_name" value="${esc(c.name||'')}"
         placeholder="เช่น คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง"></div>
-     <div class="fld"><label>หน้าที่ของคณะ (ข้อความที่พิมพ์ต่อท้ายชื่อคณะในคำสั่ง)</label>
+     <div class="fld"><label>หน้าที่ของคณะ (บันทึกไว้ใช้เอง — ไม่ถูกพิมพ์ลงไฟล์รายชื่อ)</label>
        <textarea id="c_duty" rows="5">${esc(c.duty_text||'')}</textarea></div>`,
     async()=>{
       const o={committee_id:id||'', scope:SCOPE, unit:selVal('c_unit'),
@@ -6203,37 +6160,9 @@ async function seedCommittee(){
       alert(r.added? 'สร้างคณะกรรมการแล้ว '+r.added+' คณะ' : 'มีคณะครบแล้ว ไม่มีอะไรต้องสร้างเพิ่ม');
     });
 }
-async function saveOrderCfg(){
-  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
-  try{
-    await api('saveOrderConfig',{
-      order_no:$('#od_no').value.trim(), order_year:$('#od_year').value.trim(),
-      order_date:$('#od_date').value.trim(), order_subject:$('#od_subject').value.trim(),
-      order_intro:$('#od_intro').value.trim(), order_tail:$('#od_tail').value.trim(),
-      order_set1:$('#od_set1').value.trim(), order_set2:$('#od_set2').value.trim(),
-      order_office:$('#od_office').value.trim(),
-      order_sign_name:$('#od_sign').value.trim(), order_sign_position:$('#od_signpos').value.trim()});
-    ORDER.order=Object.assign(ORDER.order||{},{
-      order_office:$('#od_office').value.trim(),
-      order_no:$('#od_no').value.trim(), order_year:$('#od_year').value.trim(),
-      order_date:$('#od_date').value.trim(), order_subject:$('#od_subject').value.trim(),
-      order_intro:$('#od_intro').value.trim(), order_tail:$('#od_tail').value.trim(),
-      order_set1:$('#od_set1').value.trim(), order_set2:$('#od_set2').value.trim(),
-      order_sign_name:$('#od_sign').value.trim(), order_sign_position:$('#od_signpos').value.trim()});
-    alert('บันทึกข้อความคำสั่งแล้ว');
-  }catch(e){ alert(e.message); }
-}
-/** รวบรวมเนื้อคำสั่งเป็นโครงสร้างเดียว ใช้ร่วมกันทั้งพิมพ์ Word และ Excel */
+/** รวบรวมบัญชีรายชื่อเป็นโครงสร้างเดียว ใช้ร่วมกันทั้งไฟล์ Word, Excel และหน้าพิมพ์ */
 function orderData(){
-  const o={
-    no:$('#od_no').value.trim(), year:$('#od_year').value.trim()||String(beYear()),
-    date:$('#od_date').value.trim(), subject:$('#od_subject').value.trim(),
-    intro:$('#od_intro').value.trim(), tail:$('#od_tail').value.trim(),
-    set1:$('#od_set1').value.trim(), set2:$('#od_set2').value.trim(),
-    sign:$('#od_sign').value.trim(), signpos:$('#od_signpos').value.trim(),
-    office:($('#od_office').value.trim() || (SCOPE==='ALL'? districtName() : groupName(SCOPE))),
-    event:eventName()
-  };
+  const o={ office:(SCOPE==='ALL'? districtName() : groupName(SCOPE)), event:eventName() };
   const units=staffUnits();
   o.units=units.map(u=>({
     unit:u, label:unitLabel(u),
@@ -6250,27 +6179,14 @@ function orderPreview(){
   const o=orderData();
   if(!o.units.length) return alert('ยังไม่มีรายชื่อในคณะใดเลย — ใส่รายชื่อที่หน้าคณะกรรมการดำเนินงานก่อนค่ะ');
   let h=`<div class="row noprint" style="margin-bottom:10px">
-      <b>ตัวอย่างคำสั่งก่อนพิมพ์</b><span class="sp" style="flex:1"></span>
+      <b>ตัวอย่างบัญชีรายชื่อก่อนพิมพ์</b><span class="sp" style="flex:1"></span>
       <button class="btn d" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
       <button class="btn g" onclick="document.getElementById('orderArea').innerHTML=''">ปิด</button></div>
-    <div class="sheetdoc">
-      <h1>คำสั่ง${esc(o.office)}</h1>
-      <h2>ที่ ${esc(thNum(o.no)||'........')}/${esc(thNum(o.year))}</h2>
-      <h2>เรื่อง ${esc(o.subject)}</h2>
-      <div style="border-top:1px dotted #444;margin:10px 0 14px"></div>
-      <p style="text-indent:2.5em;line-height:1.75">${esc(o.intro)}</p>`;
-  let set2done=false;
-  const venues=o.units.filter(u=>u.unit!=='').map(u=>u.label);
+    <div class="sheetdoc">`;
   o.units.forEach(u=>{
-    if(u.unit===''){ h+=`<h3 style="margin-top:14px">${esc(o.set1||'ชุดที่ 1')}</h3>`; }
-    else {
-      if(!set2done){ set2done=true;
-        h+=`<h3 style="margin-top:14px">${esc(o.set2||'ชุดที่ 2')} ${thNum(venues.length)} จุด ได้แก่</h3>
-            <div style="margin:0 0 8px 2.5em">${venues.map(v=>esc(v)).join('<br>')}</div>`; }
-      h+=`<h3 style="margin-top:14px">${esc(u.label)}</h3>`;
-    }
+    if(u.unit!=='') h+=`<h2 style="margin-top:14px;text-align:left">${esc(u.label)}</h2>`;
     u.committees.forEach((c,ci)=>{
-      h+=`<p style="margin:12px 0 4px"><b>${thNum(ci+1)}. ${esc(c.name)}</b> ${esc(c.duty)} ประกอบด้วย</p>
+      h+=`<p style="margin:12px 0 4px"><b>${thNum(ci+1)}. ${esc(c.name)}</b></p>
           <table style="width:100%;border-collapse:collapse;font-size:14.3px">`;
       c.members.forEach((m,mi)=>{
         h+=`<tr><td style="width:46%;padding:1.5px 4px;border:0">${thNum(ci+1)}.${thNum(mi+1)}&nbsp;&nbsp;${esc((m.prefix||'')+(m.name||''))}</td>
@@ -6280,13 +6196,7 @@ function orderPreview(){
       h+='</table>';
     });
   });
-  h+=`<p style="text-indent:2.5em;line-height:1.75;margin-top:14px">${esc(o.tail)}</p>
-      <p style="text-indent:2.5em;margin-top:8px">ทั้งนี้ ตั้งแต่บัดนี้เป็นต้นไป</p>
-      <p style="text-align:center;margin-top:14px">สั่ง ณ วันที่ ${esc(thNum(o.date))}</p>
-      <div style="text-align:center;margin-top:34px">
-        <div>${esc(o.sign||'(.............................................)')}</div>
-        <div>${esc(o.signpos)}</div></div>
-    </div>`;
+  h+='</div>';
   $('#orderArea').innerHTML=h;
   $('#orderArea').scrollIntoView({behavior:'smooth'});
 }
@@ -6363,22 +6273,10 @@ function orderDocx(){
   const o=orderData();
   if(!o.units.length) return alert('ยังไม่มีรายชื่อในคณะใดเลย — ใส่รายชื่อที่หน้าคณะกรรมการดำเนินงานก่อนค่ะ');
   let b='';
-  b+=_dxP('คำสั่ง'+o.office,{align:'center',b:true,sz:36});
-  b+=_dxP('ที่ '+(thNum(o.no)||'........')+'/'+thNum(o.year),{align:'center',b:true,sz:36});
-  b+=_dxP('เรื่อง  '+o.subject,{align:'center',b:true,sz:36,after:120});
-  b+=_dxP('----------------------------------------------------------------',{align:'center',after:160});
-  b+=_dxP(o.intro,{indent:720,after:160});
-  let set2done=false;
-  const venues=o.units.filter(u=>u.unit!=='').map(u=>u.label);
   o.units.forEach(u=>{
-    if(u.unit!=='' && !set2done){ set2done=true;
-      b+=_dxP((o.set2||'ชุดที่ 2')+' '+thNum(venues.length)+' จุด ได้แก่',{b:true,after:40});
-      venues.forEach(v=>{ b+=_dxP(v,{left:720,after:0}); });
-      b+=_dxP('',{after:60});
-    }
-    b+=_dxP(u.unit===''? (o.set1||'ชุดที่ 1') : u.label,{b:true,after:80});
+    if(u.unit!=='') b+=_dxP(u.label,{b:true,after:80});
     u.committees.forEach((c,ci)=>{
-      b+=_dxP(thNum(ci+1)+'. '+c.name+' '+c.duty+' ประกอบด้วย',{b:false,after:40,left:0});
+      b+=_dxP(thNum(ci+1)+'. '+c.name,{b:true,after:40});
       const rows=c.members.map((m,mi)=>'<w:tr>'+
         _dxCell(4300, '        '+thNum(ci+1)+'.'+thNum(mi+1)+'  '+(m.prefix||'')+(m.name||''))+
         _dxCell(3100, (m.position||'')+(m.org? ' '+cleanTxt(m.org):''))+
@@ -6387,12 +6285,7 @@ function orderDocx(){
       b+=_dxP('',{after:60});
     });
   });
-  b+=_dxP(o.tail,{indent:720,after:120});
-  b+=_dxP('ทั้งนี้  ตั้งแต่บัดนี้เป็นต้นไป',{indent:720,after:160});
-  b+=_dxP('สั่ง  ณ  วันที่ '+thNum(o.date),{align:'center',after:480});
-  b+=_dxP(o.sign||'(.............................................)',{align:'center',after:0});
-  b+=_dxP(o.signpos,{align:'center'});
-  saveBlob('คำสั่งแต่งตั้งคณะกรรมการ.docx', docxBlob(b));
+  saveBlob('บัญชีรายชื่อคณะกรรมการ.docx', docxBlob(b));
 }
 
 /* ============================ nav ============================ */
@@ -6427,7 +6320,7 @@ function go(p){
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
-    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',staff:'คณะกรรมการดำเนินงาน',order:'คำสั่งแต่งตั้งคณะกรรมการ',
+    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',staff:'คณะกรรมการดำเนินงาน',order:'คณะกรรมการ & ดาวน์โหลดรายชื่อ',
     rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
