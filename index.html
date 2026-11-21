@@ -423,9 +423,12 @@ body[data-view="admin"] .utilbar{display:none}
 .cardrow .pv{width:42px;height:54px;border-radius:6px;object-fit:cover;border:1px solid var(--line);background:#F2ECE6}
 .cardrow .pv.none{display:grid;place-items:center;font-size:17.3px;color:#B7A99C}
 @media print{
-  .cardsheet{box-shadow:none;border:0;margin:0;page-break-after:always}
+  /* ใช้ @page แบบตั้งชื่อ ไม่งั้นกฎ @page ของงานเอกสาร (ขอบ 10 มม.) จะทับกฎนี้
+     ทำให้บัตรที่กว้าง 210 มม. ถูกย่อหรือตัดขอบเวลาพิมพ์ */
+  @page cardpage{size:A4 portrait;margin:0}
+  .cardsheet{box-shadow:none;border:0;margin:0;page-break-after:always;page:cardpage}
+  .cardsheet:last-child{page-break-after:auto}   /* กันกระดาษเปล่าแผ่นท้าย */
   .idc{border:1px dashed #CCC}
-  @page{size:A4 portrait;margin:0}
 }
 /* ---------- เกียรติบัตร ---------- */
 .cert{position:relative;width:297mm;height:210mm;background:#fff center/cover no-repeat;
@@ -441,8 +444,11 @@ body[data-view="admin"] .utilbar{display:none}
 .cert .seal .l{border-bottom:1px dotted #6B5A3C;width:70mm;margin:0 auto 4px;height:14mm}
 .certwrap{overflow:auto;padding-bottom:6px}
 .certrow{display:flex;gap:10px;align-items:center;padding:9px 11px;border-bottom:1px solid var(--line-2)}
-@media print{ .cert{box-shadow:none;border:0;margin:0;page-break-after:always;width:297mm;height:210mm}
-  @page{size:A4 landscape;margin:0} }
+@media print{
+  @page certpage{size:A4 landscape;margin:0}
+  .cert{box-shadow:none;border:0;margin:0;page-break-after:always;width:297mm;height:210mm;page:certpage}
+  .cert:last-child{page-break-after:auto}
+}
 /* ---------- งานพิมพ์ ---------- */
 .sheetdoc{background:#fff;color:#000;font-family:'Sarabun',serif;padding:18mm 16mm;margin:0 auto 14px;width:210mm;min-height:297mm;box-shadow:var(--sh);border:1px solid var(--line)}
 .sheetdoc.land{width:297mm;min-height:210mm}
@@ -549,6 +555,10 @@ body[data-view="admin"] .utilbar{display:none}
   .main{padding:0;max-width:none}
   .shell{display:block}
   .sheetdoc{box-shadow:none;border:0;margin:0;page-break-after:always;width:auto;min-height:auto;padding:10mm}
+  .sheetdoc:last-child{page-break-after:auto}
+  /* หน้าที่มีกล่องตัวอย่างก่อนพิมพ์ (บัตรประจำตัว / เกียรติบัตร) ให้พิมพ์เฉพาะกล่องนั้น
+     ส่วนหัวข้อ แบบตั้งค่า และตารางรายชื่อของหลังบ้านไม่ต้องติดไปในกระดาษ */
+  .page:has(> .printarea:not(:empty)) > *:not(.printarea){display:none!important}
   @page{size:A4;margin:10mm}
 }
 </style>
@@ -1294,7 +1304,7 @@ body[data-view="admin"] .utilbar{display:none}
         <p class="hint" id="certCount" style="margin:-4px 0 10px"></p>
         <div class="card"><div class="cb" style="padding:0;max-height:62vh;overflow:auto" id="certList"></div></div>
       </div>
-      <div id="certArea" class="certwrap" style="margin-top:16px"></div>
+      <div id="certArea" class="certwrap printarea" style="margin-top:16px"></div>
     </section>
 
     <!-- ---------- บัตรประจำตัว (หลังบ้าน) ---------- -->
@@ -1345,7 +1355,7 @@ body[data-view="admin"] .utilbar{display:none}
           </div>
           <div style="max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:10px" id="cdList"></div>
         </div></div>
-      <div id="cardArea" style="margin-top:16px;overflow:auto"></div>
+      <div id="cardArea" class="printarea" style="margin-top:16px;overflow:auto"></div>
     </section>
 
     <!-- ---------- ทำเนียบกรรมการตัดสิน (หลังบ้าน) ---------- -->
@@ -4108,7 +4118,10 @@ function renderCards(){
   $('#cdPerm').innerHTML=permNote('card_open','บัตรประจำตัว');
   api('cardConfig',{scope:SCOPE}).then(cc=>{
     CARDCFG=cc;
-    $('#cdTabs').innerHTML=['student','coach','judge','staff'].map(t=>
+    /* โรงเรียนดูแลได้เฉพาะรูปนักเรียนและครูผู้ฝึกสอนของตนเอง */
+    const isSchool = !!(ME && ME.role==='school');
+    if(isSchool && (CURCARD==='judge'||CURCARD==='staff')) CURCARD='student';
+    $('#cdTabs').innerHTML=(isSchool?['student','coach']:['student','coach','judge','staff']).map(t=>
       `<button class="tab ${t===CURCARD?'on':''}" onclick="pickCard(this,'${t}')">${TYPE_TH[t]}</button>`).join('');
     loadCardTpl();
     const sc=$('#cd_school');
@@ -4163,7 +4176,8 @@ function renderCardList(){
     const withPhoto=r.items.filter(x=>x.photo_url).length;
     $('#cdCount').innerHTML='ทั้งหมด <b>'+r.total+'</b> คน · มีรูปแล้ว '+withPhoto+
       (r.total-withPhoto? ' · <span style="color:var(--bad)">ยังไม่มีรูป '+(r.total-withPhoto)+'</span>':'');
-    $('#cd_school').style.display=(CURCARD==='student'||CURCARD==='coach')?'':'none';
+    $('#cd_school').style.display=
+      ((CURCARD==='student'||CURCARD==='coach') && !(ME&&ME.role==='school'))?'':'none';
     $('#cdList').innerHTML = r.items.length? r.items.map((x,i)=>`<div class="cardrow">
         <input type="checkbox" ${CARDSEL[x.kind+'|'+x.id]?'checked':''} onchange="cdSel('${x.kind}','${x.id}',this.checked)">
         ${x.photo_url? `<img class="pv" src="${imgSrc(x.photo_url)}">` : '<div class="pv none">👤</div>'}
