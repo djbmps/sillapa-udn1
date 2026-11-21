@@ -5703,14 +5703,14 @@ function renderCertAdm(){
 
 /* ============================ คณะกรรมการดำเนินงาน & คำสั่งแต่งตั้ง ============================
    แนวคิด: หนึ่งแถว = คนหนึ่งคนในคณะหนึ่งคณะ คนเดียวอยู่หลายคณะได้ (คนละแถว)
-   unit = ชุด/จุดแข่งขัน ('' = ชุดของสำนักงานเขต) · duty = ชื่อคณะ · role = บทบาท · seq = ลำดับในคณะ */
+   unit = ชุด/จุดแข่งขัน ('' = คณะกรรมการเขตพื้นที่) · duty = ชื่อคณะ · role = บทบาท · seq = ลำดับในคณะ */
 let ORDER=null, STAFF_UNIT='', STAFF_DUTY='';
 /** หนีอักขระพิเศษก่อนใส่ลงหน้าเว็บ */
 function esc(v){ return qq(v); }
 const ROLE_OPTS=['ประธานกรรมการ','รองประธานกรรมการ','กรรมการ','กรรมการและเลขานุการ','กรรมการและผู้ช่วยเลขานุการ'];
-const TH_DIGITS='๐๑๒๓๔๕๖๗๘๙';
-function thNum(n){ return String(n==null?'':n).replace(/[0-9]/g,d=>TH_DIGITS[Number(d)]); }
-function unitLabel(u){ return String(u||'')===''? 'ชุดของสำนักงานเขต' : String(u); }
+/** เลขลำดับในคำสั่ง — ใช้เลขอารบิก */
+function fmtNo(n){ return String(n==null?'':n); }
+function unitLabel(u){ return String(u||'')===''? 'คณะกรรมการเขตพื้นที่' : String(u); }
 
 function renderStaff(){
   $('#stSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
@@ -5749,7 +5749,7 @@ function fillStaffDuty(){
   if(!names.length){ sel.innerHTML='<option value="">— ยังไม่มีคณะในชุดนี้ —</option>'; STAFF_DUTY=''; return; }
   if(names.indexOf(STAFF_DUTY)<0) STAFF_DUTY=names[0];
   sel.innerHTML='<option value="*">ทุกคณะในชุดนี้</option>'+
-    names.map((n,i)=>`<option value="${esc(n)}">${thNum(i+1)}. ${esc(n)}</option>`).join('');
+    names.map((n,i)=>`<option value="${esc(n)}">${fmtNo(i+1)}. ${esc(n)}</option>`).join('');
   sel.value=STAFF_DUTY;
 }
 function stPickUnit(){ STAFF_UNIT=$('#st_unit').value; STAFF_DUTY=''; fillStaffDuty(); drawStaff(); }
@@ -5778,9 +5778,9 @@ function drawStaff(){
     const d=String(x.duty||'');
     if((STAFF_DUTY==='*'||!STAFF_DUTY) && d!==last){
       last=d;
-      body+=`<tr><td colspan="6" style="background:var(--line-2);font-weight:700">${thNum(dutyNo(STAFF_UNIT,d))}. ${esc(d||'(ยังไม่ระบุคณะ)')}</td></tr>`;
+      body+=`<tr><td colspan="6" style="background:var(--line-2);font-weight:700">${fmtNo(dutyNo(STAFF_UNIT,d))}. ${esc(d||'(ยังไม่ระบุคณะ)')}</td></tr>`;
     }
-    body+=`<tr><td style="white-space:nowrap">${thNum(Number(x.seq)||'')}</td>
+    body+=`<tr><td style="white-space:nowrap">${fmtNo(Number(x.seq)||'')}</td>
       <td><b>${esc((x.prefix||'')+(x.name||''))}</b></td>
       <td>${esc(x.position||'')}</td><td>${esc(cleanTxt(x.org||''))}</td>
       <td style="white-space:nowrap">${esc(x.role||'กรรมการ')}</td>
@@ -6101,7 +6101,7 @@ function drawCommittees(){
       body+=`<tr><td colspan="5" style="background:var(--line-2);font-weight:700">${esc(unitLabel(u))}</td></tr>`; }
     const n=countIn(u,c.name);
     body+=`<tr><td style="white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis">${esc(unitLabel(u))}</td>
-      <td>${thNum(Number(c.no)||'')}</td><td><b>${esc(c.name)}</b></td>
+      <td>${fmtNo(Number(c.no)||'')}</td><td><b>${esc(c.name)}</b></td>
       <td style="white-space:nowrap">${n? '<span class="pill ok">'+n+' คน</span>' : '<span class="pill b">ยังไม่มี</span>'}</td>
       <td style="white-space:nowrap">
         <button class="btn g sm" onclick='goStaffDuty(${JSON.stringify(u)},${JSON.stringify(String(c.name))})'>📥 ใส่รายชื่อ</button>
@@ -6117,7 +6117,7 @@ function drawUnits(){
     const nk=committeesOf(u).length;
     const np=(window.__STAFF||[]).filter(x=>String(x.unit||'')===String(u||'')).length;
     const isDistrict=String(u||'')==='';
-    return `<tr><td><b>${esc(unitLabel(u))}</b>${isDistrict?' <span class="hint">(ชุดหลักของเขต)</span>':''}</td>
+    return `<tr><td><b>${esc(unitLabel(u))}</b>${isDistrict?' <span class="hint">(ชุดหลัก)</span>':''}</td>
       <td style="white-space:nowrap">${nk} คณะ</td><td style="white-space:nowrap">${np} รายชื่อ</td>
       <td style="white-space:nowrap">${isDistrict? '<span class="hint">แก้ชื่อ/ลบไม่ได้</span>'
         : `<button class="btn g sm" onclick='editUnit(${JSON.stringify(String(u))})'>แก้ชื่อ</button>
@@ -6169,7 +6169,7 @@ function editCommittee(id){
     `<div class="grid g3">
       <div class="fld" style="grid-column:span 2"><label>ชุด / จุดแข่งขัน</label>
         ${selOther('c_unit', us.filter(u=>u!==''), String(c.unit||''), 'เช่น จุดแข่งขันที่ 1 โรงเรียนบ้านหมากแข้ง')}
-        <div class="hint">เว้นว่างไว้ = ชุดของสำนักงานเขต</div></div>
+        <div class="hint">เว้นว่างไว้ = คณะกรรมการเขตพื้นที่</div></div>
       <div class="fld"><label>ลำดับคณะ</label><input id="c_no" type="number" min="1" value="${Number(c.no)||''}"></div></div>
      <div class="fld"><label>ชื่อคณะ</label><input id="c_name" value="${esc(c.name||'')}"
         placeholder="เช่น คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง"></div>`,
@@ -6232,10 +6232,10 @@ function orderPreview(){
   o.units.forEach(u=>{
     if(u.unit!=='') h+=`<h2 style="margin-top:14px;text-align:left">${esc(u.label)}</h2>`;
     u.committees.forEach((c,ci)=>{
-      h+=`<p style="margin:12px 0 4px"><b>${thNum(ci+1)}. ${esc(c.name)}</b></p>
+      h+=`<p style="margin:12px 0 4px"><b>${fmtNo(ci+1)}. ${esc(c.name)}</b></p>
           <table style="width:100%;border-collapse:collapse;font-size:14.3px">`;
       c.members.forEach((m,mi)=>{
-        h+=`<tr><td style="width:46%;padding:1.5px 4px;border:0">${thNum(ci+1)}.${thNum(mi+1)}&nbsp;&nbsp;${esc((m.prefix||'')+(m.name||''))}</td>
+        h+=`<tr><td style="width:46%;padding:1.5px 4px;border:0">${fmtNo(ci+1)}.${fmtNo(mi+1)}&nbsp;&nbsp;${esc((m.prefix||'')+(m.name||''))}</td>
             <td style="width:32%;padding:1.5px 4px;border:0">${esc(m.position||'')}${m.org? ' '+esc(cleanTxt(m.org)):''}</td>
             <td style="width:22%;padding:1.5px 4px;border:0;text-align:right">${esc(m.role||'กรรมการ')}</td></tr>`;
       });
@@ -6319,9 +6319,9 @@ function orderDocx(){
   o.units.forEach(u=>{
     if(u.unit!=='') b+=_dxP(u.label,{b:true,after:80});
     u.committees.forEach((c,ci)=>{
-      b+=_dxP(thNum(ci+1)+'. '+c.name,{b:true,after:40});
+      b+=_dxP(fmtNo(ci+1)+'. '+c.name,{b:true,after:40});
       const rows=c.members.map((m,mi)=>'<w:tr>'+
-        _dxCell(4300, '        '+thNum(ci+1)+'.'+thNum(mi+1)+'  '+(m.prefix||'')+(m.name||''))+
+        _dxCell(4300, '        '+fmtNo(ci+1)+'.'+fmtNo(mi+1)+'  '+(m.prefix||'')+(m.name||''))+
         _dxCell(3100, (m.position||'')+(m.org? ' '+cleanTxt(m.org):''))+
         _dxCell(2200, (m.role||'กรรมการ'),{align:'right'})+'</w:tr>');
       b+=_dxTable(rows);
