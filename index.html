@@ -4526,10 +4526,15 @@ function subCertHTML(r){
 /** เวลาจากฐานข้อมูล (ค.ศ.) → แบบไทย เช่น 19 พ.ย. 2569 12:34 น. */
 const TH_MON_S=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function tsTh(v){
-  const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
-  if(!m) return String(v||'-');
-  let y=Number(m[1]); if(y<2400) y+=543;
-  return Number(m[3])+' '+TH_MON_S[Number(m[2])-1]+' '+y+' '+m[4]+':'+m[5]+' น.';
+  if(!v && v!==0) return '-';
+  const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+  if(m){ let y=Number(m[1]); if(y<2400) y+=543;
+    return Number(m[3])+' '+TH_MON_S[Number(m[2])-1]+' '+y+' '+m[4]+':'+m[5]+' น.'; }
+  /* ค่าที่ชีตส่งกลับมาเป็นวัตถุวันที่ เบราว์เซอร์จะแปลงเป็นข้อความอังกฤษ — แปลงเป็นไทย */
+  const d=new Date(v);
+  if(isNaN(d.getTime())) return String(v);
+  return d.getDate()+' '+TH_MON_S[d.getMonth()]+' '+(d.getFullYear()+543)+' '
+    +String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' น.';
 }
 function subPill(st){
   return st==='อนุมัติ'? '<span class="pill ok">อนุมัติแล้ว</span>'
@@ -5121,7 +5126,7 @@ async function pickRestore(){
     $('#bkInfo').innerHTML=
       `<div class="note ${okMatch?'g':'b'}"><span>${okMatch?'✅':'⚠️'}</span><div>
         <b>ไฟล์สำรองของ ${info.scope==='ALL'?'ระดับเขต':groupName(info.scope)||info.scope}</b> ·
-        สำรองเมื่อ ${info.created_at||'-'} โดย ${info.created_by||'-'}
+        สำรองเมื่อ ${info.created_at? tsTh(info.created_at):'-'} โดย ${info.created_by||'-'}
         ${okMatch?'':'<div class="hint" style="margin-top:4px">ไฟล์นี้ไม่ใช่ของกลุ่มที่กำลังเปิดอยู่ จึงกู้คืนไม่ได้</div>'}</div></div>
       <div class="cb" style="padding:0;margin-top:10px;overflow:auto"><table><thead><tr><th>ข้อมูลที่จะเขียนกลับ</th><th style="text-align:right">จำนวนแถว</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     $('#bkGo').style.display = okMatch? '' : 'none';
@@ -7049,7 +7054,7 @@ function drawPromoteDistrict(){
   tbl($('#prBoard'),['กลุ่มโรงเรียน','รายการที่โอน','จำนวนทีม','สละสิทธิ์','โอนล่าสุด','สถานะ','จัดการ'],
     list.map(g=>`<tr><td><b>${g.group_name||g.group_code}</b></td>
       <td class="num">${g.act_count||0}</td><td class="num">${g.teams||0}</td>
-      <td class="num">${g.withdrawn||0}</td><td class="hint">${g.last_at||'-'}</td>
+      <td class="num">${g.withdrawn||0}</td><td class="hint">${g.last_at? tsTh(g.last_at):'-'}</td>
       <td>${g.teams? '<span class="pill ok">โอนแล้ว</span>':'<span class="pill w">ยังไม่โอน</span>'}</td>
       <td>${g.teams? `<button class="btn g sm" onclick="resetPromote('${g.group_code}','','${(g.group_name||g.group_code).replace(/'/g,"")}')">รีเซ็ตทั้งกลุ่ม</button>`:'<span class="hint">-</span>'}</td></tr>`).join(''));
 
@@ -7070,7 +7075,7 @@ function drawPromoteDetail(){
       <td><b>${it.act_name}</b> <span class="hint">${it.level||''}</span></td>
       <td>${it.teams.map(t=>`${cleanName(t.school)} <span class="hint">(อันดับ ${t.rank}${t.medal?' · '+t.medal:''})</span>`+
         (t.status==='สละสิทธิ์'?' <span class="pill b">สละสิทธิ์</span>':'')).join('<br>')}</td>
-      <td class="hint">${it.last_at||''}</td>
+      <td class="hint">${it.last_at? tsTh(it.last_at):''}</td>
       <td><button class="btn g sm" onclick="resetPromote('${it.group_code}','${it.act_id}','${(it.act_name||'').replace(/'/g,"")}')">รีเซ็ตรายการนี้</button></td></tr>`).join(''));
 }
 
@@ -7151,7 +7156,7 @@ async function loadResetRequests(){
       ? `<span class="pill w">รอดำเนินการ ${pending} คำขอ</span>` : '<span class="pill ok">ไม่มีคำขอค้าง</span>';
     const pill={'รอดำเนินการ':'w','รีเซ็ตแล้ว':'ok','ปฏิเสธ':'b'};
     tbl($('#rqTbl'),['วันที่','บัญชี','ผู้ขอ / สังกัด','ติดต่อกลับ','หมายเหตุ','สถานะ','จัดการ'],
-      items.map(x=>`<tr><td class="hint">${x.created_at||''}</td>
+      items.map(x=>`<tr><td class="hint">${tsTh(x.created_at)}</td>
         <td><code>${x.username}</code></td><td>${x.name||''}<div class="hint">${x.where||''}</div></td>
         <td>${x.contact||''}</td><td>${x.reason||''}</td>
         <td><span class="pill ${pill[x.status]||''}">${x.status}</span>
@@ -7535,7 +7540,7 @@ function drawApplications(){
           <div style="font-size:17.3px;font-weight:700">${x.prefix||''}${x.full_name}
             <span class="pill ${pill[x.status]||''}">${x.status}</span></div>
           <div class="hint">${x.position||''} · ${x.org_name||''} ${x.group_code? '· '+groupName(x.group_code):''}</div>
-          <div class="hint">รหัส ${x.ref_code} · สมัคร ${x.created_at||''} · ${x.phone} · ${x.email||'(ไม่มีอีเมล)'}</div>
+          <div class="hint">รหัส ${x.ref_code} · สมัคร ${tsTh(x.created_at)} · ${x.phone} · ${x.email||'(ไม่มีอีเมล)'}</div>
           <div style="margin-top:8px;font-size:15.8px"><b>กลุ่มสาระ:</b> ${x.category||'-'}
             &nbsp;·&nbsp; <b>วุฒิ:</b> ${x.education||'-'} ${x.major? '('+x.major+')':''}
             &nbsp;·&nbsp; <b>ประสบการณ์:</b> ${x.experience_years||'-'} ปี</div>
