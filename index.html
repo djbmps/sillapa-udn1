@@ -5358,7 +5358,7 @@ async function exportResultsCsv(){
   try{
     const r=await api('publicResults',{group:entryRound()});
     const rows=[['รายการแข่งขัน','ระดับชั้น','โรงเรียน','กลุ่ม','คะแนน','เหรียญ','อันดับ','ประกาศเมื่อ']];
-    (r.results||[]).forEach(x=>rows.push([x.act_name,x.level,cleanTxt(x.school||''),
+    (r.results||[]).forEach(x=>rows.push([x.act_name,x.level,cleanRaw(x.school||''),
       groupName(x.group_code||''),x.total,x.medal,x.rank,x.published_at||'']));
     if(rows.length===1) return alert('ยังไม่มีผลการแข่งขันที่ประกาศแล้ว');
     saveFile('sillapa-results-'+(SCOPE==='ALL'?'district':SCOPE)+'-'+stamp()+'.csv',csv(rows),'text/csv');
@@ -5368,7 +5368,7 @@ async function exportMedalCsv(){
   try{
     const r=await api('publicResults',{group:entryRound()});
     const rows=[['อันดับ','โรงเรียน','ทอง','เงิน','ทองแดง','รวม']];
-    (r.medals||[]).forEach((m,i)=>rows.push([i+1,cleanTxt(m.school),m.g,m.s,m.b,m.g+m.s+m.b]));
+    (r.medals||[]).forEach((m,i)=>rows.push([i+1,cleanRaw(m.school),m.g,m.s,m.b,m.g+m.s+m.b]));
     if(rows.length===1) return alert('ยังไม่มีผลการแข่งขันที่ประกาศแล้ว');
     saveFile('sillapa-medals-'+(SCOPE==='ALL'?'district':SCOPE)+'-'+stamp()+'.csv',csv(rows),'text/csv');
   }catch(e){ alert(e.message); }
@@ -5380,7 +5380,7 @@ async function exportEntriesCsv(){
     const rows=[['รหัสผู้สมัคร','รายการแข่งขัน','ระดับชั้น','โรงเรียน','กลุ่ม','สถานะ','วันที่สมัคร']];
     (r||[]).forEach(e=>{ const a=A.find(x=>x.act_id===e.act_id)||{};
       const s=(DB.schools||[]).find(x=>String(x.smis)===String(e.school_smis))||{};
-      rows.push([e.entry_id,a.act_name||e.act_id,a.level||'',cleanTxt(s.school_name||e.school_smis),
+      rows.push([e.entry_id,a.act_name||e.act_id,a.level||'',cleanRaw(s.school_name||e.school_smis),
         groupName(e.group_code),e.status||'',e.created_at||'']); });
     if(rows.length===1) return alert('ยังไม่มีผู้สมัคร');
     saveFile('sillapa-entries-'+(SCOPE==='ALL'?'district':SCOPE)+'-'+stamp()+'.csv',csv(rows),'text/csv');
@@ -5457,6 +5457,8 @@ function fillCert(txt,it,cfg){
 }
 /* ชื่อโรงเรียน/หน่วยงานสำหรับแสดงบนหน้าเว็บ — หนีอักขระ HTML ให้เรียบร้อย */
 function cleanTxt(n){ const t=String(n==null?'':n); const i=t.indexOf('#'); return qq(i<0?t:t.slice(0,i)); }
+/** ข้อความดิบ (ไม่หนีอักขระ) — ใช้กับไฟล์ CSV/Excel/Word และกล่องข้อความ */
+function cleanRaw(n){ const t=String(n==null?'':n); const i=t.indexOf('#'); return i<0?t:t.slice(0,i); }
 function certNo(it,cfg){
   const f=(cfg&&cfg.number_format)||(edition()+'/{seq:04d}');
   return f.replace(/\{seq:0(\d)d\}/,(m,w)=>String(it.seq||0).padStart(Number(w),'0'));
@@ -5796,7 +5798,7 @@ function drawStaff(){
     }
     body+=`<tr><td style="white-space:nowrap">${fmtNo(Number(x.seq)||'')}</td>
       <td><b>${esc((x.prefix||'')+(x.name||''))}</b></td>
-      <td>${esc(x.position||'')}</td><td>${esc(cleanTxt(x.org||''))}</td>
+      <td>${esc(x.position||'')}</td><td>${cleanTxt(x.org||'')}</td>
       <td style="white-space:nowrap">${esc(x.role||'กรรมการ')}</td>
       <td style="white-space:nowrap">
         <button class="btn g sm" title="เลื่อนขึ้น" onclick="moveStaff('${x.staff_id}',-1)">▲</button>
@@ -5869,7 +5871,7 @@ function staffXlsx(){
   });
   const rows=[['ชุด / จุดแข่งขัน','คณะกรรมการ','ที่','คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ']];
   all.forEach(x=>rows.push([unitLabel(x.unit), x.duty||'', Number(x.seq)||'', x.prefix||'', x.name||'',
-    x.position||'', cleanTxt(x.org||''), x.role||'กรรมการ']));
+    x.position||'', cleanRaw(x.org||''), x.role||'กรรมการ']));
   saveBlob('รายชื่อคณะกรรมการดำเนินงาน.xlsx', xlsxBlob([{name:'รายชื่อ', rows:rows}]));
 }
 function openStaffImport(){
@@ -6250,7 +6252,7 @@ function orderPreview(){
           <table style="width:100%;border-collapse:collapse;font-size:14.3px">`;
       c.members.forEach((m,mi)=>{
         h+=`<tr><td style="width:46%;padding:1.5px 4px;border:0">${fmtNo(ci+1)}.${fmtNo(mi+1)}&nbsp;&nbsp;${esc((m.prefix||'')+(m.name||''))}</td>
-            <td style="width:32%;padding:1.5px 4px;border:0">${esc(m.position||'')}${m.org? ' '+esc(cleanTxt(m.org)):''}</td>
+            <td style="width:32%;padding:1.5px 4px;border:0">${esc(m.position||'')}${m.org? ' '+cleanTxt(m.org):''}</td>
             <td style="width:22%;padding:1.5px 4px;border:0;text-align:right">${esc(m.role||'กรรมการ')}</td></tr>`;
       });
       h+='</table>';
@@ -6266,7 +6268,7 @@ function orderXlsx(){
   const rows=[['ชุด / จุดแข่งขัน','ที่','คณะกรรมการ','ลำดับ','คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ']];
   o.units.forEach(u=>u.committees.forEach((c,ci)=>c.members.forEach((m,mi)=>{
     rows.push([u.label, ci+1, c.name, (ci+1)+'.'+(mi+1), m.prefix||'', m.name||'',
-      m.position||'', cleanTxt(m.org||''), m.role||'กรรมการ']);
+      m.position||'', cleanRaw(m.org||''), m.role||'กรรมการ']);
   })));
   saveBlob('บัญชีรายชื่อคณะกรรมการ.xlsx', xlsxBlob([{name:'รายชื่อ', rows:rows}]));
 }
@@ -6336,7 +6338,7 @@ function orderDocx(){
       b+=_dxP(fmtNo(ci+1)+'. '+c.name,{b:true,after:40});
       const rows=c.members.map((m,mi)=>'<w:tr>'+
         _dxCell(4300, '        '+fmtNo(ci+1)+'.'+fmtNo(mi+1)+'  '+(m.prefix||'')+(m.name||''))+
-        _dxCell(3100, (m.position||'')+(m.org? ' '+cleanTxt(m.org):''))+
+        _dxCell(3100, (m.position||'')+(m.org? ' '+cleanRaw(m.org):''))+
         _dxCell(2200, (m.role||'กรรมการ'),{align:'right'})+'</w:tr>');
       b+=_dxTable(rows);
       b+=_dxP('',{after:60});
@@ -7146,7 +7148,7 @@ function renderEntries(){
 async function delEntry(id){
   const e=(window.__ENT||[]).find(x=>String(x.entry_id)===String(id))||{};
   const S=schoolsOf('ALL'), s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
-  const who=cleanName(s.school_name||e.school_smis||id);
+  const who=cleanRaw(s.school_name||e.school_smis||id);
   if(!confirm('ลบผู้สมัครของ “'+who+'” ออกจากรายการนี้?\n\n'
     +'รายชื่อนักเรียน ครูผู้ฝึกสอน และคะแนนของทีมนี้จะถูกลบไปด้วย และกู้คืนไม่ได้')) return;
   try{
@@ -9046,7 +9048,7 @@ function exportCsv(what){
        ...schoolsOf(SCOPE).map(s=>[s.smis,s.school_name,s.tambon,s.amphoe,s.group_name||groupName(s.group_code),s.n_total,s.n_lower_sec,s.offer,s.size])]
     : what==='region'
     ? [['ที่','รหัสกิจกรรม','รายการแข่งขัน','ระดับชั้น','โรงเรียนตัวแทน','กลุ่มต้นทาง','คะแนน','เหรียญ'],
-       ...(PRREG||[]).map((x,i)=>[i+1,x.act_id,x.act_name,x.level,cleanName(x.school||''),
+       ...(PRREG||[]).map((x,i)=>[i+1,x.act_id,x.act_name,x.level,cleanRaw(x.school||''),
          x.from_group?groupName(x.from_group):'',x.total,x.medal])]
     : [['รหัส','กลุ่ม','อำเภอ','โรงเรียน','นักเรียน','ขยายโอกาส'],
        ...DB.groups.map(g=>[g.group_code,g.group_name,g.amphoe,g.schools,g.students,g.expansion_schools])];
