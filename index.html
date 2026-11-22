@@ -7421,7 +7421,7 @@ function scTotalCalc(){
     if(x.v===null){ md.innerHTML=''; rk.textContent=''; return; }
     const m=medalOf(x.v);
     md.innerHTML=`<span class="pill ${m==='ทอง'?'ok':m==='เงิน'?'i':'w'}">${m}</span>`;
-    rk.innerHTML = x.rank===1? '<b>1</b>' : String(x.rank);
+    rk.innerHTML = x.rank===1? '<b>'+rankWord(1)+'</b>' : rankWord(x.rank);
   });
 }
 /** จัดเรียงแถวตามคะแนนจากมากไปน้อย (เรียกหลังบันทึก) */
@@ -7592,7 +7592,7 @@ function renderPublish(){
                         : ['อันดับ','โรงเรียน','กรรมการที่ให้คะแนน','ช่วงห่างคะแนน','คะแนนเฉลี่ย','ผล'],
       c.rows.map(r=>{ const s=S.find(x=>String(x.smis)===String(r.school_smis))||{};
         const mp={'ทอง':'m1','เงิน':'m2','ทองแดง':'m3'}[r.medal];
-        return `<tr><td class="num"><b>${r.rank}</b></td><td><b>${cleanName(s.school_name||r.school_smis)}</b></td>
+        return `<tr><td><b>${rankWord(r.rank)}</b></td><td><b>${cleanName(s.school_name||r.school_smis)}</b></td>
           <td class="${dist?'hint':'num'}">${dist?'สรุปจากคณะกรรมการ':r.judges}</td>
           <td class="num" ${(!dist&&r.spread>c.warn_gap)?'style="color:var(--bad);font-weight:700"':''}>${dist?'':r.spread}</td>
           <td class="num" style="font-weight:700">${r.total.toFixed(2)}</td>
@@ -7817,7 +7817,7 @@ function drawPromoteDetail(){
   tbl($('#prDetail'),['กลุ่ม','รายการแข่งขัน','โรงเรียนที่เป็นตัวแทน','โอนเมื่อ','จัดการ'],
     items.map(it=>`<tr><td>${it.group_name||it.group_code}</td>
       <td><b>${it.act_name}</b> <span class="hint">${it.level||''}</span></td>
-      <td>${it.teams.map(t=>`${cleanName(t.school)} <span class="hint">(อันดับ ${t.rank}${t.medal?' · '+t.medal:''})</span>`+
+      <td>${it.teams.map(t=>`${cleanName(t.school)} <span class="hint">(${qq(rankWord(t.rank))}${t.medal?' · '+qq(t.medal):''})</span>`+
         (t.status==='สละสิทธิ์'
           ? ' <span class="pill b">สละสิทธิ์</span>'
           : ` <button class="btn sm" style="padding:1px 7px" title="โรงเรียนนี้ไม่ไปแข่งระดับเขต"
@@ -8508,7 +8508,8 @@ function drawResults(){
 /** แปลงอันดับเป็นคำแบบประกาศผลราชการ */
 function rankWord(n){
   const r=Number(n)||0;
-  return r===1? 'ชนะเลิศ' : r===2? 'รองชนะเลิศอันดับที่ ๑' : r===3? 'รองชนะเลิศอันดับที่ ๒' : String(n||'');
+  return r===1? 'ชนะเลิศ' : r===2? 'รองชนะเลิศอันดับที่ 1'
+       : r===3? 'รองชนะเลิศอันดับที่ 2' : (r? 'อันดับที่ '+r : '');
 }
 /** คลิกรายการแข่งขัน → ผลการแข่งขันแบบเอกสารประกาศผล (เรียงตามคะแนน) */
 function openActResult(actId){
@@ -9070,10 +9071,10 @@ function prtSheet(kind, act, pack, pub){
     const rows=((pub&&pub.results)||[]).filter(r=>String(r.act_id)===String(act.act_id))
       .sort((a,b)=>Number(a.rank)-Number(b.rank));
     body=`<div class="dline">ผลการแข่งขัน <b>${title}</b></div>
-      <table><thead><tr><th style="width:60px">อันดับ</th><th>โรงเรียน</th>
-        <th style="width:90px">คะแนน</th><th style="width:110px">เหรียญ</th><th style="width:130px">หมายเหตุ</th></tr></thead><tbody>
-      ${rows.length? rows.map(r=>`<tr><td class="num">${r.rank}</td><td>${cleanName(r.school||'')}</td>
-          <td class="num">${r.total}</td><td>${r.medal||''}</td><td>${rankWord(r.rank)||''}</td></tr>`).join('')
+      <table><thead><tr><th style="width:150px">อันดับ</th><th>โรงเรียน</th>
+        <th style="width:90px">คะแนน</th><th style="width:110px">เหรียญ</th><th style="width:110px">หมายเหตุ</th></tr></thead><tbody>
+      ${rows.length? rows.map(r=>`<tr><td>${rankWord(r.rank)}</td><td>${cleanName(r.school||'')}</td>
+          <td class="num">${r.total}</td><td>${r.medal||''}</td><td></td></tr>`).join('')
         : blanks(12,5)}</tbody></table>
       <div class="dfoot"><b>กรรมการตัดสิน</b>${prtSignRow()}</div>`;
     return `<div class="sheetdoc">${prtHead(act,'DOC.6')}${body}</div>`;
