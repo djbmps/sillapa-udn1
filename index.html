@@ -7387,7 +7387,9 @@ function renderScoreTotal(actId, act){
    .then(([ent,calc])=>{
     SC_ENT=ent;
     const S=schoolsOf('ALL');
-    const old={}; (calc.rows||[]).forEach(r=>{ old[String(r.entry_id)]=r.total; });
+    /* เติมเฉพาะทีมที่เคยบันทึกคะแนนไว้แล้ว — ทีมที่ยังไม่ได้คีย์ต้องเป็นช่องว่าง
+       ไม่ใช่เลข 0 ซึ่งทำให้เผลอบันทึกเป็น 0 คะแนนทั้งรายการได้ */
+    const old={}; (calc.rows||[]).forEach(r=>{ if(Number(r.judges||0)>0) old[String(r.entry_id)]=r.total; });
     const rows=ent.slice().sort((a,b)=>Number(old[String(b.entry_id)]||0)-Number(old[String(a.entry_id)]||0));
     tbl($('#scTbl'),['ที่','โรงเรียน','ที่มา','คะแนนรวม','เหรียญ','อันดับ'],
       rows.map((e,i)=>{ const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
