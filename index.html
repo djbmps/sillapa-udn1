@@ -600,7 +600,7 @@ body[data-view="admin"] .utilbar{display:none}
             <button type="button" class="pweye" id="lgEye" onclick="lgTogglePass()"
                     title="แสดงรหัสผ่าน" aria-label="แสดงรหัสผ่าน">👁️</button>
           </div></div>
-        <button class="btn lgbtn" onclick="doLogin()">เข้าสู่ระบบ</button>
+        <button class="btn lgbtn" id="lgBtn" onclick="doLogin()">เข้าสู่ระบบ</button>
         <div id="lgErr" class="note b" style="display:none;margin-top:14px"></div>
 
         <div class="lgfoot">
@@ -2074,14 +2074,28 @@ function showOfflineBar(){
   document.body.style.paddingTop='44px';
 }
 
-async function api(action, params={}){
-  if(DEMO()) return demoApi(action, params);
+async function apiRaw(action, params={}){
   const body = Object.assign({action, token:TOKEN}, params);
   const res = await fetch(API, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
                                body: JSON.stringify(body)});
   const j = await res.json();
   if(!j.ok) throw new Error(j.error||'เกิดข้อผิดพลาด');
-  return j.data;
+  return j;
+}
+async function api(action, params={}){
+  if(DEMO()) return demoApi(action, params);
+  return (await apiRaw(action, params)).data;
+}
+/* ---------- บันทึกแล้วขอข้อมูลชุดใหม่กลับมาในคำขอเดียว ----------
+   เดิม: บันทึก (1 รอบ) แล้วขอรายการใหม่ (อีก 1 รอบ) = รอสองเท่า
+   ใหม่: ส่งไปรอบเดียว เซิร์ฟเวอร์บันทึกเสร็จแล้วอ่านรายการใหม่ส่งกลับมาพร้อมกัน
+   คืนค่า {data:ผลการบันทึก, then:รายการใหม่}  ถ้า then เป็น null ให้ขอรายการตามปกติ */
+async function apiThen(action, params, thenAction, thenParams){
+  if(DEMO()) return {data: await demoApi(action, params||{}),
+                     then: await demoApi(thenAction, Object.assign({}, params||{}, thenParams||{}))};
+  const j = await apiRaw(action, Object.assign({}, params||{},
+    {then:thenAction, then_params:JSON.stringify(thenParams||{})}));
+  return {data:j.data, then:(j.then===undefined? null : j.then)};
 }
 
 /* ---------- โหมดตัวอย่าง: ทำงานได้เต็มรูปแบบในเครื่อง ---------- */
@@ -3371,6 +3385,68 @@ async function reloadBoot(){
   return DB;
 }
 
+/* ---------- บันทึกแล้วตอบสนองทันที ----------
+   เดิม: กดบันทึก → รอเขียนลงฐานข้อมูล (2–4 วิ) → รอโหลดข้อมูลใหม่ทั้งระบบ (2–5 วิ) → จึงเห็นผล
+   ใหม่: กดบันทึก → รอเขียนลงฐานข้อมูลเท่านั้น → ปรับข้อมูลในเครื่องให้ตรงทันที เห็นผลเลย
+         แล้วค่อยดึงข้อมูลจริงมาทับเบื้องหลัง (ผู้ใช้ไม่ต้องรอ) */
+let BOOT_BG=0;
+function bootBG(ms){
+  if(DEMO()||!API) return;
+  clearTimeout(BOOT_BG);
+  BOOT_BG=setTimeout(()=>{
+    reloadBoot().then(()=>{ REV_LAST=Date.now(); }).catch(()=>{});
+  }, ms||1500);
+}
+/** ใส่/แทนรายการแข่งขันในข้อมูลที่อยู่ในเครื่อง (ไม่ต้องโหลดใหม่ทั้งระบบ) */
+function dbPutAct(a){
+  if(!a||!a.act_id) return;
+  DB.activities=DB.activities||[];
+  const i=DB.activities.findIndex(x=>x.act_id===a.act_id);
+  if(i<0) DB.activities.push(Object.assign({},a));
+  else DB.activities[i]=Object.assign({}, DB.activities[i], a);
+}
+function dbDelAct(id){
+  if(DB.activities) DB.activities=DB.activities.filter(x=>x.act_id!==id);
+  if(DB.criteria)   DB.criteria  =DB.criteria.filter(c=>c.act_id!==id);
+}
+/** ใส่/แทนแถวหนึ่งในอาร์เรย์ที่เก็บไว้ในเครื่อง (ใช้คู่กับการบันทึกแบบไม่ต้องโหลดใหม่) */
+function dbPutRow(arr, key, row){
+  if(!arr || !row || !row[key]) return arr;
+  const i=arr.findIndex(x=>String(x[key])===String(row[key]));
+  if(i<0) arr.push(row); else arr[i]=Object.assign({}, arr[i], row);
+  return arr;
+}
+/** ซิงก์ทำเนียบรายชื่อ/คณะกรรมการเงียบ ๆ หลังบันทึก */
+let STAFF_BG=0;
+function staffSyncBG(){
+  if(DEMO()||!API) return;
+  clearTimeout(STAFF_BG);
+  STAFF_BG=setTimeout(()=>{
+    Promise.all([api('orderSetup',{scope:SCOPE}), api('listStaff',{scope:SCOPE})])
+      .then(([od,rows])=>{ ORDER=od||ORDER; window.__STAFF=rows||window.__STAFF; })
+      .catch(()=>{});
+  }, 1500);
+}
+/** ปรับค่าตั้งค่าในเครื่องให้ตรงกับที่เพิ่งบันทึก */
+function dbCfg(o){ DB.config=Object.assign({}, DB.config||{}, o||{}); }
+
+/** ปุ่มกำลังทำงาน — บอกผู้ใช้ทันทีว่ากดติดแล้ว และกันการกดซ้ำ */
+function btnBusy(el, label){
+  if(!el || el.dataset.busy) return function(){};   /* กันครอบซ้อนกันเองเวลาเรียกต่อกันหลายชั้น */
+  const html=el.innerHTML, dis=el.disabled;
+  el.dataset.busy='1';
+  el.disabled=true; el.style.opacity='.72'; el.style.cursor='progress';
+  el.innerHTML='⏳ '+(label||'กำลังบันทึก…');
+  return function(){ delete el.dataset.busy;
+    el.innerHTML=html; el.disabled=dis; el.style.opacity=''; el.style.cursor=''; };
+}
+/** ครอบปุ่มทั่วไป: กด → ขึ้น “กำลังบันทึก…” → ทำงาน → คืนสภาพ */
+async function withBusy(ev, label, fn){
+  const el=(ev&&(ev.currentTarget||ev.target))||null;
+  const done=btnBusy(el, label);
+  try{ return await fn(); } finally{ done(); }
+}
+
 /* ---------- รายการแข่งขันและเกณฑ์เป็นชุดกลาง — เปลี่ยนที่เดียว เห็นพร้อมกันทุกที่ ----------
    เขตแก้รายการเมื่อไร เว็บที่เปิดค้างอยู่ของทุกกลุ่ม/ทุกโรงเรียนจะโหลดรายการใหม่ให้เอง
    โดยเช็คเลขเวอร์ชันข้อมูลเบา ๆ (ตอนสลับกลับมาที่แท็บ และทุก 3 นาที)                      */
@@ -4495,8 +4571,8 @@ function printCards(){
 
 /* ============================ ทำเนียบกรรมการตัดสิน ============================ */
 let JUDGES=[];
-function renderJudges(){
-  api('listJudges',{scope:SCOPE}).then(rows=>{
+function renderJudges(pre){
+  Promise.resolve(pre || api('listJudges',{scope:SCOPE})).then(rows=>{
     JUDGES=rows||[];
     $('#jgSub').textContent=(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE))+' · '+JUDGES.length+' คน';
     drawJudges(); fillJAssignSelects(); renderJAssign();
@@ -4521,10 +4597,10 @@ function fillJAssignSelects(){
   /* ที่นั่งซ้ำได้ (กรรมการ 3 คน) จึงไม่ตัดตัวเลือกที่ใช้ไปแล้วออก */
   sr.innerHTML=[...new Set(JUDGE_SEATS)].map(r=>`<option value="${r}">${r}</option>`).join('');
 }
-function renderJAssign(){
+function renderJAssign(pre){
   const act=$('#jaAct').value;
   if(!act){ tbl($('#jaTbl'),['กรรมการ','ตำแหน่งในคณะกรรมการ','หน่วยงาน',''],''); return; }
-  api('listJudgeAssign',{act_id:act}).then(rows=>{
+  Promise.resolve(pre || api('listJudgeAssign',{act_id:act})).then(rows=>{
     JASSIGN=rows||[];
     const need=Number((actsOf().find(a=>a.act_id===act)||{}).judges_required||5);
     $('#jaSub2').textContent = JASSIGN.length+' / '+need+' คน'+(JASSIGN.length<need? ' — ยังไม่ครบ':' ✓');
@@ -4541,12 +4617,14 @@ async function addJAssign(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   const act=$('#jaAct').value, jid=$('#jaJudge').value, role=$('#jaRole').value;
   if(!jid) return alert('ยังไม่มีรายชื่อกรรมการ — เพิ่มรายชื่อที่ตารางด้านบนก่อน');
-  try{ await api('saveJudgeAssign',{assign:{act_id:act, judge_id:jid, role:role}}); renderJAssign(); }
+  try{ const rr=await apiThen('saveJudgeAssign',{assign:{act_id:act, judge_id:jid, role:role}},
+    'listJudgeAssign',{act_id:act}); renderJAssign(rr.then); }
   catch(e){ alert(e.message); }
 }
 async function delJAssign(id){
   if(!confirm('ถอนการมอบหมายกรรมการท่านนี้ออกจากรายการแข่งขัน?')) return;
-  try{ await api('deleteJudgeAssign',{id:id}); renderJAssign(); }
+  try{ const rr=await apiThen('deleteJudgeAssign',{id:id},'listJudgeAssign',{act_id:$('#jaAct').value});
+    renderJAssign(rr.then); }
   catch(e){ alert(e.message); }
 }
 function drawJudges(){
@@ -4595,12 +4673,14 @@ async function saveJudgeF(){
   if(!$('#jg_name').value.trim()) return alert('กรุณากรอกชื่อ-สกุล');
   if(!j.prefix) return alert('กรุณาเลือกคำนำหน้า');
   if(SCOPE!=='ALL' && !j.group_code) j.group_code=SCOPE;
-  try{ await api('saveJudge',{judge:j, scope:SCOPE}); $('#jgForm').style.display='none'; renderJudges(); }
+  try{ const rr=await apiThen('saveJudge',{judge:j, scope:SCOPE},'listJudges',{scope:SCOPE});
+    $('#jgForm').style.display='none'; renderJudges(rr.then); }
   catch(e){ alert(e.message); }
 }
 async function delJudge(id){
   if(!confirm('ลบรายชื่อกรรมการท่านนี้?')) return;
-  try{ await api('deleteJudge',{judge_id:id}); renderJudges(); }catch(e){ alert(e.message); }
+  try{ const rr=await apiThen('deleteJudge',{judge_id:id},'listJudges',{scope:SCOPE});
+    renderJudges(rr.then); }catch(e){ alert(e.message); }
 }
 
 /* ============================ เปิด-ปิดระบบ & สิทธิ์การพิมพ์ ============================ */
@@ -4641,15 +4721,18 @@ function renderPerm(keepInput){
 async function savePerm(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   try{
-    await api('savePermConfig',{scope:SCOPE,
-      card_open:$('#pm_card').checked?'Y':'N', card_open_note:$('#pm_card_note').value.trim(),
-      print_open:$('#pm_print').checked?'Y':'N', print_open_note:$('#pm_print_note').value.trim()});
+    const both = (ME.role==='district_admin' && SCOPE==='ALL');
+    await Promise.all([
+      api('savePermConfig',{scope:SCOPE,
+        card_open:$('#pm_card').checked?'Y':'N', card_open_note:$('#pm_card_note').value.trim(),
+        print_open:$('#pm_print').checked?'Y':'N', print_open_note:$('#pm_print_note').value.trim()}),
+      both ? saveSubWin() : Promise.resolve()
+    ]);
     /* อัปเดตค่าในหน่วยความจำให้เมนูและปุ่มต่าง ๆ เปลี่ยนทันที */
     const patch={card_open:$('#pm_card').checked?'Y':'N', print_open:$('#pm_print').checked?'Y':'N',
       card_open_note:$('#pm_card_note').value.trim(), print_open_note:$('#pm_print_note').value.trim()};
     if(SCOPE==='ALL') Object.assign(DB.config,patch);
     else { const gg=(DB.groups||[]).find(x=>x.group_code===SCOPE); if(gg) Object.assign(gg,patch); }
-    if(ME.role==='district_admin' && SCOPE==='ALL') await saveSubWin();
     renderPerm(); applyScope();
     alert('บันทึกแล้ว');
   }catch(e){ alert(e.message); }
@@ -4850,9 +4933,9 @@ function renderSubMgr(){
         ${ME.role==='district_admin'?' <button class="btn g sm" style="margin-left:8px" onclick="go(\'perm\')">ไปเปิดระบบ →</button>':''}</div></div>`;
   loadSubs();
 }
-async function loadSubs(){
+async function loadSubs(pre){
   try{
-    SUBS = await api('listSubs',{group:entryRound()});
+    SUBS = pre || await api('listSubs',{group:entryRound()});
     renderSubList();
   }catch(e){ $('#sbTbl').innerHTML='<tbody><tr><td style="padding:20px;color:var(--bad)">'+e.message+'</td></tr></tbody>'; }
 }
@@ -4914,7 +4997,8 @@ function subOpen(ref){
 /** ลบคำขอทิ้งถาวร — เฉพาะผู้ดูแลหลักของเขต (คำขอที่ยื่นผิด หรือรายการทดสอบ) */
 async function subDelete(ref){
   if(!confirm('ลบคำขอเลขที่ '+ref+' ออกจากระบบถาวร?\n\nใช้เมื่อยื่นผิดหรือเป็นรายการทดสอบเท่านั้น กู้คืนไม่ได้')) return;
-  try{ await api('deleteSub',{ref_code:ref}); subCloseForm(); loadSubs(); }
+  try{ const rr=await apiThen('deleteSub',{ref_code:ref},'listSubs',{group:entryRound()});
+    subCloseForm(); loadSubs(rr.then); }
   catch(e){ alert(e.message||e); }
 }
 /** ถอนคำขอที่ยังไม่ได้พิจารณา */
@@ -4933,15 +5017,15 @@ async function subDecide(ref, status){
   if(sigEmpty('dc_sig') && !confirm('ยังไม่ได้ลงลายมือชื่อ ต้องการบันทึกผลการพิจารณาโดยไม่มีลายเซ็นหรือไม่')) return;
   try{
     let sig=''; if(!sigEmpty('dc_sig')) sig=await uploadImage(sigData('dc_sig'),'sign-'+ref);
-    await api('decideSub',{ref_code:ref, status:status,
+    const rr=await apiThen('decideSub',{ref_code:ref, status:status,
       dec_by:String(($('#dc_name')||{}).value||ME.name||''),
       dec_pos:String(($('#dc_pos')||{}).value||''),
       dec_note:String(($('#dc_note')||{}).value||'').trim(),
-      dec_sign:(sig&&sig.url)?sig.url:''});
+      dec_sign:(sig&&sig.url)?sig.url:''}, 'listSubs',{group:entryRound()});
     alert(status==='อนุมัติ'
       ? 'อนุมัติแล้ว — ระบบเปลี่ยนรายชื่อในทีมให้เรียบร้อย และออกใบอนุญาตอิเล็กทรอนิกส์แล้ว'
       : 'บันทึกผลไม่อนุมัติแล้ว');
-    subCloseForm(); loadSubs();
+    subCloseForm(); loadSubs(rr.then);
   }catch(e){ alert(e.message); }
 }
 
@@ -5450,8 +5534,10 @@ async function saveSeason(){
       district_name:$('#ss_district').value.trim(),
       event_name:$('#ss_event').value.trim()||('งานศิลปหัตถกรรมนักเรียน ครั้งที่ '+ed+' ปีการศึกษา '+yr),
       open_at:dateSelVal('ss_open'), close_at:dateSelVal('ss_close')});
-    await reloadBoot();
-    applyScope(); renderAll();
+    dbCfg({edition:ed, academic_year:yr, district_name:$('#ss_district').value.trim(),
+      event_name:$('#ss_event').value.trim()||('งานศิลปหัตถกรรมนักเรียน ครั้งที่ '+ed+' ปีการศึกษา '+yr),
+      open_at:dateSelVal('ss_open'), close_at:dateSelVal('ss_close')});
+    applyScope(); renderAll(); bootBG();
     alert('บันทึกแล้ว — ครั้งที่ '+ed+' ปีการศึกษา '+yr);
   }catch(e){ alert(e.message); }
 }
@@ -5875,9 +5961,12 @@ const ROLE_OPTS=['ประธานกรรมการ','รองประ�
 function fmtNo(n){ return String(n==null?'':n); }
 function unitLabel(u){ return String(u||'')===''? 'คณะกรรมการเขตพื้นที่' : String(u); }
 
-function renderStaff(){
+function renderStaff(local){
   $('#stSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
     ' · บัญชีรายชื่อนี้ใช้ทำคำสั่งแต่งตั้ง บัตรประจำตัว และเกียรติบัตร';
+  /* วาดจากข้อมูลที่มีในเครื่องได้ทันที (เพิ่งบันทึกเอง) แล้วค่อยซิงก์เบื้องหลัง */
+  if(local && window.__STAFF){ fillStaffUnit(); fillStaffDuty(); drawStaff();
+    staffSyncBG(); return; }
   $('#stCount').textContent='กำลังโหลด…';
   Promise.all([api('listStaff',{scope:SCOPE}), api('orderSetup',{scope:SCOPE})])
     .then(([rows,od])=>{ window.__STAFF=rows||[]; ORDER=od||{committees:[],order:{}};
@@ -5972,11 +6061,11 @@ async function moveStaff(id,dir){
   const i=sib.findIndex(x=>x.staff_id===id), j=i+dir;
   if(i<0||j<0||j>=sib.length) return;
   const a=sib[i], b=sib[j], sa=Number(a.seq)||i+1, sb=Number(b.seq)||j+1;
+  a.seq=sb; b.seq=sa; drawStaff();          /* สลับให้เห็นทันที ไม่ต้องรอเซิร์ฟเวอร์ */
   try{
-    await api('saveStaff',{staff:Object.assign({},a,{seq:sb})});
-    await api('saveStaff',{staff:Object.assign({},b,{seq:sa})});
-    renderStaff();
-  }catch(e){ alert(e.message); }
+    await Promise.all([ api('saveStaff',{staff:Object.assign({},a,{seq:sb})}),
+                        api('saveStaff',{staff:Object.assign({},b,{seq:sa})}) ]);
+  }catch(e){ alert(e.message); renderStaff(); }
 }
 async function clearStaffGroup(){
   if(!STAFF_DUTY||STAFF_DUTY==='*') return alert('เลือกคณะที่ต้องการล้างก่อนค่ะ');
@@ -5990,7 +6079,8 @@ function goStaffCert(name){
   window.CERT_PRESET={type:'staff', q:name||''};
   setView('public'); go('cert');
 }
-function refreshStaff(){ if(PAGE==='certadm') renderCertAdm(); else if(PAGE==='order') renderOrder(); else renderStaff(); }
+function refreshStaff(local){ if(PAGE==='certadm') renderCertAdm();
+  else if(PAGE==='order') renderOrder(local); else renderStaff(local); }
 
 /* ---------- นำเข้ารายชื่อทีละหลายคน ---------- */
 const STAFF_IMPORT_COLS=['คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ'];
@@ -6178,9 +6268,13 @@ async function saveCertCfg(){
     await api('saveCertConfig',{scope:SCOPE, cert_open:$('#ca_open').checked?'Y':'N',
       cert_open_note:$('#ca_note').value.trim(), cert_event_date:$('#ca_date').value.trim(),
       cert_min_medal:$('#ca_min').value, cert_number_format:nf});
-    await reloadBoot();
+    if(SCOPE==='ALL') dbCfg({cert_open:$('#ca_open').checked?'Y':'N',
+      cert_open_note:$('#ca_note').value.trim(), cert_event_date:$('#ca_date').value.trim(),
+      cert_min_medal:$('#ca_min').value, cert_number_format:nf});
+    else dbCfg({cert_open:$('#ca_open').checked?'Y':'N'});
+    CERTCFG=null;
     applyScope();   /* เมนู “เกียรติบัตร” บนหน้าเว็บสาธารณะจะโผล่/หายทันที */
-    renderCertAdm();
+    renderCertAdm(); bootBG();
     alert(($('#ca_open').checked? 'เปิดให้ดาวน์โหลดเกียรติบัตรแล้ว — หน้าเว็บสาธารณะใช้งานได้ทันที'
                                 : 'ปิดการดาวน์โหลดแล้ว')
       +'\n\nเลขที่เกียรติบัตร: '+(nf? certNo({seq:1},{number_format:nf})+' , '+certNo({seq:2},{number_format:nf})
@@ -6231,20 +6325,25 @@ function editStaff(id){
         seq:Number($('#s_seq').value)||'', cert_ok:$('#s_ok').checked?'Y':'N'};
       if(!o.name) throw new Error('กรุณากรอกชื่อ-สกุล');
       if(!o.duty) throw new Error('กรุณาเลือกหรือพิมพ์ชื่อคณะ');
-      await api('saveStaff',{staff:o});
+      const row=await api('saveStaff',{staff:o});
       STAFF_UNIT=o.unit; STAFF_DUTY=o.duty;
-      refreshStaff();
+      dbPutRow(window.__STAFF=(window.__STAFF||[]), 'staff_id', row);
+      fillStaffUnit(); fillStaffDuty(); refreshStaff(1);
     });
 }
 async function delStaff(id){
   if(!confirm('ลบรายชื่อนี้?')) return;
-  try{ await api('deleteStaff',{staff_id:id}); refreshStaff(); }catch(e){ alert(e.message); }
+  try{ await api('deleteStaff',{staff_id:id});
+    window.__STAFF=(window.__STAFF||[]).filter(x=>x.staff_id!==id);
+    refreshStaff(1); }catch(e){ alert(e.message); }
 }
 
 /* ============================ คำสั่งแต่งตั้งคณะกรรมการ ============================ */
-function renderOrder(){
+function renderOrder(local){
   $('#odSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
     ' · ตั้งชื่อคณะ ใส่รายชื่อ แล้วดาวน์โหลดไปแปะในบันทึกข้อความ';
+  /* เพิ่งบันทึกเอง — วาดจากข้อมูลในเครื่องทันที แล้วค่อยซิงก์เบื้องหลัง */
+  if(local && ORDER && window.__STAFF){ drawCommittees(); staffSyncBG(); return; }
   $('#orderArea').innerHTML='';
   Promise.all([api('orderSetup',{scope:SCOPE}), api('listStaff',{scope:SCOPE})]).then(([od,rows])=>{
     ORDER=od||{committees:[],order:{}}; window.__STAFF=rows||[];
@@ -6350,14 +6449,18 @@ function editCommittee(id){
         duty_text:(c.duty_text||''), active:'Y'};
       if(!o.name) throw new Error('กรุณากรอกชื่อคณะ');
       if(!o.no) o.no=committeesOf(o.unit).length+1;
-      await api('saveCommittee',{committee:o}); renderOrder();
+      const row=await api('saveCommittee',{committee:o});
+      if(ORDER&&ORDER.committees) dbPutRow(ORDER.committees,'committee_id',row);
+      renderOrder(1);
     });
 }
 async function delCommittee(id){
   const c=((ORDER&&ORDER.committees)||[]).find(x=>x.committee_id===id)||{};
   const n=countIn(c.unit,c.name);
   if(!confirm('ลบคณะ “'+(c.name||'')+'” ?'+(n? '\n\nคณะนี้มีรายชื่ออยู่ '+n+' คน รายชื่อจะยังอยู่แต่จะไม่ถูกจัดเข้าคณะใด':''))) return;
-  try{ await api('deleteCommittee',{committee_id:id, confirm:'Y'}); renderOrder(); }catch(e){ alert(e.message); }
+  try{ await api('deleteCommittee',{committee_id:id, confirm:'Y'});
+    if(ORDER&&ORDER.committees) ORDER.committees=ORDER.committees.filter(x=>x.committee_id!==id);
+    renderOrder(1); }catch(e){ alert(e.message); }
 }
 async function seedCommittee(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
@@ -6949,7 +7052,8 @@ async function doRename(btn){
   if(!confirm(msg)) return;
   try{
     const r=await api('renameCategory',{from,to});
-    await reloadBoot();
+    (DB.activities||[]).forEach(a=>{ if(a.category===from) a.category=to; });
+    bootBG();
     inp.dataset.old=to;
     renderActEdit(); fillActSelects();
     if(PAGE==='acts') renderActs();
@@ -7006,8 +7110,13 @@ function openModal(title,html,fn){ $('#mTitle').textContent=title; $('#mBody').i
   mSaveFn=fn; $('#mOk').style.display=''; $('#modal').classList.add('on'); }
 function closeModal(){ $('#modal').classList.remove('on');
   const bx=document.querySelector('#modal .box'); if(bx) bx.classList.remove('wide'); }
-function mSave(){ Promise.resolve(mSaveFn()).then(ok=>{ if(ok!==false) closeModal(); })
-  .catch(e=>alert(e.message)); }
+/* กดบันทึกในหน้าต่างย่อย — ขึ้น “กำลังบันทึก…” ทันที กันกดซ้ำ แล้วคืนสภาพเมื่อเสร็จ */
+function mSave(){
+  const ok$=$('#mOk'), done=btnBusy(ok$,'กำลังบันทึก…');
+  Promise.resolve(mSaveFn())
+    .then(ok=>{ done(); if(ok!==false) closeModal(); })
+    .catch(e=>{ done(); alert(e.message); });
+}
 
 function editAct(id){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
@@ -7061,8 +7170,8 @@ function editAct(id){
       if(!o.category) throw new Error('กรุณาเลือกหรือกรอกกลุ่มสาระ');
       if(Number(o.team_min)>Number(o.team_max)) throw new Error('จำนวนนักเรียนต่ำสุดต้องไม่มากกว่าสูงสุด');
       if(/^ม\./.test(o.level) && !o.condition) o.condition='เฉพาะโรงเรียนขยายโอกาส';
-      await api('saveActivity',{activity:o});
-      await reloadBoot(); renderActEdit(); fillActSelects();
+      dbPutAct(await api('saveActivity',{activity:o}));
+      renderActEdit(); fillActSelects(); bootBG();
     });
   const cs=$('#f_category');
   if(cs) cs.onchange=()=>{ $('#catNew').style.display = cs.value==='__new'?'block':'none'; };
@@ -7084,8 +7193,8 @@ async function dupAct(id){
   const lvl=prompt('ทำสำเนา "'+a.act_name+'"\n\nระดับชั้นของรายการใหม่:', a.level);
   if(!lvl) return;
   const code=prompt('รหัสกิจกรรมของรายการใหม่ (เว้นว่างได้):','');
-  try{ await api('duplicateActivity',{act_id:id, level:lvl, act_code:code||''});
-    await reloadBoot();
+  try{ dbPutAct(await api('duplicateActivity',{act_id:id, level:lvl, act_code:code||''}));
+    DB.criteria=null; bootBG();
     closeModal(); renderActEdit(); fillActSelects();
     alert('ทำสำเนาแล้ว — คัดลอกเกณฑ์การให้คะแนนมาให้ด้วย');
   }catch(e){ alert(e.message); }
@@ -7102,8 +7211,8 @@ async function toggleAct(id){
     : 'เปิด = กลับมารับสมัครและแสดงบนหน้าเว็บตามปกติ';
   if(!confirm('“'+a.act_name+'” ('+a.level+')\n\nเปลี่ยนสถานะ '+a.status+' → '+to+' ?\n\n'+why)) return;
   try{
-    await api('saveActivity',{activity:{act_id:a.act_id, group_code:'ALL', status:to}});
-    await reloadBoot(); renderActEdit(); fillActSelects();
+    dbPutAct(await api('saveActivity',{activity:{act_id:a.act_id, group_code:'ALL', status:to}}));
+    renderActEdit(); fillActSelects(); bootBG();
   }catch(e){ alert(e.message); }
 }
 async function delAct(id){
@@ -7113,14 +7222,14 @@ async function delAct(id){
     '• ถ้ามีโรงเรียนสมัครไว้แล้ว ระบบจะไม่ยอมให้ลบ และจะเสนอให้เปลี่ยนเป็น “ปิด” แทน')) return;
   try{
     await api('deleteActivity',{act_id:id});
-    await reloadBoot(); renderActEdit(); fillActSelects();
+    dbDelAct(id); renderActEdit(); fillActSelects(); bootBG();
   }catch(e){
     if(/ผู้สมัคร/.test(e.message) &&
        confirm(e.message+'\n\nเปลี่ยนสถานะรายการนี้เป็น “ปิด” แทนไหมคะ?\n'+
                '(ไม่รับสมัครเพิ่ม ไม่ขึ้นหน้าเว็บ แต่ข้อมูลและคะแนนเดิมยังอยู่ครบ)')){
       try{
-        await api('saveActivity',{activity:{act_id:id, group_code:'ALL', status:'ปิด'}});
-        await reloadBoot(); renderActEdit(); fillActSelects();
+        dbPutAct(await api('saveActivity',{activity:{act_id:id, group_code:'ALL', status:'ปิด'}}));
+        renderActEdit(); fillActSelects(); bootBG();
       }catch(e2){ alert(e2.message); }
     } else alert(e.message);
   }
@@ -7181,7 +7290,7 @@ async function editCrit(actId){
       } else {
         await api('saveCriteria',{act_id:actId, items:its});
       }
-      await reloadBoot(); renderActEdit();
+      DB.criteria=null; renderActEdit(); bootBG();
     });
   critSum();
   document.getElementById('critList').addEventListener('input',critSum);
@@ -7277,13 +7386,13 @@ function fillActSelects(){
 /** รอบการแข่งขันของเว็บที่เปิดอยู่ — เว็บเขต = รอบระดับเขต (DISTRICT) ซึ่งมีเฉพาะทีมตัวแทนที่กลุ่มโอนขึ้นมา
     เว็บกลุ่ม = รอบคัดเลือกของกลุ่มนั้น · ใช้ทั้งหน้าผู้สมัคร ให้คะแนน ผลการแข่งขัน และตารางเหรียญ */
 function entryRound(){ return SCOPE==='ALL' ? 'DISTRICT' : SCOPE; }
-function renderEntries(){
+function renderEntries(pre){
   const act=$('#entAct').value;
   const dist=(SCOPE==='ALL');
   $('#entSub').textContent = dist? 'ระดับเขต · เฉพาะทีมตัวแทนที่โอนมาจากกลุ่มโรงเรียน' : groupName(SCOPE);
   const ab=$('#entAddBtn'); if(ab) ab.style.display = dist? 'none':'';
   const nt=$('#entDistrictNote'); if(nt) nt.style.display = dist? 'flex':'none';
-  api('listEntries',{group:entryRound(), act_id:act}).then(ent=>{
+  Promise.resolve(pre || api('listEntries',{group:entryRound(), act_id:act})).then(ent=>{
     const S=schoolsOf('ALL');
     window.__ENT=ent;
     tbl($('#entTbl'),['ที่','โรงเรียน','นักเรียน','ครูผู้ฝึกสอน','ที่มา','สถานะ','จัดการ'],
@@ -7307,15 +7416,17 @@ async function delEntry(id){
   if(!confirm('ลบผู้สมัครของ “'+who+'” ออกจากรายการนี้?\n\n'
     +'รายชื่อนักเรียน ครูผู้ฝึกสอน และคะแนนของทีมนี้จะถูกลบไปด้วย และกู้คืนไม่ได้')) return;
   try{
-    await api('deleteEntry',{entry_id:id, group:entryRound()});
-    renderEntries();
+    const rr=await apiThen('deleteEntry',{entry_id:id, group:entryRound()},
+      'listEntries',{group:entryRound(), act_id:$('#entAct').value});
+    renderEntries(rr.then);
   }catch(err){
     const m=String(err.message||err);
     if(m.indexOf('ยืนยันอีกครั้ง')<0) return alert(m);
     if(!confirm(m+'\n\nยืนยันการลบหรือไม่?')) return;
-    try{ await api('deleteEntry',{entry_id:id, group:entryRound(), confirm:'Y'});
+    try{ const rr=await apiThen('deleteEntry',{entry_id:id, group:entryRound(), confirm:'Y'},
+        'listEntries',{group:entryRound(), act_id:$('#entAct').value});
       alert('ลบแล้ว — อย่าลืมประมวลผลและประกาศผลรายการนี้ใหม่');
-      renderEntries();
+      renderEntries(rr.then);
     }catch(e2){ alert(e2.message||e2); }
   }
 }
@@ -7369,9 +7480,10 @@ function editEntry(id){
       })).filter(x=>x.name);
       if(!st.length) throw new Error('กรุณากรอกชื่อนักเรียนอย่างน้อย 1 คน');
       if(st.some(x=>!x.prefix||!x.class_level)) throw new Error('เลือกคำนำหน้าและระดับชั้นของนักเรียนให้ครบ');
-      await api('saveEntry',{entry:{entry_id:id||'',act_id:actId,school_smis:$('#f_sch').value},
-        students:st, coaches:co});
-      renderEntries();
+      const rr=await apiThen('saveEntry',
+        {entry:{entry_id:id||'',act_id:actId,school_smis:$('#f_sch').value}, students:st, coaches:co},
+        'listEntries',{group:entryRound(), act_id:$('#entAct').value});
+      renderEntries(rr.then);
     });
 }
 
@@ -7580,10 +7692,11 @@ async function saveScoreTotals(){
    ============================================================================ */
 let SCLOCK=null;
 function scRound(){ return entryRound(); }
-async function scLoadLock(actId, box){
+async function scLoadLock(actId, box, pre){
   SCLOCK=null;
   const el=$('#'+box); if(el) el.innerHTML='';
   if(!actId || !ME) return null;
+  if(pre){ SCLOCK=pre; scPaintLock(box); return SCLOCK; }
   try{ SCLOCK=await api('scoreLockGet',{act_id:actId, group:scRound()}); }
   catch(e){ SCLOCK=null; }
   scPaintLock(box);
@@ -7697,9 +7810,12 @@ async function publishFromScore(){
         } else throw e;
       }
     }
-    const r=await api('publishResults',{act_id:actId, group: SCOPE==='ALL'?'':SCOPE});
-    await scLoadLock(actId,'scLock');
-    await refreshPublicViews();          /* ให้หน้าผลการแข่งขัน/ตารางเหรียญเห็นทันที */
+    /* ประกาศผล + อ่านสถานะล็อกใหม่ ในคำขอเดียว (เดิมยิงสองรอบ รอสองเท่า) */
+    const rr=await apiThen('publishResults',{act_id:actId, group: SCOPE==='ALL'?'':SCOPE},
+      'scoreLockGet',{act_id:actId, group:scRound()});
+    const r=rr.data;
+    await scLoadLock(actId,'scLock', rr.then);
+    refreshPublicViews();                /* ให้หน้าผลการแข่งขัน/ตารางเหรียญเห็นทันที (ไม่ต้องรอ) */
     alert('ประกาศผลแล้ว '+(r.published||0)+' ทีม\n\nขึ้นบน'+where+'เรียบร้อย '+
       'กดปุ่ม “พิมพ์ผลการจัดอันดับ” เพื่อออกเอกสาร');
   }catch(e){ alert(e.message); }
@@ -8016,8 +8132,10 @@ async function savePromoteWin(){
       promote_open_at: dateSelVal('pw_from'),
       promote_close_at: dateSelVal('pw_to'),
       promote_open_note: $('#pw_note').value.trim()});
+    dbCfg({promote_open:$('#pw_open').checked?'Y':'N', promote_open_at:dateSelVal('pw_from'),
+      promote_close_at:dateSelVal('pw_to'), promote_open_note:$('#pw_note').value.trim()});
+    applyScope();
     alert('บันทึกช่วงเวลารับโอนตัวแทนแล้ว');
-    renderPromote();
   }catch(e){ alert(e.message); }
 }
 
@@ -8798,14 +8916,14 @@ function actLevel(id){
   return a? (a.level||'') : '';
 }
 
-function renderSchedMgr(){
+function renderSchedMgr(pre){
   const gate=$('#smGate'), body=$('#smBody');
   if(!ME){ body.style.display='none';
     gate.innerHTML='<div class="note"><span>🔒</span><div>กรุณาเข้าสู่ระบบก่อน</div></div>'; return; }
   gate.innerHTML='<div class="note"><span>⏳</span><div>กำลังโหลดตารางแข่งขัน…</div></div>';
   body.style.display='none';
   $('#smSub').textContent = smScopeName();
-  api('listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()}).then(r=>{
+  Promise.resolve(pre || api('listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()})).then(r=>{
     SM.scope=r.scope||smScope(); SM.open=r.open||'N';
     SM.schedule=r.schedule||[]; SM.venues=r.venues||[];
     gate.innerHTML=''; body.style.display='';
@@ -8881,15 +8999,17 @@ function editVenue(id){
         address:$('#v_addr').value.trim(), contact:$('#v_contact').value.trim(),
         phone:$('#v_phone').value.trim(), note:$('#v_note').value.trim()};
       if(!o.name) throw new Error('กรุณากรอกชื่อสนามแข่งขัน');
-      await api('saveVenue',{venue:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-      renderSchedMgr();
+      const rr=await apiThen('saveVenue',{venue:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+        'listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+      renderSchedMgr(rr.then);
     });
 }
 async function delVenue(id){
   const v=SM.venues.find(x=>String(x.venue_id)===String(id))||{};
   if(!confirm('ลบสนามแข่งขัน “'+(v.name||id)+'” ?')) return;
-  try{ await api('deleteVenue',{venue_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-    renderSchedMgr(); }
+  try{ const rr=await apiThen('deleteVenue',{venue_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+      'listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+    renderSchedMgr(rr.then); }
   catch(e){ alert(e.message||e); }
 }
 
@@ -8968,8 +9088,9 @@ function editSched(id){
       if(!o.act_id) throw new Error('กรุณาเลือกรายการแข่งขัน');
       if(SM.schedule.some(x=>String(x.act_id)===String(o.act_id) && String(x.sched_id)!==String(id)))
         if(!confirm('รายการนี้มีอยู่ในตารางแล้ว — เพิ่มอีกรอบหรือไม่?')) return false;
-      await api('saveSchedule',{schedule:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-      renderSchedMgr();
+      const rr=await apiThen('saveSchedule',{schedule:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+        'listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+      renderSchedMgr(rr.then);
     });
 }
 /** 830 · 8.30 · 8:30 → 08:30 */
@@ -8982,8 +9103,9 @@ function hhmm(v){
 async function delSched(id){
   const s=SM.schedule.find(x=>String(x.sched_id)===String(id))||{};
   if(!confirm('ลบ “'+actName(s.act_id)+'” ออกจากตารางแข่งขัน?')) return;
-  try{ await api('deleteSchedule',{sched_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-    renderSchedMgr(); }
+  try{ const rr=await apiThen('deleteSchedule',{sched_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+      'listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
+    renderSchedMgr(rr.then); }
   catch(e){ alert(e.message||e); }
 }
 async function smPubOne(id){
@@ -9415,16 +9537,27 @@ function lgTogglePass(){
 /** พิมพ์ใหม่เมื่อไร ให้ข้อความผิดพลาดหายไปทันที */
 function lgTyping(){ const e=$('#lgErr'); if(e && e.style.display!=='none'){ e.style.display='none'; e.innerHTML=''; } }
 async function doLogin(){
+  const btn=$('#lgBtn'); let done=btnBusy(btn,'กำลังเข้าสู่ระบบ…');
+  const was=SCOPE;
   try{
     const sc=$('#lgScope'); if(sc && sc.value) SCOPE=sc.value;     /* เลือกเว็บที่จะเข้าจากหน้าเข้าสู่ระบบ */
     const r=await api('login',{username:$('#lgUser').value.trim(), password:$('#lgPass').value.trim()});
     TOKEN=r.token; ME=r.user; LS.setItem(K.token,TOKEN); LS.setItem(K.me,JSON.stringify(ME));
     const lk=lockedScope(); if(lk) SCOPE=lk;
     LS.setItem(K.scope,SCOPE);
-    await reloadBoot();                     /* โหลดข้อมูลของเว็บที่เลือกไว้ */
+    /* ข้อมูลของเว็บนี้โหลดไว้แล้วตอนเปิดหน้าสาธารณะ — เข้าหลังบ้านได้ทันที ไม่ต้องรอโหลดซ้ำ
+       ถ้าสลับไปเว็บอื่น ใช้สำเนาในเครื่องก่อน (ถ้ามี) แล้วค่อยดึงของจริงมาทับเบื้องหลัง */
+    if(SCOPE!==was){
+      const snap=snapLoad(SCOPE==='ALL'?'':SCOPE);
+      if(snap){ DB=snap; REV=String(DB.rev||REV); }
+      else { done(); done=btnBusy(btn,'กำลังโหลดข้อมูล…'); await reloadBoot(); }
+    }
+    bootBG(800);                            /* ดึงข้อมูลล่าสุดเงียบ ๆ หลังเข้าระบบแล้ว */
     closeLogin(); VIEW='admin'; LS.setItem(K.view,'admin');
     buildScopeSel(); applyScope(); renderAll(); go(ME.role==='selector'?'judgeapp':'dash');
-  }catch(e){ $('#lgErr').style.display='flex'; $('#lgErr').innerHTML='<span>⚠️</span><div>'+e.message+'</div>'; }
+  }catch(e){ SCOPE=was;
+    $('#lgErr').style.display='flex'; $('#lgErr').innerHTML='<span>⚠️</span><div>'+e.message+'</div>'; }
+  finally{ done(); }
 }
 
 /* ---------- จอฉาย ---------- */
@@ -9460,6 +9593,37 @@ function closeScreen(){ $$('.screen').forEach(s=>s.classList.remove('on')); docu
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeScreen();closeModal();} });
 setInterval(()=>{ const s=new Date().toTimeString().slice(0,8);
   ['clk1','clk2'].forEach(i=>{const n=document.getElementById(i); if(n)n.textContent=s}); },1000);
+
+/* ---------- ทุกปุ่มที่ต้องรอเขียนข้อมูล ให้ขึ้น “กำลังบันทึก…” เองทันที ----------
+   ผู้ใช้รู้ทันทีว่ากดติดแล้ว และกดซ้ำไม่ได้ระหว่างรอ (กันข้อมูลซ้ำ)
+   ทำที่จุดเดียวโดยครอบฟังก์ชันเดิมไว้ จึงไม่ต้องแก้ปุ่มทุกปุ่มในหน้าเว็บ */
+(function(){
+  const LABEL={ publishAct:'กำลังประกาศผล…', publishFromScore:'กำลังประกาศผล…',
+    doPromoteBatch:'กำลังโอนตัวแทน…', importJudges:'กำลังนำเข้า…',
+    sendForgot:'กำลังส่ง…', submitApply:'กำลังส่งใบสมัคร…', trackApply:'กำลังค้นหา…',
+    doReset:'กำลังล้างข้อมูล…', doResetReq:'กำลังส่งคำขอ…', resetPass:'กำลังตั้งรหัสใหม่…',
+    subDecide:'กำลังบันทึกผล…', subDelete:'กำลังลบ…', delAct:'กำลังลบ…', delAdmin:'กำลังลบ…',
+    delCommittee:'กำลังลบ…', delDoc:'กำลังลบ…', delEntry:'กำลังลบ…', delJAssign:'กำลังลบ…',
+    delJudge:'กำลังลบ…', delNews:'กำลังลบ…', delSched:'กำลังลบ…', delStaff:'กำลังลบ…',
+    delVenue:'กำลังลบ…', delRuleDoc:'กำลังลบ…', clearStaffGroup:'กำลังล้าง…',
+    resetPromote:'กำลังยกเลิก…', withdrawPromote:'กำลังถอน…', seedCommittee:'กำลังสร้าง…' };
+  Object.keys(LABEL).concat(['saveAdminF','saveApplyWin','saveCardTpl','saveCertCfg','saveJudgeF',
+    'savePerm','savePromoteWin','saveReview','saveScores','saveSeason','saveSite','saveTpl',
+    'saveApi','loadResetRequests'])
+  .forEach(n=>{
+    const f=window[n]; if(typeof f!=='function') return;
+    window[n]=function(){
+      const ev=window.event;
+      const el=(ev&&ev.target&&ev.target.closest)? ev.target.closest('button') : null;
+      const done=btnBusy(el, LABEL[n]||'กำลังบันทึก…');
+      let r;
+      try{ r=f.apply(this, arguments); }
+      catch(e){ done(); throw e; }
+      if(r && typeof r.then==='function') r.then(done, done); else done();
+      return r;
+    };
+  });
+})();
 
 /* ---------- start ---------- */
 (function(){
