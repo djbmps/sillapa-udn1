@@ -1722,7 +1722,8 @@ body[data-view="admin"] .utilbar{display:none}
                 ช่วงเวลารับโอนตัวแทน (ระบบปิดรับโอนให้อัตโนมัติเมื่อเลยกำหนด)</div></div>
           </div>
           <div class="fld"><label>รูปแบบเลขที่เกียรติบัตร</label>
-            <input id="ss_certno" placeholder="75/สพป.อด.1/{seq:04d}"></div>
+            <div class="hint">ตั้งที่หน้า <b>ระบบเกียรติบัตร</b> — เขตตั้งรูปแบบของเขต
+              และแต่ละกลุ่มโรงเรียนตั้งรูปแบบของกลุ่มตนเองได้</div></div>
           <div class="row"><button class="btn" onclick="saveSeason()">บันทึกข้อมูลงาน</button>
             <span class="hint">ชื่องาน ครั้งที่ และปีการศึกษา จะเปลี่ยนทั้งหน้าเว็บสาธารณะ เอกสารพิมพ์ และเกียรติบัตร</span></div>
         </div></div>
@@ -1800,6 +1801,9 @@ body[data-view="admin"] .utilbar{display:none}
                 <option value="ทองแดง">เหรียญทองแดงขึ้นไป</option><option value="เงิน">เหรียญเงินขึ้นไป</option>
                 <option value="ทอง">เหรียญทองเท่านั้น</option></select></div>
           </div>
+          <div class="fld"><label id="ca_numlbl">รูปแบบเลขที่เกียรติบัตร</label>
+            <input id="ca_numfmt" placeholder="74/สพป.อด.1/{seq:04d}">
+            <div class="hint" id="ca_numhint"></div></div>
           <div class="note i"><span>🔗</span><div id="caScopeNote"></div></div>
         </div></div>
 
@@ -2296,7 +2300,10 @@ function demoApi(action,p){
       const a=MEM.cert.ALL||{};
       return {open:String(g.cert_open||a.cert_open||'N').toUpperCase()==='Y',
               note:g.cert_open_note||a.cert_open_note||'', event_date:g.cert_event_date||a.cert_event_date||'',
-              min_medal:a.cert_min_medal||'', number_format:'74/สพป.อด.1/{seq:04d}', templates:MEM.tpl}; }
+              min_medal:a.cert_min_medal||'',
+              number_format:(g.cert_number_format||a.cert_number_format||'74/สพป.อด.1/{seq:04d}'),
+              district_number_format:(a.cert_number_format||'74/สพป.อด.1/{seq:04d}'),
+              templates:MEM.tpl}; }
     case 'saveCertConfig':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.cert=MEM.cert||{}; const k=p.scope||'ALL';
       MEM.cert[k]=Object.assign(MEM.cert[k]||{},p); delete MEM.cert[k].action; delete MEM.cert[k].token;
@@ -5331,7 +5338,6 @@ function renderSeason(){
   $('#ss_edition').value=c.edition||74;   $('#ss_year').value=c.academic_year||2569;
   $('#ss_district').value=c.district_name||''; $('#ss_event').value=c.event_name||'';
   dateSelSet('ss_open', c.open_at||''); dateSelSet('ss_close', c.close_at||'');
-  $('#ss_certno').value=c.cert_number_format||'';
   $('#ss_newed').value=Number(c.edition||74)+1;
   $('#ss_newyear').value=Number(c.academic_year||2569)+1;
   /* ผู้ดูแลกลุ่มไม่มีสิทธิ์เริ่มปีการศึกษาใหม่ */
@@ -5354,8 +5360,7 @@ async function saveSeason(){
     await api('saveSeason',{edition:ed, academic_year:yr,
       district_name:$('#ss_district').value.trim(),
       event_name:$('#ss_event').value.trim()||('งานศิลปหัตถกรรมนักเรียน ครั้งที่ '+ed+' ปีการศึกษา '+yr),
-      open_at:dateSelVal('ss_open'), close_at:dateSelVal('ss_close'),
-      cert_number_format:$('#ss_certno').value.trim()});
+      open_at:dateSelVal('ss_open'), close_at:dateSelVal('ss_close')});
     await reloadBoot();
     applyScope(); renderAll();
     alert('บันทึกแล้ว — ครั้งที่ '+ed+' ปีการศึกษา '+yr);
@@ -5744,6 +5749,21 @@ function renderCertAdm(){
     CERTCFG=cc;
     $('#ca_open').checked=cc.open; $('#ca_note').value=cc.note||'';
     $('#ca_date').value=cc.event_date||''; $('#ca_min').value=cc.min_medal||'';
+    /* เลขที่เกียรติบัตร — เขตกำหนดของเขต · กลุ่มกำหนดของกลุ่มเอง (เว้นว่าง = ใช้ของเขต) */
+    const dft=cc.district_number_format||'74/{seq:04d}';
+    if(SCOPE==='ALL'){
+      $('#ca_numlbl').textContent='รูปแบบเลขที่เกียรติบัตรของเขต';
+      $('#ca_numfmt').value=dft;
+      $('#ca_numfmt').placeholder='74/สพป.อด.1/{seq:04d}';
+      $('#ca_numhint').innerHTML='<code>{seq:04d}</code> คือเลขลำดับ 4 หลัก (0001, 0002, …) '+
+        '· ตัวอย่างที่จะพิมพ์จริง: <b>'+qq(certNo({seq:1},{number_format:dft}))+'</b>';
+    } else {
+      $('#ca_numlbl').textContent='รูปแบบเลขที่เกียรติบัตรของ '+groupName(SCOPE);
+      $('#ca_numfmt').value = (cc.number_format===dft) ? '' : (cc.number_format||'');
+      $('#ca_numfmt').placeholder=dft+'  (เว้นว่าง = ใช้ของเขต)';
+      $('#ca_numhint').innerHTML='ตั้งของกลุ่มเองได้ เพื่อไม่ให้เลขที่ซ้ำกับกลุ่มอื่น เช่น '+
+        '<code>74/'+qq(SCOPE)+'/{seq:04d}</code> · <b>เว้นว่าง</b> = ใช้รูปแบบของเขต ('+qq(dft)+')';
+    }
     caToggle();
     $('#caTabs').innerHTML=['student','coach','judge','staff'].map((t,i)=>
       `<button class="tab ${t===CURTPL?'on':''}" onclick="pickTpl(this,'${t}')">${TYPE_TH[t]}</button>`).join('');
@@ -6057,13 +6077,21 @@ async function saveTpl(){
 async function saveCertCfg(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   try{
+    const nf=$('#ca_numfmt').value.trim();
+    /* เว้นว่างได้เฉพาะของกลุ่ม (= ใช้ของเขต) · ของเขตต้องมีรูปแบบเสมอ */
+    if(SCOPE==='ALL' && !nf) return alert('กรุณากรอกรูปแบบเลขที่เกียรติบัตรของเขต');
+    if(nf && nf.indexOf('{seq:')<0)
+      return alert('รูปแบบเลขที่เกียรติบัตรต้องมี {seq:04d} สำหรับเลขลำดับ\n\nเช่น 74/สพป.อด.1/{seq:04d}');
     await api('saveCertConfig',{scope:SCOPE, cert_open:$('#ca_open').checked?'Y':'N',
       cert_open_note:$('#ca_note').value.trim(), cert_event_date:$('#ca_date').value.trim(),
-      cert_min_medal:$('#ca_min').value});
+      cert_min_medal:$('#ca_min').value, cert_number_format:nf});
     await reloadBoot();
     applyScope();   /* เมนู “เกียรติบัตร” บนหน้าเว็บสาธารณะจะโผล่/หายทันที */
-    alert($('#ca_open').checked? 'เปิดให้ดาวน์โหลดเกียรติบัตรแล้ว — หน้าเว็บสาธารณะใช้งานได้ทันที'
-                               : 'ปิดการดาวน์โหลดแล้ว');
+    renderCertAdm();
+    alert(($('#ca_open').checked? 'เปิดให้ดาวน์โหลดเกียรติบัตรแล้ว — หน้าเว็บสาธารณะใช้งานได้ทันที'
+                                : 'ปิดการดาวน์โหลดแล้ว')
+      +'\n\nเลขที่เกียรติบัตร: '+(nf? certNo({seq:1},{number_format:nf})+' , '+certNo({seq:2},{number_format:nf})
+                                   : 'ใช้รูปแบบของเขต'));
   }catch(e){ alert(e.message); }
 }
 function countCerts(){
