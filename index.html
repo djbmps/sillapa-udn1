@@ -2139,6 +2139,7 @@ const DEMO_PERM={saveActivity:'actedit',deleteActivity:'actedit',saveCriteria:'a
   saveJudgeAssign:'judges',deleteJudgeAssign:'judges',
   saveCriteriaDoc:'actedit',deleteCriteriaDoc:'actedit',confirmScores:'score',
   printPack:'print',resetPromotion:'promote',savePromoteWindow:'promote',promoteBatch:'promote',
+  reopenScores:'publish',
   saveJudgeApplyWindow:'judges',importApprovedJudges:'judges',notifyJudgeApplicants:'judges',
   deleteJudgeApplication:'judges'};
 const DEMO_OWNER=['unlockScores','saveSeason','exportBackup','inspectBackup','restoreBackup','resetData','listAdmins','saveAdmin','deleteAdmin',
@@ -2685,7 +2686,10 @@ function demoApi(action,p){
       const ids={}; ent.forEach(e=>ids[e.entry_id]=1);
       const has={}; (MEM.scores||[]).forEach(x=>{ if(ids[x.entry_id]&&x.score!=='') has[x.entry_id]=1; });
       const lk=demoLock(p.act_id,g);
+      const pubd=(MEM.results||[]).filter(r=>String(r.act_id)===String(p.act_id)
+        && ids[r.entry_id] && String(r.status)==='ประกาศแล้ว');
       return {act_id:p.act_id, round:String(g), locked:!!lk, teams:ent.length,
+        published:pubd.length, published_at:pubd.length?(pubd[0].published_at||''):'',
         scored:Object.keys(has).length,
         confirmed_by:lk?lk.confirmed_by:'', confirmed_pos:lk?lk.confirmed_pos:'',
         confirmed_at:lk?lk.confirmed_at:'',
@@ -2732,6 +2736,21 @@ function demoApi(action,p){
       c.rows.forEach(r=>MEM.results.push({result_id:'R'+Date.now()+r.entry_id,act_id:p.act_id,entry_id:r.entry_id,
         total:r.total,medal:r.medal,rank:r.rank,status:'ประกาศแล้ว',published_at:nowStr()}));
       memSave(); return {published:c.rows.length, group:g}; }
+    case 'reopenScores':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      const g=p.group||demoRound();
+      const un=String(p.auth_user||'').trim(), pw=String(p.auth_pass||'').trim();
+      if(!un||!pw) throw new Error('กรุณากรอกชื่อผู้ใช้และรหัสผ่านของผู้ดูแลเพื่อยืนยันการแก้ไข');
+      /* โหมดตัวอย่าง: ใช้บัญชีสาธิต admin / admin-gXX รหัสผ่าน admin */
+      const okDist = (un==='admin' && pw==='admin');
+      const okGrp  = (un==='admin-'+String(g) && pw==='admin');
+      if(!(okDist||okGrp)) throw new Error('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+      if(String(p.reason||'').trim().length<5) throw new Error('กรุณาระบุเหตุผลในการแก้ไขผล (อย่างน้อย 5 ตัวอักษร)');
+      const eg={}; MEM.entries.forEach(e=>eg[e.entry_id]=String(e.group_code));
+      const gone=MEM.results.filter(r=>r.act_id===p.act_id&&eg[r.entry_id]===String(g)).length;
+      MEM.results=MEM.results.filter(r=>!(r.act_id===p.act_id&&eg[r.entry_id]===String(g)));
+      (MEM.locks||[]).forEach(l=>{ if(String(l.act_id)===String(p.act_id)&&String(l.round)===String(g)) l.status='ปลดล็อก'; });
+      memSave(); return {act_id:p.act_id, round:String(g), withdrawn:gone, by:un}; }
     case 'promoteToDistrict':{
       if(ME&&ME.role==='group_admin'){ const w=demoPromoteWin();
         if(!w.open) throw new Error('ยังไม่เปิดให้โอนตัวแทนเข้าเขต — '+w.note); }
@@ -3181,7 +3200,62 @@ function demoApi(action,p){
         if(r.medal==='ทอง')x.g++; else if(r.medal==='เงิน')x.s++; else if(r.medal==='ทองแดง')x.b++; });
       const medals=Object.values(t).sort((a,b)=>b.g-a.g||b.s-a.s||b.b-a.b);
       return {results:rows, medals, rank_method:SEED_CONFIG.rank_method}; }
-    case 'queue': return MEM.schedule;
+    case 'queue': return (MEM.schedule||[]).filter(x=>String(x.published)==='Y');
+    /* ---------- สนามแข่งขัน & ตารางแข่งขัน (โหมดตัวอย่าง) ---------- */
+    case 'listSchedule':{
+      const g=demoSchedScope(p);
+      return {scope:g||'ALL', open:(MEM.schedOpen||{})[g||'ALL']||'N',
+        venues:(MEM.venues||[]).filter(v=>!g||String(v.group_code)===g),
+        schedule:(MEM.schedule||[]).filter(s=>!g||String(s.group_code)===g)}; }
+    case 'saveVenue':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      const g=demoSchedScope(p), v=Object.assign({},p.venue||{});
+      if(!String(v.name||'').trim()) throw new Error('ยังไม่ได้กรอกชื่อสนามแข่งขัน');
+      MEM.venues=MEM.venues||[]; v.group_code=g;
+      if(!v.venue_id){ v.venue_id='V'+String(MEM.venues.length+1).padStart(3,'0'); MEM.venues.push(v); }
+      else { const i=MEM.venues.findIndex(x=>x.venue_id===v.venue_id); if(i>=0) MEM.venues[i]=Object.assign(MEM.venues[i],v); }
+      memSave(); return v; }
+    case 'deleteVenue':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.schedule=(MEM.schedule||[]).filter(s=>String(s.venue_id)!==String(p.venue_id));
+      MEM.venues=(MEM.venues||[]).filter(v=>String(v.venue_id)!==String(p.venue_id));
+      memSave(); return true; }
+    case 'saveSchedule':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      const g=demoSchedScope(p), s=Object.assign({},p.schedule||{});
+      if(!s.act_id) throw new Error('ยังไม่ได้เลือกรายการแข่งขัน');
+      MEM.schedule=MEM.schedule||[]; s.group_code=g;
+      if(s.published!=='Y') s.published=s.published||'N';
+      if(!s.status) s.status='รอแข่งขัน';
+      if(!s.sched_id){ s.sched_id='H'+String(MEM.schedule.length+1).padStart(4,'0'); MEM.schedule.push(s); }
+      else { const i=MEM.schedule.findIndex(x=>x.sched_id===s.sched_id); if(i>=0) MEM.schedule[i]=Object.assign(MEM.schedule[i],s); }
+      memSave(); return s; }
+    case 'deleteSchedule':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.schedule=(MEM.schedule||[]).filter(s=>String(s.sched_id)!==String(p.sched_id));
+      memSave(); return true; }
+    case 'publishSchedule':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      (MEM.schedule||[]).forEach(s=>{ if(String(s.sched_id)===String(p.sched_id)) s.published=(p.on==='Y'?'Y':'N'); });
+      memSave(); return true; }
+    case 'publishScheduleAll':{
+      if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      const g=demoSchedScope(p); MEM.schedOpen=MEM.schedOpen||{};
+      MEM.schedOpen[g||'ALL']=(p.on==='Y'?'Y':'N');
+      (MEM.schedule||[]).forEach(s=>{ if(!g||String(s.group_code)===g) s.published=(p.on==='Y'?'Y':'N'); });
+      memSave(); return {open:MEM.schedOpen[g||'ALL']}; }
+    case 'checkConflicts':{
+      const g=demoSchedScope(p), rows=(MEM.schedule||[]).filter(s=>!g||String(s.group_code)===g);
+      const out=[], seen={};
+      rows.forEach(a=>rows.forEach(b=>{
+        if(a.sched_id>=b.sched_id) return;
+        if(String(a.venue_id)!==String(b.venue_id)||String(a.room||'')!==String(b.room||'')) return;
+        if(String(a.date||'')!==String(b.date||'')) return;
+        if(String(a.start_time||'')<String(b.end_time||'') && String(b.start_time||'')<String(a.end_time||'')){
+          const k=a.sched_id+'|'+b.sched_id; if(seen[k]) return; seen[k]=1;
+          out.push({a:a.sched_id,b:b.sched_id,date:a.date,room:a.room,venue_id:a.venue_id});
+        } }));
+      return out; }
     case 'printPack':{
       const acts=MEM.activities.filter(a=>!p.act_id||a.act_id===p.act_id);
       const ent=demoApi('listEntries',{group:p.group,act_id:p.act_id});
@@ -3193,6 +3267,11 @@ function demoApi(action,p){
   }
 }
 function needD(){ if(!ME||ME.role!=='district_admin') throw new Error('รายการแข่งขัน หมวดหมู่ และเกณฑ์การให้คะแนน อยู่ในความดูแลของสำนักงานเขตพื้นที่การศึกษาเท่านั้น — กลุ่มโรงเรียนและโรงเรียนใช้ชุดเดียวกันกับเขต'); }
+/** ขอบเขตของสนาม/ตารางแข่งขันในโหมดตัวอย่าง — กลุ่มถูกล็อกไว้ที่กลุ่มตนเอง */
+function demoSchedScope(p){
+  if(ME && ME.role==='group_admin') return String(ME.scope);
+  const g=String((p&&p.group)||''); return (g&&g!=='ALL')? g : '';
+}
 function demoToken(u){ return {token:'demo', user:u}; }
 function demoRound(){ return (ME&&(ME.role==='group_admin'||ME.role==='school'))? ME.scope
   : (SCOPE && SCOPE!=='ALL' ? SCOPE : 'DISTRICT'); }
@@ -7401,12 +7480,16 @@ function renderScoreTotal(actId, act){
        ไม่ใช่เลข 0 ซึ่งทำให้เผลอบันทึกเป็น 0 คะแนนทั้งรายการได้ */
     const old={}; (calc.rows||[]).forEach(r=>{ if(Number(r.judges||0)>0) old[String(r.entry_id)]=r.total; });
     const rows=ent.slice().sort((a,b)=>Number(old[String(b.entry_id)]||0)-Number(old[String(a.entry_id)]||0));
-    tbl($('#scTbl'),['ที่','โรงเรียน','กลุ่มโรงเรียน','คะแนนรวม','เหรียญ','อันดับ'],
+    /* คอลัมน์ “กลุ่มโรงเรียน” มีความหมายเฉพาะรอบระดับเขต (บอกว่าตัวแทนมาจากกลุ่มไหน)
+       รอบของกลุ่มเองทุกทีมอยู่กลุ่มเดียวกันอยู่แล้ว จึงไม่ต้องมีคอลัมน์นี้ให้เปลืองที่ */
+    const dist=(SCOPE==='ALL');
+    tbl($('#scTbl'), dist? ['ที่','โรงเรียน','กลุ่มโรงเรียน','คะแนนรวม','เหรียญ','อันดับ']
+                         : ['ที่','โรงเรียน','คะแนนรวม','เหรียญ','อันดับ'],
       rows.map((e,i)=>{ const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
         const v=old[String(e.entry_id)];
         return `<tr data-e="${e.entry_id}"><td class="num">${i+1}</td>
           <td><b>${cleanName(s.school_name||e.school_smis)}</b></td>
-          <td class="hint">${e.from_group? qq(groupShort(e.from_group)) : ''}</td>
+          ${dist? `<td class="hint">${e.from_group? qq(groupShort(e.from_group)) : ''}</td>` : ''}
           <td><input type="number" min="0" max="${full}" step="0.01" value="${v!==undefined?v:''}"
              oninput="scTotalCalc()" style="width:96px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-weight:700"></td>
           <td data-medal></td><td class="num" data-rank></td></tr>`;
