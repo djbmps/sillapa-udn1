@@ -1717,7 +1717,9 @@ body[data-view="admin"] .utilbar{display:none}
           <div class="grid g3">
             <div class="fld"><label>วันที่จัดการแข่งขัน — ตั้งแต่วันที่</label><div id="ss_open_wrap"></div></div>
             <div class="fld"><label>ถึงวันที่</label><div id="ss_close_wrap"></div></div>
-            <div class="fld"><label>เส้นตายกลุ่มส่งตัวแทนเข้าเขต</label><div id="ss_deadline_wrap"></div></div>
+            <div class="fld"><label>เส้นตายกลุ่มส่งตัวแทนเข้าเขต</label>
+              <div class="hint" style="padding-top:8px">ตั้งที่หน้า <b>ตัวแทนเข้าภาค/เขต</b> →
+                ช่วงเวลารับโอนตัวแทน (ระบบปิดรับโอนให้อัตโนมัติเมื่อเลยกำหนด)</div></div>
           </div>
           <div class="fld"><label>รูปแบบเลขที่เกียรติบัตร</label>
             <input id="ss_certno" placeholder="75/สพป.อด.1/{seq:04d}"></div>
@@ -2045,6 +2047,21 @@ let DB = null;              // ข้อมูลจาก bootstrap
 let PAGE='home';
 let VIEW = LS.getItem(K.view) || 'public';
 const DEMO = ()=> !API;
+let OFFLINE = false;        // เชื่อมฐานข้อมูลไม่ได้ → ข้อมูลที่เห็นเป็นข้อมูลตัวอย่าง
+/** แถบเตือนค้างบนสุด เมื่อระบบต่อฐานข้อมูลจริงไม่ได้ */
+function showOfflineBar(){
+  if(document.getElementById('offBar')) return;
+  const d=document.createElement('div');
+  d.id='offBar';
+  d.style.cssText='position:fixed;left:0;right:0;top:0;z-index:9999;background:#9B1C1C;color:#fff;'+
+    'font-size:14px;line-height:1.45;padding:9px 14px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.25)';
+  d.innerHTML='⚠️ <b>ขณะนี้ระบบเชื่อมต่อฐานข้อมูลไม่ได้</b> — ข้อมูลที่แสดงอยู่เป็น'+
+    '<b>ข้อมูลตัวอย่างของระบบ ไม่ใช่ข้อมูลจริง</b> กรุณาลองใหม่อีกครั้งภายหลัง '+
+    '<button onclick="location.reload()" style="margin-left:8px;border:0;border-radius:7px;padding:3px 11px;'+
+    'background:#fff;color:#9B1C1C;font-weight:700;cursor:pointer;font-family:inherit">ลองใหม่</button>';
+  document.body.appendChild(d);
+  document.body.style.paddingTop='44px';
+}
 
 async function api(action, params={}){
   if(DEMO()) return demoApi(action, params);
@@ -2790,6 +2807,17 @@ function demoApi(action,p){
       const gs=Object.values(G).map(o=>{o.act_count=Object.keys(o.acts).length; delete o.acts; return o;});
       return {window:w, groups:gs, items:Object.values(A), total_teams:pro.length,
               group_total:(DB.groups||[]).length, my_scope:scope, role:ME?ME.role:''}; }
+    case 'withdrawPromotion':{
+      const pr=(MEM.promotions||[]).find(r=>String(r.id)===String(p.promotion_id));
+      if(!pr) throw new Error('ไม่พบรายการตัวแทน');
+      pr.status='สละสิทธิ์'; pr.note=p.reason||'';
+      (MEM.entries||[]).forEach(e=>{ if(e.entry_id===pr.district_entry_id) e.status='สละสิทธิ์'; });
+      const taken=(MEM.promotions||[]).map(r=>r.entry_id);
+      const emap={}; (MEM.entries||[]).forEach(e=>emap[e.entry_id]=e);
+      const next=(MEM.results||[]).filter(r=>r.act_id===pr.act_id&&emap[r.entry_id]
+          &&emap[r.entry_id].group_code===pr.from_group&&taken.indexOf(r.entry_id)<0)
+        .sort((a,b)=>Number(a.rank)-Number(b.rank))[0]||null;
+      memSave(); return {withdrawn:pr.id, suggest:next}; }
     case 'resetPromotion':{
       if(!ME||ME.role!=='district_admin') throw new Error('เฉพาะผู้ดูแลเขตเท่านั้น');
       const g=p.group, act=p.act_id||'';
@@ -3222,8 +3250,14 @@ async function boot(){
   try{
     DB = await api('bootstrap', {group: sc});
     if(!DEMO()) snapSave(DB, sc);
-  }catch(e){ alert('เชื่อมต่อฐานข้อมูลไม่สำเร็จ: '+e.message+'\nระบบจะทำงานในโหมดตัวอย่างแทน');
-    API=''; DB = await api('bootstrap',{}); }
+  }catch(e){
+    /* ต่อฐานข้อมูลไม่ได้ → ระบบจะใช้ข้อมูลตัวอย่างแทน ซึ่ง "ไม่ใช่ข้อมูลจริง"
+       ต้องขึ้นแถบเตือนค้างไว้ให้ผู้เข้าชมเห็นตลอด ไม่ใช่เตือนครั้งเดียวแล้วหาย */
+    OFFLINE = true;
+    alert('ขณะนี้เชื่อมต่อฐานข้อมูลไม่ได้ ('+e.message+')\n\n'+
+          'ข้อมูลที่แสดงต่อจากนี้เป็นข้อมูลตัวอย่างของระบบ ไม่ใช่ข้อมูลจริง\n'+
+          'กรุณารีเฟรชหน้าเว็บอีกครั้งในภายหลัง');
+    API=''; DB = await api('bootstrap',{}); showOfflineBar(); }
   window.__BOOTED=1;
   /* ยังไม่เข้าสู่ระบบ = เห็นเฉพาะหน้าเว็บสาธารณะเสมอ */
   guestPage_();
@@ -5297,7 +5331,7 @@ function renderSeason(){
   $('#ss_edition').value=c.edition||74;   $('#ss_year').value=c.academic_year||2569;
   $('#ss_district').value=c.district_name||''; $('#ss_event').value=c.event_name||'';
   dateSelSet('ss_open', c.open_at||''); dateSelSet('ss_close', c.close_at||'');
-  dateSelSet('ss_deadline', c.group_deadline||''); $('#ss_certno').value=c.cert_number_format||'';
+  $('#ss_certno').value=c.cert_number_format||'';
   $('#ss_newed').value=Number(c.edition||74)+1;
   $('#ss_newyear').value=Number(c.academic_year||2569)+1;
   /* ผู้ดูแลกลุ่มไม่มีสิทธิ์เริ่มปีการศึกษาใหม่ */
@@ -5321,7 +5355,7 @@ async function saveSeason(){
       district_name:$('#ss_district').value.trim(),
       event_name:$('#ss_event').value.trim()||('งานศิลปหัตถกรรมนักเรียน ครั้งที่ '+ed+' ปีการศึกษา '+yr),
       open_at:dateSelVal('ss_open'), close_at:dateSelVal('ss_close'),
-      group_deadline:dateSelVal('ss_deadline'), cert_number_format:$('#ss_certno').value.trim()});
+      cert_number_format:$('#ss_certno').value.trim()});
     await reloadBoot();
     applyScope(); renderAll();
     alert('บันทึกแล้ว — ครั้งที่ '+ed+' ปีการศึกษา '+yr);
@@ -6186,12 +6220,12 @@ function editCommittee(id){
       <div class="fld" style="grid-column:span 2"><label>ชุด / จุดแข่งขัน</label>
         ${selOther('c_unit', us.filter(u=>u!==''), String(c.unit||''), 'เช่น จุดแข่งขันที่ 1 โรงเรียนบ้านหมากแข้ง')}
         <div class="hint">เว้นว่างไว้ = คณะกรรมการเขตพื้นที่</div></div>
-      <div class="fld"><label>ลำดับคณะ</label><input id="c_no" type="number" min="1" value="${Number(c.no)||''}"></div></div>
+      <div class="fld"><label>ลำดับคณะ</label><input id="cm_no" type="number" min="1" value="${Number(c.no)||''}"></div></div>
      <div class="fld"><label>ชื่อคณะ</label><input id="c_name" value="${esc(c.name||'')}"
         placeholder="เช่น คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง"></div>`,
     async()=>{
       const o={committee_id:id||'', scope:SCOPE, unit:selVal('c_unit'),
-        no:Number($('#c_no').value)||0, name:$('#c_name').value.trim(),
+        no:Number($('#cm_no').value)||0, name:$('#c_name').value.trim(),
         duty_text:(c.duty_text||''), active:'Y'};
       if(!o.name) throw new Error('กรุณากรอกชื่อคณะ');
       if(!o.no) o.no=committeesOf(o.unit).length+1;
@@ -6208,7 +6242,7 @@ async function seedCommittee(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   openModal('สร้างชุดคณะกรรมการตั้งต้น',
     `<div class="note i" style="margin-bottom:10px"><span>✨</span><div>
-      ระบบจะสร้าง <b>13 คณะของสำนักงานเขต</b> พร้อมข้อความหน้าที่ตามรูปแบบคำสั่งที่ใช้อยู่<br>
+      ระบบจะสร้าง <b>13 คณะกรรมการเขตพื้นที่</b> ตามรูปแบบคำสั่งที่ใช้อยู่<br>
       ถ้าพิมพ์ชื่อจุดแข่งขันไว้ด้วย จะสร้าง <b>8 คณะประจำจุด</b> ให้ทุกจุดอัตโนมัติ · คณะที่มีชื่อซ้ำจะไม่ถูกสร้างทับ</div></div>
      <div class="fld"><label>จุดแข่งขัน (พิมพ์บรรทัดละ 1 จุด เว้นว่างได้ถ้ายังไม่ต้องการ)</label>
        <textarea id="sd_units" rows="5" placeholder="จุดแข่งขันที่ 1 โรงเรียนบ้านหมากแข้ง
@@ -7282,7 +7316,7 @@ function renderScore(){
         : c.item_name+' ('+c.max_score+')'),'รวม'],
       ent.map((e,i)=>{ const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
         return `<tr data-e="${e.entry_id}"><td class="num">${i+1}</td>
-          <td><b>${SEED_CONFIG.blind_judging==='TRUE'?'หมายเลข '+String(i+1).padStart(2,'0'):(s.school_name||e.school_smis)}</b></td>
+          <td><b>${blindNames()? 'หมายเลข '+String(i+1).padStart(2,'0') : cleanName(s.school_name||e.school_smis)}</b></td>
           ${crit.map(c=>`<td><input type="number" min="0" max="${c.max_score}" data-c="${c.crit_id}"
              oninput="scRow(this)" style="width:76px;padding:6px 8px;border:1px solid var(--line);border-radius:8px"></td>`).join('')}
           <td class="num" data-total style="font-weight:700">0</td></tr>`;
@@ -7291,6 +7325,15 @@ function renderScore(){
       ' · '+ent.length+' ทีม · '+($('#scJudge').selectedOptions[0]||{}).textContent;
     scLoadLock(actId,'scLock');
   });
+}
+/** ปิดชื่อโรงเรียนในตารางให้คะแนน (ตัดสินแบบไม่เห็นชื่อ)
+ *  ใช้เฉพาะบัญชีกรรมการ — ผู้ดูแลที่คีย์คะแนนจากใบกระดาษต้องเห็นชื่อโรงเรียน
+ *  ไม่งั้นจะคีย์คะแนนสลับทีมได้ง่ายมาก */
+function blindNames(){
+  const c=DB.config||{};
+  const v=(c.blind_judging===undefined||c.blind_judging===''? 'TRUE' : String(c.blind_judging)).toUpperCase();
+  const on=(v==='TRUE'||v==='Y'||v==='YES'||v==='1');
+  return on && !!ME && (ME.role==='judge' || ME.role==='head_judge');
 }
 /** เกณฑ์เหรียญจากค่าตั้งค่าของเขต */
 function medalOf(total){
@@ -7358,13 +7401,16 @@ function scRow(inp){ const tr=inp.closest('tr');
 async function saveScores(src){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   if(scTotalMode()) return saveScoreTotals();
-  const jid=$('#scJudge').value, out=[];
+  const jid=$('#scJudge').value, out=[]; let over='';
   $$('#scTbl tbody tr').forEach(tr=>{
-    tr.querySelectorAll('input').forEach(i=>{ if(i.value!=='')
-      out.push({entry_id:tr.dataset.e, judge_id:jid, crit_id:i.dataset.c, score:Number(i.value)}); });
+    tr.querySelectorAll('input').forEach(i=>{ if(i.value===''){ return; }
+      const v=Number(i.value), mx=Number(i.max||0);
+      if(!(v>=0) || (mx && v>mx)) over=over||('แถวที่ '+(tr.rowIndex)+' กรอก '+i.value+' ซึ่งเกินคะแนนเต็ม '+mx);
+      out.push({entry_id:tr.dataset.e, judge_id:jid, crit_id:i.dataset.c, score:v}); });
   });
+  if(over) return alert('คะแนนเกินคะแนนเต็มของหัวข้อ\n\n'+over+'\n\nกรุณาแก้ไขก่อนบันทึก');
   if(!out.length) return alert('ยังไม่ได้กรอกคะแนน');
-  try{ const r=await api('saveScores',{act_id:$('#scAct').value, scores:out, source:src});
+  try{ const r=await api('saveScores',{act_id:$('#scAct').value, group:entryRound(), scores:out, source:src});
     alert('บันทึกแล้ว '+r.saved+' ช่อง'+(src==='paper'?' (จากใบกระดาษ)':''));
   }catch(e){ alert(e.message); }
 }
@@ -7735,7 +7781,11 @@ function drawPromoteDetail(){
     items.map(it=>`<tr><td>${it.group_name||it.group_code}</td>
       <td><b>${it.act_name}</b> <span class="hint">${it.level||''}</span></td>
       <td>${it.teams.map(t=>`${cleanName(t.school)} <span class="hint">(อันดับ ${t.rank}${t.medal?' · '+t.medal:''})</span>`+
-        (t.status==='สละสิทธิ์'?' <span class="pill b">สละสิทธิ์</span>':'')).join('<br>')}</td>
+        (t.status==='สละสิทธิ์'
+          ? ' <span class="pill b">สละสิทธิ์</span>'
+          : ` <button class="btn sm" style="padding:1px 7px" title="โรงเรียนนี้ไม่ไปแข่งระดับเขต"
+               onclick="withdrawPromote('${t.promotion_id}','${qq(String(t.school||'')).replace(/'/g,'')}')">สละสิทธิ์</button>`)
+        ).join('<br>')}</td>
       <td class="hint">${it.last_at? tsTh(it.last_at):''}</td>
       <td><button class="btn g sm" onclick="resetPromote('${it.group_code}','${it.act_id}','${(it.act_name||'').replace(/'/g,"")}')">รีเซ็ตรายการนี้</button></td></tr>`).join(''));
 }
@@ -7750,6 +7800,26 @@ async function savePromoteWin(){
     alert('บันทึกช่วงเวลารับโอนตัวแทนแล้ว');
     renderPromote();
   }catch(e){ alert(e.message); }
+}
+
+/** โรงเรียนที่เป็นตัวแทนแจ้งไม่ไปแข่งระดับเขต — ถอนออกและเสนอทีมอันดับถัดไป */
+function withdrawPromote(pid, school){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  openModal('บันทึกการสละสิทธิ์',
+    `<div class="note w" style="margin-bottom:10px"><span>⚠️</span><div>
+       <b>${qq(school)}</b> จะถูกถอนออกจากการเป็นตัวแทนเข้าแข่งระดับเขต<br>
+       ใบสมัครระดับเขตของทีมนี้จะเปลี่ยนสถานะเป็น “สละสิทธิ์” · ผลการแข่งขันรอบกลุ่มยังอยู่ครบ</div></div>
+     <div class="fld"><label>เหตุผล / หมายเหตุ</label>
+       <textarea id="wd_reason" rows="3" placeholder="เช่น นักเรียนย้ายโรงเรียน / ติดภารกิจ"></textarea></div>`,
+    async()=>{
+      const r=await api('withdrawPromotion',{promotion_id:pid, reason:$('#wd_reason').value.trim()});
+      await renderPromote();
+      const n=r&&r.suggest;
+      alert('บันทึกการสละสิทธิ์แล้ว'+(n
+        ? '\n\nทีมอันดับถัดไปของรายการนี้คือ อันดับ '+(n.rank||'-')+
+          '\nถ้าต้องการส่งแทน ให้กลุ่มโรงเรียนกดโอนตัวแทนรายการนี้อีกครั้ง'
+        : '\n\nรายการนี้ไม่มีทีมอันดับถัดไปในกลุ่มแล้ว'));
+    });
 }
 
 async function resetPromote(group, actId, label){
