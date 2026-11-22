@@ -2433,6 +2433,15 @@ function demoApi(action,p){
       const t=p.template; const i=MEM.tpl.findIndex(x=>x.tpl_id===t.tpl_id);
       if(i<0) MEM.tpl.push(t); else Object.assign(MEM.tpl[i],t);
       memSave(); return t; }
+    case 'groupProgressStats':{
+      const m={};
+      (MEM.entries||[]).forEach(e=>{ const g=String(e.group_code||'');
+        if(!g||g==='ALL'||g==='DISTRICT'){ if(e.from_group){ m[e.from_group]=m[e.from_group]||{t:0,s:0,sc:new Set(),ac:new Set(),d:0}; m[e.from_group].d++; } return; }
+        m[g]=m[g]||{t:0,s:0,sc:new Set(),ac:new Set(),d:0};
+        m[g].t++; m[g].s+=(e.students||[]).length;
+        if(e.school_smis) m[g].sc.add(String(e.school_smis)); if(e.act_id) m[g].ac.add(e.act_id); });
+      return Object.keys(m).map(g=>({group_code:g,teams:m[g].t,students:m[g].s,
+        schools:m[g].sc.size,acts:m[g].ac.size,to_district:m[g].d})); }
     case 'listStaff': return (MEM.staff||[]).filter(x=>!p.scope||p.scope==='ALL'||x.scope===p.scope||x.scope==='ALL');
     case 'saveStaff':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.staff=MEM.staff||[]; const st=p.staff;
@@ -6602,24 +6611,21 @@ function renderSchools(){
 let GPROG=null, GPROG_AT=0;
 async function groupProgress(force){
   if(GPROG && !force && Date.now()-GPROG_AT < 120000) return GPROG;
-  const [ent,pub]=await Promise.all([api('listEntries',{}), api('publicResults',{})]);
+  /* ใช้คำสั่งสรุปแบบตัวเลขล้วน ไม่ดึงรายชื่อนักเรียนออกมาที่หน้าเว็บสาธารณะ */
+  const [st,pub]=await Promise.all([api('groupProgressStats',{}), api('publicResults',{})]);
   const m={};
-  const get=g=>(m[g]=m[g]||{teams:0,students:0,schools:new Set(),acts:new Set(),pubActs:new Set(),toDistrict:0});
-  (ent||[]).forEach(e=>{
-    const g=String(e.group_code||'');
-    const isDist = !g || g==='ALL' || g==='DISTRICT';
-    if(!isDist){
-      const o=get(g); o.teams++; o.students+=(e.students||[]).length;
-      if(e.school_smis) o.schools.add(String(e.school_smis));
-      if(e.act_id) o.acts.add(e.act_id);
-    } else if(e.from_group){ get(String(e.from_group)).toDistrict++; }
+  const get=g=>(m[g]=m[g]||{teams:0,students:0,schools:new Set(),acts:new Set(),pubActs:new Set(),toDistrict:0,
+                            schoolsN:0,actsN:0,pubActsN:0});
+  (st||[]).forEach(r=>{
+    const o=get(String(r.group_code||''));
+    o.teams=Number(r.teams)||0; o.students=Number(r.students)||0;
+    o.schoolsN=Number(r.schools)||0; o.actsN=Number(r.acts)||0; o.toDistrict=Number(r.to_district)||0;
   });
   (((pub||{}).results)||[]).forEach(r=>{
     const g=String(r.group_code||''); if(!g||g==='ALL'||g==='DISTRICT') return;
     if(r.act_id) get(g).pubActs.add(r.act_id);
   });
-  Object.keys(m).forEach(k=>{ const o=m[k];
-    o.schoolsN=o.schools.size; o.actsN=o.acts.size; o.pubActsN=o.pubActs.size; });
+  Object.keys(m).forEach(k=>{ const o=m[k]; o.pubActsN=o.pubActs.size; });
   GPROG=m; GPROG_AT=Date.now(); return m;
 }
 /** เติมตัวเลขความคืบหน้าลงในช่องที่ทำเครื่องหมาย data-gp ไว้ (เรียกหลังวาดการ์ดแล้ว) */
@@ -8747,7 +8753,22 @@ function clearApi(){ API=''; LS.removeItem(K.api); boot().then(()=>renderSetup()
 /* ---------- เอกสารพิมพ์ ---------- */
 /** คณะกรรมการตัดสินกิจกรรมละ 5 คน — ใช้ร่วมกันทุกแบบฟอร์มที่ต้องลงลายมือชื่อ */
 const JUDGE_SEATS=['ประธานกรรมการ','กรรมการ','กรรมการ','กรรมการ','กรรมการและเลขานุการ'];
-function printDoc(kind){ go('print'); $('#prtDoc').value=kind; buildDoc(); }
+/** ปุ่มลัดจากหน้าให้คะแนน/ประกาศผล → ไปหน้าพิมพ์เอกสาร เลือกเอกสารและรายการให้เสร็จ แล้วสร้างให้เลย */
+function printDoc(kind){
+  const srcId = kind==='scoresheet' ? 'scAct' : 'pbAct';
+  const actId = (($('#'+srcId)||{}).value)||'';
+  const want  = kind==='scoresheet' ? 'judgescore' : 'doc6';
+  go('print');
+  setTimeout(()=>{
+    const a=(actsOf()||[]).find(x=>x.act_id===actId);
+    const cat=$('#prtCat');
+    if(a && cat){ cat.value=a.category||cat.value; prtFillActs(); }
+    const sel=$('#prtAct'); if(sel && actId) sel.value=actId;
+    const all=$('#prtAllAct'); if(all) all.checked=false;
+    $$('#prtDocs input[type=checkbox]').forEach(c=>{ c.checked = (c.value===want); });
+    printDocs();
+  }, 450);
+}
 /* ============================ พิมพ์เอกสารการแข่งขัน ============================
    เจ้าหน้าที่พิมพ์ "ทั้งชุด" ของแต่ละรายการแข่งขัน แล้วใส่ซองส่งให้คณะกรรมการตัดสิน
    เลือกได้ว่าจะพิมพ์ทุกฉบับ หรือเลือกเฉพาะบางฉบับ และพิมพ์ทีเดียวทั้งหมวดหมู่ก็ได้ */
