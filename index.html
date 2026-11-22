@@ -904,9 +904,11 @@ body[data-view="admin"] .utilbar{display:none}
       <div class="card"><div class="cb" style="padding:0;overflow:auto"><table id="scTbl"></table></div></div>
       <div class="row" style="margin-top:12px" id="scBtns">
         <span class="hint" id="scHint"></span><span class="sp"></span>
-        <button class="btn g" id="scSavePaper" onclick="saveScores('paper')">บันทึกเป็นคะแนนจากกระดาษ</button>
-        <button class="btn g" id="scSaveOnline" onclick="saveScores('online')">บันทึกคะแนน</button>
-        <button class="btn" onclick="confirmScoresNow()">✔ ยืนยันคะแนน &amp; ล็อก</button>
+        <button class="btn g" id="scSavePaper" style="display:none" onclick="saveScores('paper')">บันทึกเป็นคะแนนจากกระดาษ</button>
+        <button class="btn g" id="scSaveOnline" onclick="saveScores('online')">💾 บันทึกผล</button>
+        <button class="btn" id="scPublishBtn" onclick="publishFromScore()">📣 ประกาศผล</button>
+        <button class="btn g" id="scPrintBtn" style="display:none" onclick="printDoc('results')">🖨️ พิมพ์ผลการจัดอันดับ</button>
+        <button class="btn d" id="scEditBtn" style="display:none" onclick="reopenResults()">🔓 แก้ไขผลที่ประกาศแล้ว</button>
       </div>
     </section>
 
@@ -7325,15 +7327,15 @@ function renderScore(){
     nt.style.display = totalMode? 'flex':'none';
     nt.querySelector('div').innerHTML = SCOPE==='ALL'
       ? '<b>ระดับเขต — กรอกคะแนนรวมของแต่ละทีม</b> ตามแบบรายงานคะแนนที่คณะกรรมการสรุปส่งมา '
-        +'ระบบจะคิดเหรียญและจัดอันดับให้อัตโนมัติ ตรวจทานถูกต้องแล้วจึงไปที่หน้า <b>ตรวจทาน &amp; ประกาศผล</b> เพื่อประกาศผลอย่างเป็นทางการ'
+        +'ระบบจะคิดเหรียญและจัดอันดับให้อัตโนมัติ · ตรวจทานถูกต้องแล้วกด <b>บันทึกผล</b> แล้วกด <b>ประกาศผล</b>'
       : '<b>กรอกคะแนนรวมของแต่ละทีม</b> จากใบบันทึกคะแนนที่คณะกรรมการตัดสินส่งมา '
         +'ระบบจะคิดเหรียญและจัดอันดับให้อัตโนมัติ · ใบกระดาษของกรรมการยังเป็นหลักฐานคะแนนรายหัวข้อ ให้เก็บไว้ตามระเบียบ '
         +'<br>ถ้าต้องการเก็บคะแนนแยกรายกรรมการและรายหัวข้อไว้ในระบบด้วย กดปุ่ม <b>สลับเป็นคีย์แยกรายกรรมการ</b>';
   }
   /* โหมดคะแนนรวมบันทึกชุดเดียว ไม่ต้องมีปุ่มแยก “ออนไลน์ / จากกระดาษ” ให้สับสน */
   const sp=$('#scSavePaper'), so=$('#scSaveOnline');
-  if(sp) sp.style.display = totalMode? 'none':'';
-  if(so) so.textContent = totalMode? 'บันทึกคะแนนรวม' : 'บันทึกคะแนน';
+  if(sp) sp.style.display='none';                 /* รวมเป็นปุ่ม “บันทึกผล” ปุ่มเดียว */
+  if(so) so.textContent='💾 บันทึกผล';
   if(totalMode) return renderScoreTotal(actId, act);
   const nj=Number(act.judges_required||3);
   if(!$('#scJudge').options.length || $('#scJudge').dataset.n!=nj){
@@ -7503,31 +7505,39 @@ function scPaintLock(box){
   const el=$('#'+box); if(!el) return;
   const L=SCLOCK;
   if(!L){ el.innerHTML=''; return; }
-  if(L.locked){
-    el.innerHTML=`<div class="note ok"><span>🔒</span><div>
-      <b>คะแนนรายการนี้ยืนยันและล็อกแล้ว</b> — แก้ไขไม่ได้จนกว่าจะปลดล็อก<br>
+  const pub=Number(L.published||0);
+  if(pub){
+    el.innerHTML=`<div class="note ok"><span>📣</span><div>
+      <b>ประกาศผลแล้ว ${pub} ทีม</b> — แสดงบนหน้าเว็บสาธารณะเรียบร้อย
+      ${L.published_at?'<span class="hint"> · '+ (thStamp(L.published_at)||qq(L.published_at)) +'</span>':''}<br>
+      <span class="hint">กดปุ่ม <b>พิมพ์ผลการจัดอันดับ</b> เพื่อออกเอกสาร ·
+        ถ้าต้องแก้ไข กด <b>แก้ไขผลที่ประกาศแล้ว</b> แล้วใส่รหัสผ่านผู้ดูแล</span></div></div>`;
+  }else if(L.locked){
+    el.innerHTML=`<div class="note i"><span>🔒</span><div>
+      <b>ยืนยันและล็อกคะแนนแล้ว</b> — กดปุ่ม “ประกาศผล” ได้เลย<br>
       <span class="hint">ยืนยันโดย ${qq(L.confirmed_by||'-')}${L.confirmed_pos?' ('+qq(L.confirmed_pos)+')':''} · ${thStamp(L.confirmed_at)||qq(L.confirmed_at)}</span>
-      ${L.can_unlock?`<div style="margin-top:9px"><button class="btn g sm" onclick="unlockScoresNow()">🔓 ปลดล็อกเพื่อแก้ไข</button></div>`:
-        '<div class="hint" style="margin-top:6px">ถ้าต้องแก้ไข ให้แจ้งผู้ดูแลหลักของสำนักงานเขตปลดล็อกให้</div>'}
+      ${L.can_unlock?`<div style="margin-top:9px"><button class="btn g sm" onclick="unlockScoresNow()">🔓 ปลดล็อกเพื่อแก้ไข</button></div>`:''}
     </div>`;
   }else{
     const full = L.teams && L.scored>=L.teams;
     el.innerHTML=`<div class="note ${full?'i':'w'}"><span>${full?'📝':'⏳'}</span><div>
-      <b>ยังไม่ได้ยืนยันคะแนน</b> — กรอกคะแนนแล้ว ${L.scored} จาก ${L.teams} ทีม<br>
-      <span class="hint">กรอกครบและตรวจทานแล้ว กดปุ่ม “ยืนยันคะแนน &amp; ล็อก” ด้านล่าง ระบบจึงจะให้ประกาศผลได้</span></div></div>`;
+      <b>ยังไม่ได้ประกาศผล</b> — กรอกคะแนนแล้ว ${L.scored} จาก ${L.teams} ทีม<br>
+      <span class="hint">กรอกครบและตรวจทานแล้ว กด <b>บันทึกผล</b> แล้วกด <b>ประกาศผล</b>
+        ผลจะขึ้นหน้าเว็บสาธารณะทันที</span></div></div>`;
   }
   scApplyLock();
 }
 /** ล็อกแล้วปิดช่องกรอกและปุ่มบันทึกทั้งหมดในหน้าให้คะแนน */
 function scApplyLock(){
-  const locked=!!(SCLOCK&&SCLOCK.locked);
+  const L=SCLOCK||{};
+  const locked=!!L.locked, pub=Number(L.published||0)>0;
+  /* ล็อกแล้ว = แก้คะแนนไม่ได้ · ประกาศแล้ว = ต้องใส่รหัสผ่านก่อนจึงแก้ได้ */
   $$('#scTbl input').forEach(i=>{ i.disabled=locked; i.style.background=locked?'var(--line-2)':''; });
-  const row=$('#scBtns'); if(row){
-    [...row.querySelectorAll('button')].forEach(b=>{
-      const isConfirm=/ยืนยันคะแนน/.test(b.textContent);
-      b.style.display = locked ? 'none' : (isConfirm? '' : '');
-    });
-  }
+  const show=(id,on)=>{ const b=$('#'+id); if(b) b.style.display = on? '' : 'none'; };
+  show('scSaveOnline', !locked);
+  show('scPublishBtn', !pub);
+  show('scPrintBtn',   pub);
+  show('scEditBtn',    pub);
 }
 async function confirmScoresNow(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
@@ -7558,6 +7568,72 @@ async function confirmScoresNow(){
     } else alert(e.message);
   }
 }
+/** ประกาศผลจากหน้าให้คะแนนในคลิกเดียว — ยืนยัน+ล็อกคะแนน แล้วประกาศขึ้นเว็บสาธารณะ */
+async function publishFromScore(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const actId=$('#scAct').value;
+  if(!actId) return alert('ยังไม่ได้เลือกรายการแข่งขัน');
+  const act=(DB.activities||[]).find(a=>a.act_id===actId)||{};
+  const L=SCLOCK||{};
+  const where = SCOPE==='ALL' ? 'เว็บระดับเขตพื้นที่' : 'เว็บของ '+groupName(SCOPE);
+  if(!confirm('ประกาศผล “'+(act.act_name||'')+'” ('+(act.level||'')+') ?\n\n'+
+    'กรอกคะแนนแล้ว '+(L.scored||0)+' จาก '+(L.teams||0)+' ทีม\n\n'+
+    '• ผลจะขึ้นบน'+where+'ให้ทุกคนเห็นทันที\n'+
+    '• คะแนนจะถูกล็อก ถ้าจะแก้ต้องใส่รหัสผ่านผู้ดูแล')) return;
+  const btn=$('#scPublishBtn'); if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังประกาศผล…'; }
+  try{
+    if(!L.locked){
+      try{
+        await api('confirmScores',{act_id:actId, group:scRound(),
+          confirmed_by:(ME&&ME.name)||'', confirmed_pos:''});
+      }catch(e){
+        if(/ยังกรอกคะแนนไม่ครบ/.test(e.message)){
+          if(!confirm(e.message+'\n\nประกาศผลทั้งที่ยังกรอกไม่ครบใช่ไหมคะ?')) throw new Error('ยกเลิกการประกาศผล');
+          await api('confirmScores',{act_id:actId, group:scRound(), allow_partial:'Y',
+            confirmed_by:(ME&&ME.name)||'', confirmed_pos:''});
+        } else throw e;
+      }
+    }
+    const r=await api('publishResults',{act_id:actId, group: SCOPE==='ALL'?'':SCOPE});
+    await scLoadLock(actId,'scLock');
+    alert('ประกาศผลแล้ว '+(r.published||0)+' ทีม\n\nขึ้นบน'+where+'เรียบร้อย '+
+      'กดปุ่ม “พิมพ์ผลการจัดอันดับ” เพื่อออกเอกสาร');
+  }catch(e){ alert(e.message); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='📣 ประกาศผล'; } }
+}
+
+/** แก้ไขผลที่ประกาศไปแล้ว — ต้องใส่รหัสผ่านผู้ดูแลที่มีอำนาจในรอบนั้น */
+function reopenResults(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  const actId=$('#scAct').value;
+  if(!actId) return alert('ยังไม่ได้เลือกรายการแข่งขัน');
+  const act=(DB.activities||[]).find(a=>a.act_id===actId)||{};
+  const dist=(SCOPE==='ALL');
+  openModal('แก้ไขผลที่ประกาศแล้ว',
+    `<div class="note w" style="margin-bottom:10px"><span>⚠️</span><div>
+       <b>${qq(act.act_name||'')}</b> ${qq(act.level||'')}<br>
+       ผลรายการนี้จะถูก<b>ถอนออกจากหน้าเว็บสาธารณะ</b> และปลดล็อกให้แก้คะแนนได้
+       · แก้เสร็จต้องกด “ประกาศผล” ใหม่อีกครั้ง</div></div>
+     <div class="note i" style="margin-bottom:10px"><span>🔑</span><div>
+       ต้องใช้บัญชี${dist? '<b>ผู้ดูแลเขตพื้นที่</b>'
+                        : '<b>ผู้ดูแลกลุ่ม '+qq(groupName(SCOPE))+'</b> หรือผู้ดูแลเขตพื้นที่'}
+       ยืนยันทุกครั้ง ระบบจะบันทึกชื่อผู้แก้และเหตุผลไว้ตรวจสอบ</div></div>
+     <div class="grid g2">
+       <div class="fld"><label>ชื่อผู้ใช้</label><input id="rp_user" autocomplete="off"></div>
+       <div class="fld"><label>รหัสผ่าน</label><input id="rp_pass" type="password" autocomplete="off"></div></div>
+     <div class="fld"><label>เหตุผลที่ต้องแก้ไข</label>
+       <input id="rp_why" placeholder="เช่น กรรมการแจ้งแก้คะแนนทีมที่ 3"></div>`,
+    async()=>{
+      const r=await api('reopenScores',{act_id:actId, group:scRound(),
+        auth_user:$('#rp_user').value.trim(), auth_pass:$('#rp_pass').value,
+        reason:$('#rp_why').value.trim()});
+      await reloadBoot();
+      await renderScore();
+      alert('ถอนผลออกจากหน้าเว็บแล้ว '+(r.withdrawn||0)+' ทีม — แก้คะแนนได้เลย\n\n'+
+        'แก้เสร็จอย่าลืมกด “ประกาศผล” อีกครั้ง');
+    });
+}
+
 async function unlockScoresNow(){
   const actId=$('#scAct').value || $('#pbAct').value;
   const act=(DB.activities||[]).find(a=>a.act_id===actId)||{};
@@ -8861,7 +8937,9 @@ function clearApi(){ API=''; LS.removeItem(K.api); boot().then(()=>renderSetup()
 const JUDGE_SEATS=['ประธานกรรมการ','กรรมการ','กรรมการ','กรรมการ','กรรมการและเลขานุการ'];
 /** ปุ่มลัดจากหน้าให้คะแนน/ประกาศผล → ไปหน้าพิมพ์เอกสาร เลือกเอกสารและรายการให้เสร็จ แล้วสร้างให้เลย */
 function printDoc(kind){
-  const srcId = kind==='scoresheet' ? 'scAct' : 'pbAct';
+  /* scoresheet = ใบให้คะแนนเปล่า · results = ผลการจัดอันดับ (สั่งจากหน้าให้คะแนน)
+     resultsheet = ใบสรุปผล (สั่งจากหน้าตรวจทาน & ประกาศผล) */
+  const srcId = (kind==='scoresheet'||kind==='results') ? 'scAct' : 'pbAct';
   const actId = (($('#'+srcId)||{}).value)||'';
   const want  = kind==='scoresheet' ? 'judgescore' : 'doc6';
   go('print');
