@@ -229,6 +229,11 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#151210,#4A1F0C
 .lbr.t2 .rk{background:linear-gradient(140deg,#C4CDD8,#8B96A4);color:#1C2430}
 .lbr.t3 .rk{background:linear-gradient(140deg,#CE8B52,#9A5E2C)}
 .lbr .c{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+/* หัวตารางของจอฉาย — บอกว่าแต่ละคอลัมน์คืออะไร ค้างอยู่บนสุดเวลาเลื่อน */
+.lbr.hd{background:transparent;font-size:15.3px;font-weight:700;color:#B39C88;
+  letter-spacing:.3px;padding:4px 17px 8px;margin-bottom:4px;border-bottom:1px solid #2A2118;border-radius:0;
+  position:sticky;top:0;z-index:2;backdrop-filter:blur(2px)}
+.lbr.hd .c{font-weight:700}
 .gc{color:#F0C863}.sc{color:#C6D0DB}.bc{color:#D2925C}
 .login{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
 .login .l{position:relative;overflow:hidden;background:linear-gradient(150deg,#3D0019,#78002F 55%,#A00040);
@@ -9345,8 +9350,11 @@ function openScreen(k){
   if(k==='live'){
     $('#liveSub').textContent=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' · ปีการศึกษา 2569';
     api('publicResults',{group:entryRound()}).then(r=>{
-      $('#liveBoard').innerHTML = r.medals.length? r.medals.slice(0,12).map((m,i)=>
-        `<div class="lbr ${i<3?'t'+(i+1):''}"><span class="rk">${i+1}</span><span>${m.school}</span>
+      const head=`<div class="lbr hd"><span>อันดับ</span><span>โรงเรียน</span>
+         <span class="c gc">🥇 ทอง</span><span class="c sc">🥈 เงิน</span><span class="c bc">🥉 ทองแดง</span>
+         <span class="c">รวม</span></div>`;
+      $('#liveBoard').innerHTML = r.medals.length? head + r.medals.slice(0,12).map((m,i)=>
+        `<div class="lbr ${i<3?'t'+(i+1):''}"><span class="rk">${i+1}</span><span>${cleanTxt(m.school)}</span>
          <span class="c gc">${m.g}</span><span class="c sc">${m.s}</span><span class="c bc">${m.b}</span>
          <span class="c">${m.g+m.s+m.b}</span></div>`).join('')
         : `<div style="padding:70px;text-align:center;color:#8D7C6D"><div style="font-size:45.3px">🏅</div>
@@ -9355,8 +9363,10 @@ function openScreen(k){
     });
   } else {
     api('queue',{group:SCOPE==='ALL'?'':SCOPE}).then(q=>{
-      $('#queueBoard').innerHTML = q.length? q.map(x=>`<div class="lbr"><span></span><span>${x.act}</span>
-        <span class="c">${x.start||''}</span><span class="c">${x.venue||''}</span><span class="c">${x.status||''}</span><span></span></div>`).join('')
+      const qhead=`<div class="lbr hd"><span>ที่</span><span>รายการแข่งขัน</span>
+        <span class="c">เวลา</span><span class="c">สนามแข่งขัน</span><span class="c">สถานะ</span><span></span></div>`;
+      $('#queueBoard').innerHTML = q.length? qhead + q.map((x,i)=>`<div class="lbr"><span class="rk">${i+1}</span><span>${qq(x.act)}</span>
+        <span class="c">${qq(x.start||'')}</span><span class="c">${qq(x.venue||'')}</span><span class="c">${qq(x.status||'')}</span><span></span></div>`).join('')
         : `<div style="padding:70px;text-align:center;color:#8D7C6D"><div style="font-size:45.3px">🗓️</div>
            <div style="font-size:23.3px;font-weight:700;color:#fff;margin-top:10px">ยังไม่มีรายการที่จัดตารางแข่งขัน</div>
            <div style="margin-top:6px">หน้าจอนี้จะแสดงคิวแต่ละสนามทันทีที่แอดมินจัดตารางเวลาให้รายการแข่งขัน</div></div>`;
