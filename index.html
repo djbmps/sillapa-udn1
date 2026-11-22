@@ -5498,6 +5498,8 @@ function fillCert(txt,it,cfg){
 function cleanTxt(n){ const t=String(n==null?'':n); const i=t.indexOf('#'); return qq(i<0?t:t.slice(0,i)); }
 /** ข้อความดิบ (ไม่หนีอักขระ) — ใช้กับไฟล์ CSV/Excel/Word และกล่องข้อความ */
 function cleanRaw(n){ const t=String(n==null?'':n); const i=t.indexOf('#'); return i<0?t:t.slice(0,i); }
+/** คะแนนเต็มบนใบเอกสาร — เลขกลม ๆ ไม่ต้องมี .00 ให้รกตา (40 แทน 40.00) */
+function scNum(v){ const n=Number(v||0); return Number.isInteger(n)? String(n) : n.toFixed(2); }
 function certNo(it,cfg){
   const f=(cfg&&cfg.number_format)||(edition()+'/{seq:04d}');
   return f.replace(/\{seq:0(\d)d\}/,(m,w)=>String(it.seq||0).padStart(Number(w),'0'));
@@ -5661,7 +5663,9 @@ function certHTML(it,tpl,cfg){
     <div class="ln dt" style="top:${tpl.y_detail||52}%">${fillCert(tpl.line_detail,it,cfg)}</div>
     <div class="ln sm" style="top:${tpl.y_org||60}%">${fillCert(tpl.line_org,it,cfg)}</div>
     <div class="ln sm" style="top:70%">${fillCert(tpl.line_date,it,cfg)}</div>
-    <div class="seal"><div class="l"></div>(${tpl.sign_name||''})<br>${tpl.sign_position||''}</div>
+    ${ (tpl.sign_name||tpl.sign_position)
+       ? `<div class="seal"><div class="l"></div>(${qq(tpl.sign_name||'')})<br>${qq(tpl.sign_position||'')}</div>`
+       : '' /* ยังไม่ได้ตั้งชื่อผู้ลงนาม — ไม่ต้องพิมพ์วงเล็บว่าง ( ) ติดไปบนเกียรติบัตร */ }
     <div style="position:absolute;right:16mm;top:13mm;text-align:right;font-size:12.3px;color:#6B5A3C">เลขที่ ${certNo(it,cfg)}</div>
     <div style="position:absolute;left:16mm;top:13mm;text-align:center">${qrSvg(certVerifyUrl(it,cfg),20)}
       <div style="font-size:10.3px;color:#6B5A3C;margin-top:1.5mm;letter-spacing:.2px">สแกนตรวจสอบ</div></div>
@@ -9034,8 +9038,8 @@ function prtSheet(kind, act, pack, pub){
       <table class="sm"><thead>
         <tr><th rowspan="2" style="width:44px">ลำดับที่</th><th rowspan="2">โรงเรียน</th><th rowspan="2" style="width:130px">สังกัด</th>
           <th colspan="${Math.max(1,crit.length)}">เกณฑ์</th>
-          <th rowspan="2" style="width:62px">รวม<br>${full.toFixed(2)}</th><th rowspan="2" style="width:76px">หมายเหตุ</th></tr>
-        <tr>${crit.length? crit.map(c=>`<th style="width:52px">${c.item_name||''}<br><span class="tiny">(${Number(c.max_score||0).toFixed(2)})</span></th>`).join('')
+          <th rowspan="2" style="width:62px">รวม<br>${scNum(full)}</th><th rowspan="2" style="width:76px">หมายเหตุ</th></tr>
+        <tr>${crit.length? crit.map(c=>`<th style="width:52px">${c.item_name||''}<br><span class="tiny">(${scNum(c.max_score)})</span></th>`).join('')
              : '<th style="width:52px">คะแนน</th>'}</tr></thead><tbody>
       ${ent.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${cleanName(e.school_name||e.school_smis)}</td>
         <td>${districtName()}</td>${'<td></td>'.repeat(Math.max(1,crit.length))}<td></td><td></td></tr>`).join('')}
