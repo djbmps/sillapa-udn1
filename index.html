@@ -820,7 +820,7 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- ทะเบียนโรงเรียน ---------- -->
     <section class="page" id="p-schools">
-      <div class="hd"><div><h2>ทะเบียนโรงเรียน</h2><p id="schSub"></p></div><span class="sp"></span>
+      <div class="hd"><div><h2>ทะเบียนโรงเรียน</h2><p id="rgSub"></p></div><span class="sp"></span>
         <button class="btn g sm" onclick="exportCsv('schools')">⬇ CSV</button></div>
       <div class="row" style="margin-bottom:12px">
         <input id="schQ" placeholder="ค้นชื่อโรงเรียน / ตำบล / รหัส SMIS…" oninput="renderSchools()"
@@ -831,8 +831,8 @@ body[data-view="admin"] .utilbar{display:none}
           <option value="">ทุกโรงเรียน</option><option value="exp">เฉพาะขยายโอกาส (ลง ม.1-3 ได้)</option>
           <option value="no">โรงเรียนที่สมัครไม่ได้</option></select>
       </div>
-      <div class="card"><div class="cb" style="padding:0;overflow:auto;max-height:66vh"><table id="schTbl"></table></div></div>
-      <p class="hint" id="schCount" style="margin-top:8px"></p>
+      <div class="card"><div class="cb" style="padding:0;overflow:auto;max-height:66vh"><table id="rgTbl"></table></div></div>
+      <p class="hint" id="rgCount" style="margin-top:8px"></p>
     </section>
 
     <!-- ---------- กลุ่มโรงเรียน ---------- -->
@@ -1494,7 +1494,7 @@ body[data-view="admin"] .utilbar{display:none}
 
     <!-- ---------- ขอเปลี่ยนตัว (หลังบ้าน) ---------- -->
     <section class="page" id="p-submgr">
-      <div class="hd"><div><h2>ขอเปลี่ยนตัวนักเรียน / ครูผู้ฝึกสอน</h2><p id="smSub"></p></div>
+      <div class="hd"><div><h2>ขอเปลี่ยนตัวนักเรียน / ครูผู้ฝึกสอน</h2><p id="sbSub"></p></div>
         <span class="sp"></span>
         <button class="btn" id="smNewBtn" onclick="subNew()">+ ยื่นคำขอเปลี่ยนตัว</button></div>
       <div id="smState"></div>
@@ -1562,7 +1562,7 @@ body[data-view="admin"] .utilbar{display:none}
           <option value="">ทุกสถานะ</option><option>รอพิจารณา</option><option>อนุมัติ</option><option>ไม่อนุมัติ</option>
         </select>
         <button class="btn g sm" onclick="loadSubs()">รีเฟรช</button></div>
-        <div class="cb" style="padding:0"><div style="overflow:auto"><table id="smTbl"></table></div></div></div>
+        <div class="cb" style="padding:0"><div style="overflow:auto"><table id="sbTbl"></table></div></div></div>
     </section>
 
     <!-- ---------- จัดการผู้ดูแล (เฉพาะผู้ดูแลหลัก) ---------- -->
@@ -4691,7 +4691,7 @@ function subCanCancel(r){
 function renderSubMgr(){
   if(!ME) return;
   const w=subWin();
-  $('#smSub').textContent = subIsSchool()
+  $('#sbSub').textContent = subIsSchool()
     ? 'ยื่นคำขอเปลี่ยนตัวนักเรียนหรือครูผู้ฝึกสอนของโรงเรียน'
     : 'พิจารณาคำขอเปลี่ยนตัว และยื่นแทนโรงเรียนที่เข้าระบบไม่ได้';
   $('#smListTitle').textContent = subIsSchool()? 'คำขอของโรงเรียน' : 'คำขอที่ยื่นเข้ามา';
@@ -4711,12 +4711,12 @@ async function loadSubs(){
   try{
     SUBS = await api('listSubs',{group:entryRound()});
     renderSubList();
-  }catch(e){ $('#smTbl').innerHTML='<tbody><tr><td style="padding:20px;color:var(--bad)">'+e.message+'</td></tr></tbody>'; }
+  }catch(e){ $('#sbTbl').innerHTML='<tbody><tr><td style="padding:20px;color:var(--bad)">'+e.message+'</td></tr></tbody>'; }
 }
 function renderSubList(){
   const f=($('#smFilter')||{}).value||'';
   const rows=SUBS.filter(r=>!f||r.status===f);
-  tbl($('#smTbl'),['เลขที่','โรงเรียน','รายการแข่งขัน','เปลี่ยนจาก → เป็น','สาเหตุ','สถานะ','จัดการ'],
+  tbl($('#sbTbl'),['เลขที่','โรงเรียน','รายการแข่งขัน','เปลี่ยนจาก → เป็น','สาเหตุ','สถานะ','จัดการ'],
     rows.map(r=>{
       const act=(DB.activities||[]).find(a=>a.act_id===r.act_id)||{};
       return `<tr>
@@ -6582,10 +6582,10 @@ function renderSchools(){
   if(fl==='exp') r=r.filter(s=>s.is_expansion==='Y');
   if(fl==='no') r=r.filter(s=>s.can_register!=='Y');
   if(q) r=r.filter(s=>(s.school_name+s.tambon+s.smis).includes(q));
-  $('#schSub').textContent=(SCOPE==='ALL'?'ทั้งเขต 214 โรงเรียน':groupName(SCOPE));
-  $('#schCount').textContent='แสดง '+r.length+' โรงเรียน · นักเรียนรวม '+
+  $('#rgSub').textContent=(SCOPE==='ALL'?'ทั้งเขต 214 โรงเรียน':groupName(SCOPE));
+  $('#rgCount').textContent='แสดง '+r.length+' โรงเรียน · นักเรียนรวม '+
     r.reduce((a,b)=>a+Number(b.n_total||0),0).toLocaleString()+' คน';
-  tbl($('#schTbl'),['SMIS','โรงเรียน','ตำบล','อำเภอ','กลุ่ม','นักเรียน','เปิดสอน','ขนาด','สมัครได้','บัญชี'],
+  tbl($('#rgTbl'),['SMIS','โรงเรียน','ตำบล','อำเภอ','กลุ่ม','นักเรียน','เปิดสอน','ขนาด','สมัครได้','บัญชี'],
     r.slice(0,400).map(s=>`<tr><td class="num" style="color:var(--ink-3)">${s.smis}</td>
       <td><b>${cleanName(s.school_name)}</b></td><td>${s.tambon}</td><td>${s.amphoe}</td>
       <td>${(s.group_name||groupName(s.group_code))}</td>
@@ -6791,8 +6791,10 @@ async function doRename(btn){
   }catch(e){ alert(e.message); }
 }
 function critStat(actId){
-  if(!DB.criteria) { const n0=critCount(actId);
-    return n0? `<span class="pill ok">${n0} หัวข้อ</span>` : '<span class="pill w">ยังไม่มีเกณฑ์</span>'; }
+  /* ระหว่างที่เกณฑ์ยังโหลดไม่เสร็จ ต้องคืนค่าโครงสร้างเดียวกันเสมอ
+     ไม่งั้นป้ายสถานะจะขึ้นว่า undefined และตัวนับ “เกณฑ์ยังไม่พร้อม” จะผิด */
+  if(!DB.criteria){ const n0=critCount(actId);
+    return {n:n0, sum:null, state: n0? 'load' : 'none'}; }
   const nc=(DB.criteria||[]).filter(c=>c.act_id===actId);
   const sum=nc.reduce((s,c)=>s+Number(c.max_score||0),0);
   return {n:nc.length, sum, state: !nc.length?'none' : (sum===100?'ok':'bad')};
@@ -6808,7 +6810,7 @@ function drawActEdit(){
   if(cs) rows=rows.filter(a=>critStat(a.act_id).state===cs);
   if(q)  rows=rows.filter(a=>(a.act_name+' '+(a.act_code||'')).includes(q));
 
-  const bad=A.filter(a=>critStat(a.act_id).state!=='ok').length;
+  const bad=A.filter(a=>{const st2=critStat(a.act_id).state; return st2!=='ok' && st2!=='load';}).length;
   $('#aeCount').innerHTML='แสดง <b>'+rows.length+'</b> จาก '+A.length+' รายการ'+
     (bad? ' · <span style="color:var(--bad);font-weight:600">'+bad+' รายการเกณฑ์ยังไม่พร้อม</span>' : ' · เกณฑ์ครบทุกรายการแล้ว')+
     (c? ' · กำลังกรองหมวด “'+c+'”' : '');
@@ -6816,6 +6818,7 @@ function drawActEdit(){
   tbl($('#aeTbl'),['รหัส','รายการแข่งขัน','กลุ่มสาระ','ระดับชั้น','ทีม','ครู','กรรมการ','โควตา','เกณฑ์','สถานะ','จัดการ'],
     rows.map(a=>{ const k=critStat(a.act_id);
       const badge = k.state==='none' ? '<span class="pill b">ยังไม่มี</span>'
+                  : k.state==='load' ? `<span class="pill ok">${k.n} หัวข้อ</span>`
                   : `<span class="pill ${k.state==='ok'?'ok':'w'}">${k.n} หัวข้อ · ${k.sum}</span>`;
       return `<tr><td class="num">${a.act_code||a.act_id}</td>
         <td><b>${a.act_name}</b>${a.condition?'<br><span class="hint">'+a.condition+'</span>':''}</td>
@@ -8465,12 +8468,15 @@ function renderSched(){
       ยังไม่ได้เปิดตารางแข่งขันบนหน้าเว็บ — เปิดได้ที่เมนู “ตารางแข่งขัน &amp; สนาม”</td></tr>`);
     return;
   }
+  const schEmpty=(msg)=>tbl($('#schTbl'),SCH_HEAD,
+    `<tr><td colspan="${SCH_HEAD.length}" style="text-align:center;color:var(--ink-3);padding:26px">${msg}</td></tr>`);
   api('queue',{group:SCOPE==='ALL'?'':SCOPE}).then(q=>{
     $('#schCount').textContent = q.length? q.length+' รายการ' : '';
+    if(!q.length){ schEmpty('ยังไม่ประกาศตารางแข่งขัน — โปรดติดตามประกาศจากสำนักงานเขตพื้นที่การศึกษา'); return; }
     tbl($('#schTbl'),SCH_HEAD,
       q.map(x=>`<tr><td><b>${x.act||''}</b></td><td>${x.level||''}</td><td>${thDateLong(x.date)}</td>
         <td>${tmRange(x.start,x.end)}</td><td>${x.venue||''}</td><td>${x.status||''}</td></tr>`).join(''));
-  }).catch(()=>{ tbl($('#schTbl'),SCH_HEAD,''); });
+  }).catch(()=>{ $('#schCount').textContent=''; schEmpty('ยังไม่ประกาศตารางแข่งขัน'); });
 }
 /** 08:30 + 11:30 → 08:30–11:30 น. */
 function tmRange(a,b){
