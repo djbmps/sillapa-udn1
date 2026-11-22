@@ -3707,16 +3707,16 @@ function dstr(v){
 function newsCard(n,i){
   return `<div class="newscard" onclick="openNews(${i})">
     <div class="th" style="${n.image?`background-image:url('${imgSrc(n.image)}')`:''}">${n.image?'':'📰'}</div>
-    <div><h4>${n.pin==='Y'?'<span class="pill i">ปักหมุด</span> ':''}${n.title}</h4>
-      <div class="mt">${dstr(n.date)} · ${n.scope==='ALL'?'ประกาศจากเขต':'ข่าวของ '+groupName(n.scope)}</div>
-      <p>${(n.body||'').slice(0,180)}</p></div></div>`;
+    <div><h4>${n.pin==='Y'?'<span class="pill i">ปักหมุด</span> ':''}${qq(n.title)}</h4>
+      <div class="mt">${qq(dstr(n.date))} · ${n.scope==='ALL'?'ประกาศจากเขต':'ข่าวของ '+qq(groupName(n.scope))}</div>
+      <p>${qq((n.body||'').slice(0,180))}</p></div></div>`;
 }
 function openNews(i){
   const n=(window.__NEWS||[])[i]; if(!n) return;
   openModal(n.title,
     `<div class="hint" style="margin-bottom:10px">${dstr(n.date)} · ${n.scope==='ALL'?'ประกาศจากสำนักงานเขต':'ข่าวของ '+groupName(n.scope)}</div>`+
-    (n.image?`<img src="${imgSrc(n.image)}" style="width:100%;border-radius:10px;margin-bottom:12px">`:'')+
-    `<div style="white-space:pre-wrap;font-size:15.3px;line-height:1.75">${n.body||'(ไม่มีรายละเอียดเพิ่มเติม)'}</div>`,
+    (n.image?`<img src="${qq(imgSrc(n.image))}" style="width:100%;border-radius:10px;margin-bottom:12px">`:'')+
+    `<div style="white-space:pre-wrap;font-size:15.3px;line-height:1.75">${qq(n.body||'(ไม่มีรายละเอียดเพิ่มเติม)')}</div>`,
     ()=>false);
   $('#mOk').style.display='none';
 }
@@ -3731,8 +3731,8 @@ function renderDocs(){
     return `<div class="card" style="margin-bottom:14px"><div class="ch"><h3>${c}</h3>
       <span class="sp"></span><span class="pill i">${r.length} รายการ</span></div>
       <div class="cb" style="padding:0"><table><tbody>${r.map(d=>
-        `<tr><td><b>${d.title}</b>${d.note?'<br><span class="hint">'+d.note+'</span>':''}</td>
-         <td style="width:120px;text-align:right"><a class="btn g sm" href="${d.url}" target="_blank" rel="noopener">⬇ ดาวน์โหลด</a></td></tr>`
+        `<tr><td><b>${qq(d.title)}</b>${d.note?'<br><span class="hint">'+qq(d.note)+'</span>':''}</td>
+         <td style="width:120px;text-align:right">${safeUrl(d.url)? `<a class="btn g sm" href="${qq(safeUrl(d.url))}" target="_blank" rel="noopener noreferrer">⬇ ดาวน์โหลด</a>`:'<span class="hint">ลิงก์ไม่ถูกต้อง</span>'}</td></tr>`
       ).join('')}</tbody></table></div></div>`;
   }).join('') || '<div class="note i"><span>📄</span><div>ยังไม่มีเอกสาร — ผู้ดูแลเพิ่มได้ที่เมนู “ประชาสัมพันธ์” ในระบบหลังบ้าน</div></div>';
 }
