@@ -3743,7 +3743,11 @@ function renderDocs(){
    หลังบ้าน:    อัปโหลด PDF ทีละสาระ (หนึ่งสาระ = หนึ่งไฟล์ อัปใหม่ทับของเดิม)
    ============================================================================ */
 let CRITDOCS=null;
-function qq(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+/** หนีอักขระ HTML ก่อนแสดงข้อความที่ผู้ใช้กรอกเข้ามา — กันสคริปต์แฝงในชื่อหรือข้อความ */
+function qq(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;')
+  .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
+/** ยอมรับเฉพาะลิงก์ http/https — กัน javascript: ที่ฝังมากับใบสมัคร */
+function safeUrl(u){ const t=String(u||'').trim(); return /^https?:\/\//i.test(t)? t : ''; }
 function kbStr(kb){ kb=Number(kb||0); if(!kb) return '';
   return kb>=1024 ? (kb/1024).toFixed(kb>=10240?0:1)+' MB' : kb+' KB'; }
 /** วันที่แบบไทย — เวลาที่ระบบบันทึกเองเป็น ค.ศ. จึงแปลงเป็น พ.ศ. ให้อัตโนมัติ */
@@ -4215,8 +4219,8 @@ function cardHTML(it,t,cfg){
     <div class="ph" style="top:${t.y_photo||26}%;width:${t.photo_w||35}%;aspect-ratio:3/4">
       ${it.photo_url? `<img src="${imgSrc(it.photo_url)}" alt="">`
         : '<div class="none">ยังไม่มี<br>รูปถ่าย</div>'}</div>
-    <div class="l nm" style="top:${t.y_name||61}%">${it.name||''}</div>
-    <div class="l dt" style="top:${t.y_detail||72}%">${it.detail||''}${it.level?' · '+it.level:''}</div>
+    <div class="l nm" style="top:${t.y_name||61}%">${qq(it.name||'')}</div>
+    <div class="l dt" style="top:${t.y_detail||72}%">${qq(it.detail||'')}${it.level?' · '+qq(it.level):''}</div>
     <div class="l og" style="top:${t.y_org||80}%">${cleanTxt(it.org||'')}</div>
     <div class="role">${t.title_text||''}</div>
     ${num}</div>`;
@@ -4296,8 +4300,8 @@ function renderCardList(){
     $('#cdList').innerHTML = r.items.length? r.items.map((x,i)=>`<div class="cardrow">
         <input type="checkbox" ${CARDSEL[x.kind+'|'+x.id]?'checked':''} onchange="cdSel('${x.kind}','${x.id}',this.checked)">
         ${x.photo_url? `<img class="pv" src="${imgSrc(x.photo_url)}">` : '<div class="pv none">👤</div>'}
-        <div style="flex:1;min-width:0"><b>${x.name}</b>
-          <div class="hint" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.detail||''}${x.org? ' · '+cleanTxt(x.org):''}</div></div>
+        <div style="flex:1;min-width:0"><b>${qq(x.name)}</b>
+          <div class="hint" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${qq(x.detail||'')}${x.org? ' · '+cleanTxt(x.org):''}</div></div>
         <button class="btn g sm" onclick="uploadPhoto(${i})">${x.photo_url?'เปลี่ยนรูป':'📷 อัปโหลดรูป'}</button>
       </div>`).join('')
       : cardEmpty();
@@ -4422,8 +4426,8 @@ function drawJudges(){
     rows.map(j=>{
       const i=JUDGES.indexOf(j);
       return `<tr><td><b>${cleanTxt(j.name||'')}</b></td><td>${cleanTxt(j.position||'')}</td>
-        <td>${cleanTxt(j.org||'')}</td><td>${cleanTxt(j.expertise||'')}</td><td>${j.phone||''}</td>
-        <td>${j.status||'อนุมัติ'}</td>
+        <td>${cleanTxt(j.org||'')}</td><td>${cleanTxt(j.expertise||'')}</td><td>${qq(j.phone||'')}</td>
+        <td>${qq(j.status||'อนุมัติ')}</td>
         <td>${j.photo_url?'✅':'<span style="color:var(--bad)">ยังไม่มี</span>'}</td>
         <td style="white-space:nowrap"><button class="btn g sm" onclick="editJudge(${i})">แก้ไข</button>
           <button class="btn g sm" onclick="delJudge('${j.judge_id}')">ลบ</button></td></tr>`;
@@ -4858,8 +4862,8 @@ function subFillEntries(){
 function subPersonName(x){
   if(!x) return '';
   if(x.first_name!==undefined)
-    return [x.prefix,x.first_name,x.last_name].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
-  return [x.prefix,(x.name||x.full_name||'')].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+    return qq([x.prefix,x.first_name,x.last_name].filter(Boolean).join(' ').replace(/\s+/g,' ').trim());
+  return qq([x.prefix,(x.name||x.full_name||'')].filter(Boolean).join(' ').replace(/\s+/g,' ').trim());
 }
 /** เติมรายชื่อเดิมของทีมที่เลือก */
 function subPickEntry(){
@@ -5441,17 +5445,18 @@ let CERTCFG=null, CERTITEMS=[], CURTPL='student';
 const TYPE_TH={student:'นักเรียน',coach:'ครูผู้ฝึกสอน',judge:'คณะกรรมการตัดสิน',staff:'คณะกรรมการดำเนินงาน'};
 
 function fillCert(txt,it,cfg){
-  const map={'{ชื่อผู้รับ}':it.name||'','{โรงเรียน}':cleanTxt(it.school||''),
-    '{รายการแข่งขัน}':it.act_name||'','{ระดับชั้น}':it.level||'','{ผล}':it.medal?('เหรียญ'+it.medal).replace('เหรียญเข้าร่วม','เข้าร่วมการแข่งขัน'):'',
+  const map={'{ชื่อผู้รับ}':qq(it.name||''),'{โรงเรียน}':cleanTxt(it.school||''),
+    '{รายการแข่งขัน}':qq(it.act_name||''),'{ระดับชั้น}':qq(it.level||''),'{ผล}':it.medal?qq(('เหรียญ'+it.medal).replace('เหรียญเข้าร่วม','เข้าร่วมการแข่งขัน')):'',
     '{คะแนน}':it.total!=null?String(it.total):'','{อันดับ}':it.rank!=null?String(it.rank):'',
-    '{หน่วยงาน}':cleanTxt(it.org||it.school||''),'{หน้าที่}':it.duty||'',
+    '{หน่วยงาน}':cleanTxt(it.org||it.school||''),'{หน้าที่}':qq(it.duty||''),
     '{วันที่}':(cfg&&cfg.event_date)||'','{เลขที่}':certNo(it,cfg),
     /* โทเคนที่ตามปีการศึกษาให้อัตโนมัติ — เปลี่ยนครั้งที่/ปีแล้วเกียรติบัตรเปลี่ยนตามเอง */
     '{ชื่องาน}':eventName(),'{ครั้งที่}':String(edition()),'{ปีการศึกษา}':String(acadYear()),
     '{เขตพื้นที่}':districtName()};
   return String(txt||'').replace(/\{[^}]+\}/g,m=>map[m]!==undefined?map[m]:'');
 }
-function cleanTxt(n){ const i=String(n).indexOf('#'); return i<0?String(n):String(n).slice(0,i); }
+/* ชื่อโรงเรียน/หน่วยงานสำหรับแสดงบนหน้าเว็บ — หนีอักขระ HTML ให้เรียบร้อย */
+function cleanTxt(n){ const t=String(n==null?'':n); const i=t.indexOf('#'); return qq(i<0?t:t.slice(0,i)); }
 function certNo(it,cfg){
   const f=(cfg&&cfg.number_format)||(edition()+'/{seq:04d}');
   return f.replace(/\{seq:0(\d)d\}/,(m,w)=>String(it.seq||0).padStart(Number(w),'0'));
@@ -5611,7 +5616,7 @@ function certHTML(it,tpl,cfg){
   const bg=tpl&&tpl.bg_url;
   return `<div class="cert ${bg?'':'noimg'}" ${bg?`style="background-image:url('${imgSrc(bg)}')"`:''}>
     <div class="ln sm" style="top:30%">${fillCert(tpl.line_intro,it,cfg)}</div>
-    <div class="ln nm" style="top:${tpl.y_name||42}%">${it.name||''}</div>
+    <div class="ln nm" style="top:${tpl.y_name||42}%">${qq(it.name||'')}</div>
     <div class="ln dt" style="top:${tpl.y_detail||52}%">${fillCert(tpl.line_detail,it,cfg)}</div>
     <div class="ln sm" style="top:${tpl.y_org||60}%">${fillCert(tpl.line_org,it,cfg)}</div>
     <div class="ln sm" style="top:70%">${fillCert(tpl.line_date,it,cfg)}</div>
@@ -5674,9 +5679,9 @@ function searchCert(){
     CERTITEMS=r.items; CERTCFG=Object.assign(CERTCFG||{},{templates:r.templates,event_date:r.event_date,number_format:r.number_format});
     $('#certCount').textContent='พบ '+r.total+' ฉบับ'+(r.total>r.items.length?' (แสดง '+r.items.length+' รายการแรก)':'');
     $('#certList').innerHTML = r.items.length? r.items.map((x,i)=>`<div class="certrow">
-        <div style="flex:1"><b>${x.name}</b>
-          <div class="hint">${x.act_name? x.act_name+' · '+(x.level||'') : (x.duty||'')}${x.school? ' · '+cleanTxt(x.school):''}
-            ${x.medal? ' · <span class="pill ok">'+x.medal+'</span>':''}</div></div>
+        <div style="flex:1"><b>${qq(x.name)}</b>
+          <div class="hint">${x.act_name? qq(x.act_name)+' · '+qq(x.level||'') : qq(x.duty||'')}${x.school? ' · '+cleanTxt(x.school):''}
+            ${x.medal? ' · <span class="pill ok">'+qq(x.medal)+'</span>':''}</div></div>
         <button class="btn g sm" onclick="makeCert(${i})">ออกเกียรติบัตร</button></div>`).join('')
       : '<div style="padding:26px;text-align:center;color:var(--ink-3)">ไม่พบรายชื่อตามที่ค้นหา</div>';
   }).catch(e=>{ $('#certList').innerHTML='<div style="padding:20px">'+e.message+'</div>'; });
@@ -7128,8 +7133,8 @@ function renderEntries(){
       ent.map((e,i)=>{ const s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
         return `<tr><td class="num">${i+1}</td><td><b>${cleanName(s.school_name||e.school_smis)}</b>
           ${e.from_group?'<br><span class="pill i">ตัวแทน '+groupName(e.from_group)+' อันดับ '+e.from_rank+'</span>':''}</td>
-          <td>${(e.students||[]).map(x=>x.prefix+x.first_name+' '+x.last_name).join('<br>')||'-'}</td>
-          <td>${(e.coaches||[]).map(x=>x.prefix+x.name).join('<br>')||'-'}</td>
+          <td>${(e.students||[]).map(x=>qq((x.prefix||'')+x.first_name+' '+x.last_name)).join('<br>')||'-'}</td>
+          <td>${(e.coaches||[]).map(x=>qq((x.prefix||'')+x.name)).join('<br>')||'-'}</td>
           <td>${e.source==='district'?'โอนจากกลุ่ม':'สมัครในกลุ่ม'}</td>
           <td><span class="pill ${e.status==='ยืนยัน'?'ok':'w'}">${e.status}</span></td>
           <td style="white-space:nowrap"><button class="btn g sm" onclick="editEntry('${e.entry_id}')">แก้ไข</button>
@@ -7759,18 +7764,8 @@ async function resetPromote(group, actId, label){
 /** ชื่อโรงเรียนบางแห่งมีหมายเหตุเรียนรวมต่อท้ายด้วย # */
 function cleanName(n){
   const s=String(n||''); const i=s.indexOf('#');
-  return i<0? s : s.slice(0,i)+' <span class="pill w" title="'+s.slice(i+1)+'">เรียนรวม</span>';
+  return i<0? qq(s) : qq(s.slice(0,i))+' <span class="pill w" title="'+qq(s.slice(i+1))+'">เรียนรวม</span>';
 }
-async function doPromote(){
-  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
-  if(ME.role!=='group_admin') return alert('การโอนตัวแทนเป็นงานของผู้ดูแลกลุ่มโรงเรียน — เขตมีหน้าที่ติดตามและรีเซ็ตให้กลุ่มโอนใหม่');
-  if(SCOPE==='ALL') return alert('เลือกกลุ่มโรงเรียนที่ต้องการโอนตัวแทนก่อน (มุมขวาบน)');
-  try{ const r=await api('promoteToDistrict',{act_id:$('#prAct').value, group:SCOPE,
-        quota:$('#prQuota').value, min_medal:$('#prMin').value});
-    alert('โอนตัวแทนขึ้นระดับเขตแล้ว '+r.promoted+' ทีม (โควตา '+r.quota+')'); renderPromote();
-  }catch(e){ alert(e.message); }
-}
-
 /* ---------- ลืมรหัสผ่าน: ขอให้เขตรีเซ็ตให้ ---------- */
 function toggleForgot(){
   const b=$('#forgotBox'); b.style.display = b.style.display==='none'? '' : 'none';
@@ -8114,7 +8109,7 @@ async function trackApply(){
     const r=await api('myJudgeApplication',{ref_code:$('#ap_ref').value.trim(), phone:$('#ap_refphone').value.trim()});
     const pill={'รอพิจารณา':'w','ผ่านคุณสมบัติ':'ok','สำรอง':'i','ไม่ผ่าน':'b','บรรจุแล้ว':'ok'}[r.status]||'';
     $('#apTrack').innerHTML=`<div class="note i"><span>🔎</span><div>
-      <b>${r.full_name}</b> · ${r.org_name||''} <span class="pill ${pill}">${r.status}</span>
+      <b>${qq(r.full_name)}</b> · ${qq(r.org_name||'')} <span class="pill ${pill}">${qq(r.status)}</span>
       <div style="margin-top:8px">กิจกรรมที่สมัคร:<br>${r.choices.map(c=>'อันดับ '+c.order+' — '+c.act_name).join('<br>')}</div>
       ${r.decided_act_name? '<div style="margin-top:8px"><b>รายการที่ได้รับมอบหมาย:</b> '+r.decided_act_name+'</div>':''}
       ${r.note? '<div class="hint" style="margin-top:6px">หมายเหตุ: '+r.note+'</div>':''}
@@ -8187,23 +8182,24 @@ function drawApplications(){
   $('#jaSum').textContent = `ใบสมัครทั้งหมด ${all} ใบ · รอพิจารณา ${n('รอพิจารณา')} · ผ่าน ${n('ผ่านคุณสมบัติ')} · สำรอง ${n('สำรอง')} · ไม่ผ่าน ${n('ไม่ผ่าน')} · บรรจุแล้ว ${n('บรรจุแล้ว')}`;
   if(!items.length){ $('#jaList').innerHTML='<div class="hint" style="text-align:center;padding:26px">ยังไม่มีใบสมัครตามเงื่อนไขที่เลือก</div>'; return; }
   const pill={'รอพิจารณา':'w','ผ่านคุณสมบัติ':'ok','สำรอง':'i','ไม่ผ่าน':'b','บรรจุแล้ว':'ok'};
+  /* ข้อความทั้งหมดในใบสมัครมาจากคนนอกที่กรอกเองบนหน้าเว็บสาธารณะ — ต้องหนีอักขระก่อนแสดงเสมอ */
   $('#jaList').innerHTML = items.map(x=>`
     <div class="card" style="margin-bottom:12px"><div class="cb">
       <div class="row" style="align-items:flex-start">
         <div style="flex:1;min-width:260px">
-          <div style="font-size:17.3px;font-weight:700">${x.prefix||''}${x.full_name}
-            <span class="pill ${pill[x.status]||''}">${x.status}</span></div>
-          <div class="hint">${x.position||''} · ${x.org_name||''} ${x.group_code? '· '+groupName(x.group_code):''}</div>
-          <div class="hint">รหัส ${x.ref_code} · สมัคร ${tsTh(x.created_at)} · ${x.phone} · ${x.email||'(ไม่มีอีเมล)'}</div>
-          <div style="margin-top:8px;font-size:15.8px"><b>กลุ่มสาระ:</b> ${x.category||'-'}
-            &nbsp;·&nbsp; <b>วุฒิ:</b> ${x.education||'-'} ${x.major? '('+x.major+')':''}
-            &nbsp;·&nbsp; <b>ประสบการณ์:</b> ${x.experience_years||'-'} ปี</div>
-          ${x.past_judge? `<div class="hint">เคยเป็นกรรมการ: ${x.past_judge}</div>`:''}
-          ${x.expertise? `<div style="margin-top:6px;font-size:15.3px">${x.expertise}</div>`:''}
-          ${x.doc_url? `<div style="margin-top:6px"><a href="${x.doc_url}" target="_blank" rel="noopener">เอกสารประกอบ ↗</a></div>`:''}
-          <div style="margin-top:8px;font-size:15.8px">${x.choices.map(c=>`อันดับ ${c.order} — ${c.act_name}`).join('<br>')}</div>
-          ${x.decided_act_name? `<div style="margin-top:6px"><b>มอบหมาย:</b> ${x.decided_act_name}</div>`:''}
-          ${x.decided_by? `<div class="hint">พิจารณาโดย ${x.decided_by} ${x.decided_at||''}</div>`:''}
+          <div style="font-size:17.3px;font-weight:700">${qq(x.prefix||'')}${qq(x.full_name)}
+            <span class="pill ${pill[x.status]||''}">${qq(x.status)}</span></div>
+          <div class="hint">${qq(x.position||'')} · ${qq(x.org_name||'')} ${x.group_code? '· '+qq(groupName(x.group_code)):''}</div>
+          <div class="hint">รหัส ${qq(x.ref_code)} · สมัคร ${qq(tsTh(x.created_at))} · ${qq(x.phone)} · ${qq(x.email||'(ไม่มีอีเมล)')}</div>
+          <div style="margin-top:8px;font-size:15.8px"><b>กลุ่มสาระ:</b> ${qq(x.category||'-')}
+            &nbsp;·&nbsp; <b>วุฒิ:</b> ${qq(x.education||'-')} ${x.major? '('+qq(x.major)+')':''}
+            &nbsp;·&nbsp; <b>ประสบการณ์:</b> ${qq(x.experience_years||'-')} ปี</div>
+          ${x.past_judge? `<div class="hint">เคยเป็นกรรมการ: ${qq(x.past_judge)}</div>`:''}
+          ${x.expertise? `<div style="margin-top:6px;font-size:15.3px">${qq(x.expertise)}</div>`:''}
+          ${safeUrl(x.doc_url)? `<div style="margin-top:6px"><a href="${qq(safeUrl(x.doc_url))}" target="_blank" rel="noopener noreferrer">เอกสารประกอบ ↗</a></div>`:''}
+          <div style="margin-top:8px;font-size:15.8px">${x.choices.map(c=>`อันดับ ${qq(c.order)} — ${qq(c.act_name)}`).join('<br>')}</div>
+          ${x.decided_act_name? `<div style="margin-top:6px"><b>มอบหมาย:</b> ${qq(x.decided_act_name)}</div>`:''}
+          ${x.decided_by? `<div class="hint">พิจารณาโดย ${qq(x.decided_by)} ${qq(x.decided_at||'')}</div>`:''}
         </div>
         <div style="min-width:280px">
           <div class="fld" style="margin:0"><label>ผลการพิจารณา</label>
@@ -8214,9 +8210,9 @@ function drawApplications(){
             <select id="ac_${x.apply_id}" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;width:100%">
               ${x.choices.map(c=>`<option value="${c.act_id}" ${c.act_id===x.decided_act?'selected':''}>อันดับ ${c.order} — ${c.act_name}</option>`).join('')}</select></div>
           <div class="fld" style="margin:8px 0 0"><label>หมายเหตุถึงผู้สมัคร</label>
-            <input id="nt_${x.apply_id}" value="${(x.note||'').replace(/"/g,'&quot;')}" placeholder="เหตุผล / ข้อแนะนำ"></div>
+            <input id="nt_${x.apply_id}" value="${qq(x.note||'')}" placeholder="เหตุผล / ข้อแนะนำ"></div>
           <div class="row" style="margin-top:10px"><span class="sp"></span>
-            ${ME.role==='district_admin'? `<button class="btn g sm" onclick="delApplication('${x.apply_id}','${(x.full_name||'').replace(/'/g,'')}')">ลบใบสมัคร</button>`:''}
+            ${ME.role==='district_admin'? `<button class="btn g sm" onclick='delApplication(${JSON.stringify(String(x.apply_id))},${JSON.stringify(String(x.full_name||''))})'>ลบใบสมัคร</button>`:''}
             <button class="btn" onclick="saveReview('${x.apply_id}')">บันทึกผล</button></div>
         </div>
       </div></div></div>`).join('');
@@ -8276,9 +8272,9 @@ async function renderSelectors(cats){
     sc.innerHTML='<option value="ALL">ทุกกลุ่มสาระ</option>'+cs.map(c=>`<option>${c}</option>`).join('');
     if(cur) sc.value=cur;
     tbl($('#selTbl'),['ชื่อ-สกุล','ชื่อผู้ใช้','กลุ่มสาระ','เข้าระบบล่าสุด','จัดการ'],
-      (r.items||[]).map(x=>`<tr><td>${x.name}</td><td>${x.username}</td>
-        <td>${x.scope==='ALL'?'ทุกกลุ่มสาระ':x.scope}</td><td class="hint">${x.last_login||'-'}</td>
-        <td><button class="btn g sm" onclick="delSelector('${x.user_id}','${x.name.replace(/'/g,'')}')">ลบ</button></td></tr>`).join(''));
+      (r.items||[]).map(x=>`<tr><td>${qq(x.name)}</td><td>${qq(x.username)}</td>
+        <td>${qq(x.scope==='ALL'?'ทุกกลุ่มสาระ':x.scope)}</td><td class="hint">${qq(x.last_login||'-')}</td>
+        <td><button class="btn g sm" onclick='delSelector(${JSON.stringify(String(x.user_id))},${JSON.stringify(String(x.name||''))})'>ลบ</button></td></tr>`).join(''));
   }catch(e){ $('#selTbl').innerHTML=''; }
 }
 async function addSelector(){
@@ -8859,7 +8855,7 @@ function prtSheet(kind, act, pack, pub){
   const crit=(pack.criteria||[]).filter(c=>c.act_id===act.act_id).sort((a,b)=>a.order-b.order);
   const sc=prtSchedLine(act, pack);
   const title=`${act.act_name||''} ${act.level||''}`;
-  const stuName=s=>[s.prefix,s.first_name,s.last_name].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+  const stuName=s=>qq([s.prefix,s.first_name,s.last_name].filter(Boolean).join(' ').replace(/\s+/g,' ').trim());
   const coachName=c=>[c.prefix,c.name].filter(Boolean).join('').trim();
   const blanks=(n,cols)=>Array.from({length:Math.max(0,n)},()=>'<tr>'+'<td></td>'.repeat(cols)+'</tr>').join('');
   let body='';
