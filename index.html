@@ -7568,6 +7568,21 @@ async function confirmScoresNow(){
     } else alert(e.message);
   }
 }
+/** โหลดผลสาธารณะใหม่ แล้ววาดทุกหน้าที่ใช้ผลชุดนี้ซ้ำ
+ *  (ผลการแข่งขัน · ตารางเหรียญ · ตารางเหรียญบนหน้าแรก)
+ *  เรียกทุกครั้งหลังประกาศผลหรือถอนผล ไม่งั้นหน้าที่เปิดค้างอยู่จะยังเป็นข้อมูลเก่า */
+async function refreshPublicViews(){
+  try{ window.__PUB = await api('publicResults',{group:entryRound(), fresh:'1'}); }
+  catch(e){ return; }
+  try{ drawResults(); }catch(e){}
+  try{ drawMedals(); }catch(e){}
+  try{
+    const b=$('#rankMethodTag'); if(b) b.textContent=medalSortLabel();
+    const t=$('#homeMedals');
+    if(t) tbl(t,['อันดับ','โรงเรียน','ชนะเลิศ','รองชนะเลิศอันดับ 1','รองชนะเลิศอันดับ 2','ทอง','เงิน','ทองแดง'],
+      medalTally(window.__PUB).slice(0,8).map((m,i)=>medalRow(m,i)).join(''));
+  }catch(e){}
+}
 /** ประกาศผลจากหน้าให้คะแนนในคลิกเดียว — ยืนยัน+ล็อกคะแนน แล้วประกาศขึ้นเว็บสาธารณะ */
 async function publishFromScore(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
@@ -7596,6 +7611,7 @@ async function publishFromScore(){
     }
     const r=await api('publishResults',{act_id:actId, group: SCOPE==='ALL'?'':SCOPE});
     await scLoadLock(actId,'scLock');
+    await refreshPublicViews();          /* ให้หน้าผลการแข่งขัน/ตารางเหรียญเห็นทันที */
     alert('ประกาศผลแล้ว '+(r.published||0)+' ทีม\n\nขึ้นบน'+where+'เรียบร้อย '+
       'กดปุ่ม “พิมพ์ผลการจัดอันดับ” เพื่อออกเอกสาร');
   }catch(e){ alert(e.message); }
@@ -7629,6 +7645,7 @@ function reopenResults(){
         reason:$('#rp_why').value.trim()});
       await reloadBoot();
       await renderScore();
+      await refreshPublicViews();
       alert('ถอนผลออกจากหน้าเว็บแล้ว '+(r.withdrawn||0)+' ทีม — แก้คะแนนได้เลย\n\n'+
         'แก้เสร็จอย่าลืมกด “ประกาศผล” อีกครั้ง');
     });
@@ -7680,7 +7697,8 @@ async function publishAct(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   if(!confirm('ประกาศผลรายการนี้? หลังประกาศคะแนนจะถูกล็อกทันที')) return;
   try{ const r=await api('publishResults',{act_id:$('#pbAct').value, group: SCOPE==='ALL'?'':SCOPE});
-    alert('ประกาศผลแล้ว '+r.published+' ทีม'); renderPublish(); renderHome();
+    renderPublish(); await refreshPublicViews();
+    alert('ประกาศผลแล้ว '+r.published+' ทีม');
   }catch(e){ alert(e.message); }
 }
 
