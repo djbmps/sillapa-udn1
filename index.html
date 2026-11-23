@@ -9508,11 +9508,11 @@ async function smOpenToggle(){
 /* ---------- สนามแข่งขัน ---------- */
 function drawVenues(){
   $('#smVCount').textContent = SM.venues.length? SM.venues.length+' สนาม' : '';
-  tbl($('#smVTbl'),['รหัส','ชื่อสนามแข่งขัน','ห้อง/อาคาร','ที่อยู่','ผู้ประสานงาน','ใช้ในตาราง',''],
+  tbl($('#smVTbl'),['รหัส','ชื่อสนามแข่งขัน','ผู้ประสานงาน','ใช้ในตาราง (กิจกรรม)',''],
     SM.venues.map(v=>{
       const used=SM.schedule.filter(s=>String(s.venue_id)===String(v.venue_id)).length;
-      return `<tr><td>${v.venue_id}</td><td><b>${v.name||''}</b></td><td>${v.room||''}</td>
-        <td>${v.address||''}</td><td>${[v.contact,v.phone].filter(Boolean).join(' · ')}</td>
+      return `<tr><td>${v.venue_id}</td><td><b>${v.name||''}</b></td>
+        <td>${[v.contact,v.phone].filter(Boolean).join(' · ')}</td>
         <td class="num">${used||'—'}</td>
         <td style="white-space:nowrap"><button class="btn g sm" onclick="editVenue('${v.venue_id}')">แก้ไข</button>
           <button class="btn g sm" onclick="delVenue('${v.venue_id}')">ลบ</button></td></tr>`;
