@@ -5708,6 +5708,9 @@ async function printAccounts(){
         <tr><th>รหัสผ่าน</th><td><b>${cleanTxt(x.pass_code)}</b></td></tr>
         <tr><th>เว็บไซต์</th><td>${cleanTxt(site)}</td></tr></table>
       <div class="sf">โปรดเก็บรักษาเป็นความลับ · เปลี่ยนรหัสผ่านได้ที่เมนูบัญชีของท่าน</div></div>`;
+    /* แบ่งเป็นหน้า หน้าละ 6 โรงเรียน */
+    const PER=6, pages=[];
+    for(let i=0;i<items.length;i+=PER) pages.push(items.slice(i,i+PER));
     const w=window.open('','_blank','width=960,height=760');
     if(!w) return alert('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ — กรุณาอนุญาต popup แล้วลองใหม่');
     w.document.write(`<!doctype html><meta charset="utf-8">
@@ -5715,11 +5718,17 @@ async function printAccounts(){
       <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
       <style>
         *{box-sizing:border-box}
-        body{font-family:"IBM Plex Sans Thai",sans-serif;margin:0;padding:14mm 10mm;color:#1a1a1a}
-        h1{font-size:19px;margin:0 0 3px}
-        .sub{font-size:13.5px;color:#555;margin-bottom:14px}
-        .wrap{display:grid;grid-template-columns:1fr 1fr;gap:7mm}
-        .slip{border:1px dashed #999;border-radius:6px;padding:7mm 6mm;break-inside:avoid;page-break-inside:avoid}
+        @page{size:A4 portrait;margin:10mm 9mm}
+        body{font-family:"IBM Plex Sans Thai",sans-serif;margin:0;padding:0;color:#1a1a1a}
+        /* หน้าละ 6 โรงเรียน — 2 คอลัมน์ × 3 แถว ขนาดเท่ากันทุกใบ ตัดตามเส้นประได้พอดี */
+        .pg{page-break-after:always;break-after:page}
+        .pg:last-child{page-break-after:auto;break-after:auto}
+        .pghd{font-size:13px;font-weight:700;color:#333;margin-bottom:4mm;
+              border-bottom:1px solid #ddd;padding-bottom:2mm;display:flex;justify-content:space-between;gap:8mm}
+        .pghd span{font-weight:400;color:#666;white-space:nowrap}
+        .wrap{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:80mm;gap:6mm}
+        .slip{border:1px dashed #999;border-radius:6px;padding:7mm 6mm;overflow:hidden;
+              break-inside:avoid;page-break-inside:avoid}
         .sh{font-size:11.5px;color:#666}
         .sn{font-size:16px;font-weight:700;margin-top:3px;line-height:1.35}
         .sw{font-size:12.5px;color:#555;margin-bottom:7px}
@@ -5728,12 +5737,15 @@ async function printAccounts(){
         .st td{padding:3px 0}
         .st b{font-family:ui-monospace,Consolas,monospace;font-size:16.5px;letter-spacing:.6px}
         .sf{font-size:11px;color:#777;margin-top:7px;border-top:1px solid #eee;padding-top:5px}
-        @media print{ body{padding:10mm 8mm} }
+        @media screen{ body{padding:10mm}
+          .pg{margin:0 auto 10mm;max-width:192mm;background:#fff;
+              box-shadow:0 2px 12px rgba(0,0,0,.14);padding:10mm 9mm;border-radius:4px} }
       </style>
-      <h1>บัญชีผู้ใช้และรหัสผ่าน · ${cleanTxt(where)}</h1>
-      <div class="sub">${cleanTxt(head)} · พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')} · ${items.length} บัญชี
-        — เอกสารลับ ตัดตามเส้นประแล้วส่งให้แต่ละโรงเรียน</div>
-      <div class="wrap">${items.map(slip).join('')}</div>`);
+      ${pages.map((grp,pi)=>`<section class="pg">
+          <div class="pghd">บัญชีผู้ใช้และรหัสผ่าน · ${cleanTxt(where)}
+            <span>${cleanTxt(head)} · ${new Date().toLocaleDateString('th-TH')} · หน้า ${pi+1}/${pages.length}</span></div>
+          <div class="wrap">${grp.map(slip).join('')}</div>
+        </section>`).join('')}`);
     w.document.close();
     setTimeout(()=>{ w.focus(); w.print(); }, 700);
     $('#acMsg').innerHTML='<div class="note w"><span>🔒</span><div><b>เอกสารนี้มีรหัสผ่าน</b> — '+
