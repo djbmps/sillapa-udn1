@@ -738,6 +738,40 @@ th{background:linear-gradient(180deg,#FDF4F8,#F6E7EF);
   color-mix(in srgb,var(--gc,#A00040) 62%, #0B0409) 0%, var(--gc,#A00040) 100%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.26), 0 3px 10px rgba(22,0,11,.20)}
 
+/* ---- ข่าวเด่น (ปักหมุด) — ภาพใหญ่ ตัวหนังสือวางทับบนภาพ ---- */
+.newsheros{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px}
+.newsheros.two{grid-template-columns:1fr 1fr}
+.newshero{position:relative;overflow:hidden;border-radius:14px;cursor:pointer;
+  min-height:300px;display:flex;align-items:flex-end;
+  background:#2A2320 center/cover no-repeat;
+  box-shadow:0 1px 3px rgba(0,0,0,.14), 0 10px 26px rgba(0,0,0,.14);
+  transition:transform .14s, box-shadow .16s}
+.newsheros.two .newshero{min-height:240px}
+.newshero:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.20), 0 16px 38px rgba(0,0,0,.20)}
+/* ไม่มีภาพ — ใช้พื้นสีประจำงานแทน จะได้ไม่เป็นกล่องว่าง */
+.newshero.noimg{background:var(--grad-dark,#2A0012)}
+.newshero .nhicon{position:absolute;right:18px;top:14px;font-size:70px;opacity:.14;z-index:1}
+.newshero .nhshade{position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(8,6,5,.05) 0%,rgba(8,6,5,.40) 52%,rgba(8,6,5,.88) 100%)}
+.newshero .nhin{position:relative;z-index:2;padding:18px 20px 17px;color:#fff;width:100%}
+.newshero .nhtag{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:13.3px;color:rgba(255,255,255,.90);margin-bottom:7px}
+.newshero h3{font-size:21.3px;line-height:1.35;margin:0;color:#fff;
+  text-shadow:0 2px 10px rgba(0,0,0,.45)}
+.newsheros.two .newshero h3{font-size:18.3px}
+.newshero p{margin:7px 0 0;font-size:14.3px;color:rgba(255,255,255,.90);line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  text-shadow:0 1px 6px rgba(0,0,0,.40)}
+.newsheros.two .newshero p{-webkit-line-clamp:2;font-size:13.8px}
+@media(max-width:860px){
+  .newsheros.two{grid-template-columns:1fr}
+  .newshero,.newsheros.two .newshero{min-height:210px}
+  .newshero h3,.newsheros.two .newshero h3{font-size:18.3px}
+}
+@media print{ .newshero{min-height:0;background:#fff!important;box-shadow:none!important}
+  .newshero .nhshade,.newshero .nhicon{display:none}
+  .newshero .nhin,.newshero h3,.newshero p,.newshero .nhtag{color:#222!important;text-shadow:none!important} }
+
 /* ---- ป้ายสถานะ ---- */
 .pill.i{background:linear-gradient(135deg,var(--pri-soft),#fff)}
 /* ---- หน้าเข้าสู่ระบบ ---- */
@@ -4110,7 +4144,7 @@ function renderPubNav(){
 function renderNews(){
   api('listNews',{scope:SCOPE==='ALL'?'':SCOPE}).then(rows=>{
     $('#newsSub').textContent=rows.length+' เรื่อง · '+(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE));
-    $('#newsList').innerHTML = rows.length? rows.map((n,i)=>newsCard(n,i)).join('')
+    $('#newsList').innerHTML = rows.length? newsList(rows)
       : '<div class="note i"><span>📭</span><div>ยังไม่มีข่าวประชาสัมพันธ์ — ข่าวจากเขตและจากกลุ่มจะแสดงที่นี่</div></div>';
     window.__NEWS=rows;
   });
@@ -4120,6 +4154,35 @@ function renderNews(){
 function dstr(v){
   const t=String(v==null?'':v).match(/^(\d{4})-(\d{2})-(\d{2})/);
   return t? t[0] : String(v==null?'':v);
+}
+/** วาดรายการข่าวทั้งชุด
+ *  ข่าวที่ "ปักหมุด" จะขึ้นเป็นภาพใหญ่ ปักหมุดได้สูงสุด 2 เรื่อง (เรียงเคียงกัน)
+ *  ถ้ายังไม่ได้ปักหมุดเรื่องใดเลย ใช้ข่าวล่าสุดเป็นข่าวเด่นแทน 1 เรื่อง
+ *  ปักหมุดเกิน 2 เรื่อง ส่วนที่เกินจะอยู่ในรายการแถวเล็กพร้อมป้าย “ปักหมุด” ตามปกติ */
+function newsList(rows){
+  if(!rows||!rows.length) return '';
+  let hero=rows.filter(n=>String(n.pin||'').toUpperCase()==='Y').slice(0,2);
+  if(!hero.length) hero=[rows[0]];
+  const inHero=new Set(hero);
+  const rest=rows.filter(n=>!inHero.has(n));
+  const at=n=>rows.indexOf(n);
+  return `<div class="newsheros${hero.length>1?' two':''}">`
+    + hero.map(n=>newsHero(n,at(n))).join('') + `</div>`
+    + rest.map(n=>newsCard(n,at(n))).join('');
+}
+/** ข่าวเด่น — ภาพใหญ่เต็มความกว้าง ตัวหนังสือวางทับบนภาพ */
+function newsHero(n,i){
+  const img=n.image? imgSrc(n.image) : '';
+  return `<div class="newshero${img?'':' noimg'}" onclick="openNews(${i})"
+      ${img?`style="background-image:url('${img}')"`:''}>
+    ${img?'':'<div class="nhicon">📰</div>'}
+    <div class="nhshade"></div>
+    <div class="nhin">
+      <div class="nhtag">${n.pin==='Y'?'<span class="pill i">ปักหมุด</span> ':''}
+        <span>${qq(dstr(n.date))} · ${n.scope==='ALL'?'ประกาศจากเขต':'ข่าวของ '+qq(groupName(n.scope))}</span></div>
+      <h3>${qq(n.title)}</h3>
+      <p>${qq((n.body||'').slice(0,160))}</p>
+    </div></div>`;
 }
 function newsCard(n,i){
   return `<div class="newscard" onclick="openNews(${i})">
@@ -4451,7 +4514,10 @@ function editNews(id){
        <div id="n_imgprev" style="margin-top:8px"></div></div>
      <div class="fld"><label>รายละเอียด</label>
        <textarea id="n_body" rows="7" style="resize:vertical">${n.body||''}</textarea></div>
-     <label style="font-size:14.3px"><input type="checkbox" id="n_pin" ${n.pin==='Y'?'checked':''}> ปักหมุดไว้บนสุด</label>`,
+     <label style="font-size:14.3px"><input type="checkbox" id="n_pin" ${n.pin==='Y'?'checked':''}> ปักหมุดไว้บนสุด</label>
+     <div class="hint" style="margin-top:4px">ข่าวที่ปักหมุดจะขึ้นเป็น<b>ภาพใหญ่</b>บนหน้าแรกและหน้าข่าว — ปักได้สูงสุด 2 เรื่อง
+       ถ้าปักเกิน 2 เรื่อง ส่วนที่เกินจะอยู่ในรายการด้านล่างพร้อมป้าย “ปักหมุด”
+       <br>ถ้าไม่ปักหมุดเลย ระบบจะใช้ข่าวล่าสุด 1 เรื่องเป็นภาพใหญ่ให้เอง · แนะนำภาพแนวนอน กว้างอย่างน้อย 1200 พิกเซล</div>`,
     async()=>{
       const o={id:id||'', title:$('#n_title').value.trim(), date:dateSelVal('n_date'),
         scope:$('#n_scope').value, image:$('#n_image').value.trim(),
@@ -6968,7 +7034,7 @@ function renderHome(){
     if(wrap) wrap.style.display='block';
     const cnt=$('#homeNewsCount'); if(cnt) cnt.textContent = rows.length? rows.length+' เรื่อง' : '';
     $('#homeNews').innerHTML = rows.length
-      ? rows.map((n,i)=>newsCard(n,i)).join('')
+      ? newsList(rows)
       : `<div class="note i"><span>📭</span><div>ยังไม่มีข่าวประชาสัมพันธ์ — ข่าวที่เพิ่มจะขึ้นตรงนี้เป็นอันดับแรกของหน้าแรก
          <div style="margin-top:9px"><button class="btn sm" onclick="go('newsmgr')">📣 ไปเพิ่มข่าว</button></div></div></div>`;
   }).catch(()=>{ const w=$('#homeNewsWrap'); if(w) w.style.display='none'; });
