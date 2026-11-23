@@ -1055,7 +1055,9 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       </div></div>
 
       <div class="ng" data-sec="doc"><span class="ngh" onclick="togSec(this)">พิมพ์เอกสาร &amp; เกียรติบัตร<i class="cv">▾</i></span><div class="ngb">
-        <button class="nv" data-p="print" data-perm="print"><i>🖨️</i>พิมพ์เอกสารการแข่งขัน</button>
+        <!-- เอกสารการแข่งขันเป็นงานของกลุ่มโรงเรียน/เขต — โรงเรียนไม่ต้องพิมพ์เอง -->
+        <button class="nv" data-p="print" data-role="district_admin,group_admin" data-perm="print"><i>🖨️</i>พิมพ์เอกสารการแข่งขัน</button>
+        <button class="nv" data-p="cert" data-role="school"><i>🎖️</i>ดาวน์โหลดเกียรติบัตร</button>
         <button class="nv" data-p="certadm" data-role="district_admin,group_admin" data-perm="certadm"><i>🎖️</i>ระบบเกียรติบัตร</button>
       </div></div>
 
@@ -7203,6 +7205,9 @@ function go(p){
   if(isAdminPage(p) && !ME){ p='home'; VIEW='public'; }   /* ลิงก์เก่าของหน้าหลังบ้าน → กลับหน้าแรก (ไม่เด้งหน้าเข้าสู่ระบบ) */
   if(p==='setup' && ME && ME.role!=='district_admin'){ p='dash'; }
   if(p==='apply' && SCOPE!=='ALL') p='home';   /* สมัครกรรมการตัดสิน มีเฉพาะเว็บระดับเขต */
+  /* เอกสารการแข่งขันเป็นงานของกลุ่มโรงเรียนและเขต โรงเรียนพิมพ์ได้เฉพาะเกียรติบัตร */
+  if(p==='print' && ME && ME.role!=='district_admin' && ME.role!=='group_admin'){
+    p = (ME.role==='school') ? 'cert' : 'dash'; }
   if(ME && ME.role==='selector' && isAdminPage(p) && p!=='judgeapp') p='judgeapp';
   /* กันคนที่ไม่มีสิทธิ์เปิดหน้านั้น แม้จะพิมพ์ลิงก์เข้ามาเอง */
   if(ME && (ME.role==='district_admin'||ME.role==='group_admin')){
