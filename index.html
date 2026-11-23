@@ -4639,9 +4639,10 @@ async function saveSite(){
 /* ---------- หลังบ้าน: จัดการข่าว & เอกสาร ---------- */
 function renderNewsMgr(){
   $('#nmSub').textContent = SCOPE==='ALL'
-    ? 'ข่าวของเขตแสดงบนหน้าเว็บเขตและทุกกลุ่มโรงเรียน'
+    ? 'ข่าวของเขตแสดงบนหน้าเว็บเขตและทุกกลุ่มโรงเรียน · หน้านี้แสดงข่าวของกลุ่มด้วยเพื่อกำกับดูแล แต่หน้าเว็บเขตจะไม่แสดงข่าวของกลุ่ม'
     : 'ข่าวของ '+groupName(SCOPE)+' แสดงเฉพาะเว็บกลุ่มนี้ (ข่าวจากเขตจะไหลลงมาแสดงด้วย)';
-  api('listNews',{scope:SCOPE==='ALL'?'':SCOPE}).then(rows=>{
+  const seeAll = (SCOPE==='ALL' && ME && ME.role==='district_admin') ? 'Y' : '';
+  api('listNews',{scope:SCOPE==='ALL'?'':SCOPE, all:seeAll}).then(rows=>{
     window.__NEWS=rows;
     tbl($('#nmTbl'),['วันที่','หัวข้อ','ขอบเขต','ปักหมุด','จัดการ'],
       rows.map((n,i)=>`<tr><td style="width:110px;color:var(--ink-3)">${dstr(n.date)}</td>
