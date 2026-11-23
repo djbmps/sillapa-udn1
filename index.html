@@ -4710,8 +4710,8 @@ async function saveSite(){
 /* ---------- หลังบ้าน: จัดการข่าว & เอกสาร ---------- */
 function renderNewsMgr(){
   $('#nmSub').textContent = SCOPE==='ALL' ? 'ระดับเขต' : groupName(SCOPE);
-  const seeAll = (SCOPE==='ALL' && ME && ME.role==='district_admin') ? 'Y' : '';
-  api('listNews',{scope:SCOPE==='ALL'?'':SCOPE, all:seeAll}).then(rows=>{
+  /* หลังบ้าน: เห็นเฉพาะข่าวของขอบเขตที่กำลังดูอยู่ — เขตเห็นข่าวเขต กลุ่มเห็นข่าวกลุ่มตนเอง */
+  api('listNews',{scope:SCOPE==='ALL'?'':SCOPE, only:'Y'}).then(rows=>{
     window.__NEWS=rows;
     tbl($('#nmTbl'),['วันที่','หัวข้อ','ขอบเขต','ปักหมุด','จัดการ'],
       rows.map((n,i)=>`<tr><td style="width:110px;color:var(--ink-3)">${dstr(n.date)}</td>
