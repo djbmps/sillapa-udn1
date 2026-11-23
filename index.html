@@ -1291,8 +1291,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
               <div class="fld" style="margin:0;flex:1;min-width:240px"><label>ข้อความที่แสดงเมื่อยังปิดอยู่</label>
                 <input id="pw_note" placeholder="เช่น จะเปิดรับโอนตัวแทนวันที่ 20 ต.ค. 2569"></div>
             </div>
-            <div class="row" style="margin-top:12px"><span class="hint" style="flex:1">
-              วันที่ใช้รูปแบบ พ.ศ. ปี-เดือน-วัน เช่น 2569-10-20 · เว้นว่างไว้ = ไม่จำกัดวัน</span>
+            <div class="row" style="margin-top:12px">
               <button class="btn" onclick="savePromoteWin()">บันทึกช่วงเวลา</button></div>
           </div>
         </div>
@@ -1311,8 +1310,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
 
     <!-- ---------- ตัวแทนเข้าแข่งระดับภาค (เฉพาะระดับเขต) ---------- -->
     <section class="page" id="p-region">
-      <div class="hd"><div><h2>ตัวแทนเข้าภาค</h2>
-        <p>ทีมที่ชนะเลิศและได้เหรียญทองในการแข่งขันระดับเขต คือตัวแทนของ สพป.อุดรธานี เขต 1 เข้าแข่งขันระดับภาค</p></div>
+      <div class="hd"><div><h2>ตัวแทนเข้าภาค</h2></div>
         <span class="sp"></span>
         <button class="btn g" onclick="loadRegionReps()">⟳ รีเฟรช</button>
         <button class="btn g" onclick="exportCsv('region')">⬇ CSV</button>
@@ -1331,7 +1329,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
     <!-- ---------- สมัครเป็นกรรมการตัดสิน (หน้าสาธารณะ) ---------- -->
     <section class="page" id="p-apply">
       <div class="hd"><div><h2>สมัครเป็นคณะกรรมการตัดสิน</h2>
-        <p>เปิดรับครู บุคลากรทางการศึกษา และผู้ทรงคุณวุฒิ ที่ประสงค์เป็นกรรมการตัดสินการแข่งขัน · เลือกกิจกรรมได้ 3 อันดับ</p></div></div>
+        </div></div>
 
       <div id="apWin" style="margin-bottom:13px"><div class="note i"><span>⏳</span><div>กำลังตรวจสอบสถานะการรับสมัคร…</div></div></div>
 
@@ -1415,14 +1413,14 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <div class="fld" style="margin:0;flex:1;min-width:240px"><label>ข้อความประกาศ / คุณสมบัติผู้สมัคร</label>
               <input id="ja_note" placeholder="เช่น รับครูผู้สอนที่มีประสบการณ์ไม่น้อยกว่า 3 ปี"></div>
           </div>
-          <div class="row" style="margin-top:12px"><span class="hint" style="flex:1">วันที่ใช้รูปแบบ พ.ศ. ปี-เดือน-วัน เช่น 2569-10-20 · เว้นว่าง = ไม่จำกัดวัน</span>
+          <div class="row" style="margin-top:12px">
             <button class="btn" onclick="saveApplyWin()">บันทึกช่วงเวลา</button></div>
         </div>
       </div>
 
       <div class="card" id="jaSelCard" style="margin-bottom:14px">
         <div class="ch"><h3>คณะกรรมการคัดเลือก (รายกลุ่มสาระ)</h3><span class="sp"></span>
-          <span class="hint">ผู้ดูแลหลักของเขตเป็นผู้เพิ่ม · แต่ละท่านเห็นเฉพาะใบสมัครในกลุ่มสาระของตน</span></div>
+          </div>
         <div class="cb">
           <div class="row">
             <div class="fld" style="margin:0;width:150px"><label>ชื่อผู้ใช้</label><input id="sel_user" placeholder="sel-thai"></div>
@@ -1477,7 +1475,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn g sm" onclick="prtPreset('all')">เลือกทั้งหมด</button>
         <button class="btn g sm" onclick="prtPreset('none')">ล้าง</button></div>
         <div class="cb"><div id="prtDocs" class="grid g2"></div>
-          <p class="hint" style="margin-top:10px">ชุดมาตรฐานที่เจ้าหน้าที่ใส่ซองให้กรรมการ = ใบปะหน้าซอง + DOC.1 + DOC.2 + DOC.3 + DOC.4</p>
+          
         </div></div>
 
       <div class="row noprint" style="margin-bottom:14px">
@@ -1552,7 +1550,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           <div class="fld"><label>ข้อมูลติดต่อ (แสดงท้ายเว็บ)</label>
             <input id="st_contact" placeholder="กลุ่มส่งเสริมการจัดการศึกษา โทร. 0-4222-xxxx"></div>
           <div class="fld" style="margin-bottom:4px"><label>วันที่จัดการแข่งขัน</label>
-            <div class="hint">ใช้แสดงบนหน้าเว็บสาธารณะ เช่น “แข่งขันระหว่างวันที่ 1 – 4 มีนาคม 2570”</div></div>
+            </div>
           <div class="grid g2" id="fld_dates">
             <div class="fld"><label>ตั้งแต่วันที่</label><div id="st_open_at_wrap"></div></div>
             <div class="fld"><label>ถึงวันที่</label><div id="st_close_at_wrap"></div></div>
@@ -1772,8 +1770,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         </div></div>
 
       <div class="card"><div class="ch"><h3>เกียรติบัตร</h3><span class="sp"></span><span id="pmCertState"></span></div>
-        <div class="cb"><div class="row"><span class="hint" style="flex:1">
-          การเปิด-ปิดดาวน์โหลดเกียรติบัตรตั้งค่าอยู่ที่หน้า “ระบบเกียรติบัตร” พร้อมกับพื้นหลังและข้อความ</span>
+        <div class="cb"><div class="row">
           <button class="btn g" onclick="go('certadm')">ไปหน้าระบบเกียรติบัตร →</button></div></div></div>
     </section>
 
@@ -1798,8 +1795,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
                      style="text-transform:uppercase"></div>
             <button class="btn" onclick="subLookup()">ตรวจสอบ</button>
             <div id="subFindOut" style="margin-top:12px"></div>
-            <p class="hint" style="margin-top:10px">กรรมการหน้างานสแกน QR บนใบอนุญาตเปลี่ยนตัว
-              หรือกรอกเลขที่คำขอในช่องนี้ ก็ตรวจสอบได้ทันทีว่าทีมนี้เปลี่ยนตัวถูกต้องหรือไม่</p>
+            
           </div></div>
       </div>
       <div class="card"><div class="ch"><h3>สรุปคำขอเปลี่ยนตัวในระบบ</h3></div>
@@ -1846,7 +1842,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           <div class="fld"><label>หลักฐานประกอบ (ใบรับรองแพทย์ / หนังสือโรงเรียน ฯลฯ)</label>
             <div class="row" style="gap:8px">
               <button type="button" class="btn g sm" id="sb_up" onclick="subPickDoc()">📎 แนบไฟล์ / ถ่ายรูป</button>
-              <span class="hint" id="sb_docmsg">รองรับรูปถ่ายจากมือถือ ระบบย่อขนาดให้อัตโนมัติ</span></div>
+              <span class="hint" id="sb_docmsg"></span></div>
             <input id="sb_doc" placeholder="หรือวางลิงก์ไฟล์หลักฐานที่นี่" style="margin-top:7px" oninput="subDocPreview()">
             <div id="sb_docprev" style="margin-top:8px"></div></div>
 
@@ -1861,7 +1857,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
                 เซ็นชื่อในกรอบด้านล่าง (ใช้นิ้วบนมือถือ หรือเมาส์บนคอมพิวเตอร์)</label>
               <div class="sigbox"><canvas id="sb_sig" width="620" height="180"></canvas></div>
               <div class="row" style="margin-top:7px"><button type="button" class="btn g sm" onclick="sigClear('sb_sig')">ล้างลายเซ็น</button>
-                <span class="hint">ระบบจะบันทึกวันเวลาและเลขที่คำขอกำกับลายมือชื่อไว้เป็นหลักฐาน</span></div>
+                </div>
             </div></div>
 
           <div class="row" style="margin-top:14px">
@@ -2008,7 +2004,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div class="hd"><div><h2>ปีการศึกษา · สำรองข้อมูล · ล้างผลการแข่งขัน</h2><p id="ssSub"></p></div></div>
 
       <div class="card" id="ssCfgCard" style="margin-bottom:14px"><div class="ch"><h3>① ข้อมูลงานและปีการศึกษา</h3>
-        <span class="sp"></span><span class="hint">แก้ได้เฉพาะผู้ดูแลเขต · มีผลกับทุกกลุ่มทันที</span></div>
+        <span class="sp"></span></div>
         <div class="cb">
           <div class="grid g3">
             <div class="fld"><label>ครั้งที่</label><input id="ss_edition" type="number" oninput="ssName()"></div>
@@ -2021,14 +2017,12 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <div class="fld"><label>วันที่จัดการแข่งขัน — ตั้งแต่วันที่</label><div id="ss_open_wrap"></div></div>
             <div class="fld"><label>ถึงวันที่</label><div id="ss_close_wrap"></div></div>
             <div class="fld"><label>เส้นตายกลุ่มส่งตัวแทนเข้าเขต</label>
-              <div class="hint" style="padding-top:8px">ตั้งที่หน้า <b>ตัวแทนเข้าภาค/เขต</b> →
-                ช่วงเวลารับโอนตัวแทน (ระบบปิดรับโอนให้อัตโนมัติเมื่อเลยกำหนด)</div></div>
+              </div>
           </div>
           <div class="fld"><label>รูปแบบเลขที่เกียรติบัตร</label>
-            <div class="hint">ตั้งที่หน้า <b>ระบบเกียรติบัตร</b> — เขตตั้งรูปแบบของเขต
-              และแต่ละกลุ่มโรงเรียนตั้งรูปแบบของกลุ่มตนเองได้</div></div>
+            </div>
           <div class="row"><button class="btn" onclick="saveSeason()">บันทึกข้อมูลงาน</button>
-            <span class="hint">ชื่องาน ครั้งที่ และปีการศึกษา จะเปลี่ยนทั้งหน้าเว็บสาธารณะ เอกสารพิมพ์ และเกียรติบัตร</span></div>
+            </div>
         </div></div>
 
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>② สำรองข้อมูลก่อนล้างเสมอ</h3>
@@ -2143,7 +2137,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
 
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>จำนวนเกียรติบัตรที่ออกได้ตอนนี้</h3>
         <span class="sp"></span><button class="btn g sm" onclick="countCerts()">↻ นับใหม่</button></div>
-        <div class="cb"><div class="grid g4" id="caCount"><div class="hint">กด “นับใหม่” เพื่อดึงจากผลการแข่งขันที่ประกาศแล้ว</div></div></div></div>
+        <div class="cb"><div class="grid g4" id="caCount"></div></div></div>
 
       
     </section>
@@ -2209,7 +2203,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
 
     <!-- ---------- ตั้งค่า ---------- -->
     <section class="page" id="p-setup">
-      <div class="hd"><div><h2>ตั้งค่าเชื่อมฐานข้อมูล</h2><p>ระบบนี้ใช้ Google Sheets เป็นฐานข้อมูล และ Google Apps Script เป็นตัวกลาง</p></div></div>
+      <div class="hd"><div><h2>ตั้งค่าเชื่อมฐานข้อมูล</h2></div></div>
       <div class="grid g2">
         <div class="card"><div class="ch"><h3>ที่อยู่ API (Apps Script Web App)</h3></div><div class="cb">
           <div class="fld"><label>URL ที่ได้จากการ Deploy</label>
@@ -2217,8 +2211,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           <div class="row"><button class="btn" onclick="saveApi()">บันทึกและเชื่อมต่อ</button>
             <button class="btn g" onclick="clearApi()">ใช้โหมดตัวอย่าง (ออฟไลน์)</button></div>
           <div id="apiMsg" style="margin-top:12px"></div>
-          <p class="hint" style="margin-top:12px">ค่านี้เก็บไว้ในเครื่องของท่านเอง (localStorage) ไม่ได้ส่งไปไหน
-            — ถ้าต้องการฝังถาวรให้แก้ค่า <code>API_URL</code> ที่ต้นไฟล์ index.html แล้ว push ขึ้น GitHub</p>
+          
         </div></div>
         <div class="card"><div class="ch"><h3>สถานะระบบ</h3></div><div class="cb" id="sysInfo"></div></div>
       </div>
@@ -4507,10 +4500,7 @@ function editRuleDoc(cat){
   const label = cat==='ALL' ? 'ไฟล์ทั้งเล่ม (ทุกกลุ่มสาระ)' : cat;
   const defTitle = d.title || ('เกณฑ์การแข่งขัน '+(cat==='ALL'?'(ทั้งเล่ม)':cat));
   openModal('ไฟล์เกณฑ์ — '+label,
-    `<div class="note i" style="margin-bottom:12px"><span>📘</span><div>
-       อัปโหลดไฟล์ PDF เข้าระบบได้ไม่เกิน <b>20 MB</b> ระบบเก็บให้ใน Google Drive ของเขตและเปิดสิทธิ์ให้คนทั่วไปอ่านได้เอง<br>
-       ถ้าไฟล์ใหญ่กว่านั้น ให้อัปขึ้น Google Drive เองแล้ววางลิงก์ในช่องล่าง
-       (ตั้งค่าแชร์เป็น <b>ผู้ที่มีลิงก์ · ผู้อ่าน</b> ด้วยนะคะ)</div></div>
+    `
      <div class="fld"><label>ชื่อเอกสาร</label><input id="rd_title" value="${qq(defTitle)}"></div>
      <div class="fld"><label>ไฟล์ PDF</label>
        <div class="updrop" id="rdDrop"><b>📤 คลิกเพื่อเลือกไฟล์ PDF หรือลากไฟล์มาวางตรงนี้</b>
@@ -4519,7 +4509,7 @@ function editRuleDoc(cat){
        <div class="hint" id="rdState" style="margin-top:7px">${d.url?'ไฟล์ปัจจุบัน'+(d.size_kb?' · '+kbStr(d.size_kb):''):''}</div></div>
      <div class="fld"><label>หรือวางลิงก์ไฟล์เอง</label>
        <input id="rd_url" value="${qq(d.url||'')}" placeholder="https://drive.google.com/file/d/…"></div>
-     <div class="fld"><label>หมายเหตุ <span class="hint">(แสดงใต้ชื่อในหน้าสาธารณะ เว้นว่างได้)</span></label>
+     <div class="fld"><label>หมายเหตุ </label>
        <input id="rd_note" value="${qq(d.note||'')}" placeholder="เช่น ฉบับปรับปรุง 15 ต.ค. 2569"></div>`,
     async()=>{
       const inp=$('#rd_url'), url=inp.value.trim();
@@ -4557,7 +4547,7 @@ function bindPdfUploader(dropId,inputId,barId,stateId,cat){
         filename:'เกณฑ์-'+(cat==='ALL'?'ทั้งเล่ม':cat)});
       inp.value=r.url; inp.dataset.fid=r.id||''; inp.dataset.kb=r.size_kb||0;
       st.innerHTML='<b style="color:var(--ok)">อัปโหลดแล้ว</b> · '+kbStr(r.size_kb)+' · '+qq(file.name)+
-        ' <span class="hint">— กด “บันทึก” เพื่อนำขึ้นหน้าเว็บ</span>';
+        ' ';
     }catch(e){ st.textContent=''; alert('อัปโหลดไม่สำเร็จ: '+e.message); }
     $('#'+barId).classList.remove('on');
   };
@@ -4657,12 +4647,12 @@ function editNews(id){
          <select id="n_scope" ${canScope?'':'disabled'}>
            <option value="ALL" ${n.scope==='ALL'?'selected':''}>ทั้งเขต (แสดงทุกกลุ่ม)</option>
            ${(DB.groups||[]).map(g=>`<option value="${g.group_code}" ${n.scope===g.group_code?'selected':''}>เฉพาะ ${g.group_name}</option>`).join('')}
-         </select>${canScope?'':'<div class="hint">ผู้ดูแลกลุ่มโพสต์ได้เฉพาะเว็บกลุ่มตนเอง</div>'}</div>
+         </select>${canScope?'':''}</div>
      </div>
      <div class="fld"><label>รูปประกอบข่าว (ไม่บังคับ)</label>
        <div class="row" style="gap:8px">
          <button type="button" class="btn g sm" id="n_up" onclick="newsPickImage()">📷 อัปโหลดรูปจากเครื่อง</button>
-         <span class="hint" id="n_imgmsg">ย่อขนาดให้อัตโนมัติ แล้วเก็บไว้ใน Google Drive ของเขต</span>
+         <span class="hint" id="n_imgmsg"></span>
        </div>
        <input id="n_image" value="${(n.image||'').replace(/"/g,'&quot;')}" placeholder="หรือวางลิงก์รูปที่นี่"
               oninput="newsImgPreview()" style="margin-top:7px">
@@ -4732,7 +4722,7 @@ function editDoc(id){
       </select></div></div>
      <div class="fld"><label>ชื่อเอกสาร</label><input id="d_title" value="${(d.title||'').replace(/"/g,'&quot;')}"></div>
      <div class="fld"><label>ลิงก์ไฟล์ (URL)</label><input id="d_url" value="${d.url||''}" placeholder="https://drive.google.com/…">
-       <div class="hint">อัปโหลดไฟล์ขึ้น Google Drive แล้วแชร์แบบ “ทุกคนที่มีลิงก์” จากนั้นวางลิงก์ที่นี่</div></div>
+       </div>
      <div class="fld"><label>หมายเหตุ</label><input id="d_note" value="${d.note||''}"></div>`,
     async()=>{
       const o={id:id||'', category:$('#d_cat').value, scope:$('#d_scope').value,
@@ -4959,8 +4949,7 @@ function cardEmpty(){
     <div style="font-size:31.3px">📷</div>
     <div style="font-weight:700;margin-top:6px">${m[0]}</div>
     <div class="hint" style="max-width:520px;margin:6px auto 0">${m[1]}</div>
-    <div class="hint" style="max-width:520px;margin:10px auto 0">
-      ปุ่ม <b>“📷 อัปโหลดรูป”</b> จะอยู่ท้ายแถวของแต่ละคนในตารางนี้ — เมื่อมีรายชื่อแล้วจะเห็นทันที</div>
+    
     ${m[3]? `<button class="btn" style="margin-top:14px" onclick="go('${m[3]}')">${m[2]}</button>`:''}
   </div>`;
 }
@@ -5122,7 +5111,7 @@ function permNote(key,label){
   return `<div class="note ${on?'g':'w'}" style="margin-bottom:12px"><span>${on?'🔓':'🔒'}</span><div>
     <b>${on?'ขณะนี้เปิดให้พิมพ์'+label+'แล้ว':'ขณะนี้ยังไม่เปิดให้พิมพ์'+label}</b>
     ${on?'' : ' — ผู้ดูแลเขตพื้นที่/กลุ่มโรงเรียนเปิดระบบได้ที่หน้า “เปิด-ปิดระบบ &amp; สิทธิ์การพิมพ์”'}
-    ${(!on && ME && ME.role==='district_admin')? '<br><span class="hint">คุณเป็นผู้ดูแลเขต จึงยังทดลองพิมพ์ตรวจสอบได้ก่อนเปิดระบบ</span>':''}
+    ${(!on && ME && ME.role==='district_admin')? '<br>':''}
     </div></div>`;
 }
 function renderPerm(keepInput){
@@ -5249,8 +5238,7 @@ function renderSubsPublic(){
       ${[['คำขอทั้งหมด',c.total||0],['อนุมัติแล้ว',c.approved||0],
          ['รอพิจารณา',c.waiting||0],['ไม่อนุมัติ',c.rejected||0]]
         .map((x,i)=>`<div class="stat s${i+1}"><div class="l">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('')}</div>
-      <p class="hint" style="margin-top:10px">หน้าสาธารณะแสดงเฉพาะจำนวนคำขอ ไม่เปิดเผยรายชื่อนักเรียน
-        และไม่เปิดเผยเลขที่คำขอ — ผู้ถือใบอนุญาตตรวจสอบรายใบได้จากเลขที่คำขอบนใบของตนเอง</p>`;
+      `;
   }).catch(e=>{ $('#subPubStat').innerHTML='<span class="hint">'+e.message+'</span>'; });
 }
 /** ตรวจสอบคำขอจากเลขที่ — ใช้ได้ทั้งหน้าเว็บและสแกน QR หน้างาน */
@@ -6638,11 +6626,7 @@ function openStaffImport(){
         <select id="im_unit" onchange="imFillDuty()">${us.map(u=>`<option value="${esc(u)}" ${u===STAFF_UNIT?'selected':''}>${esc(unitLabel(u))}</option>`).join('')}</select></div>
       <div class="fld"><label>นำเข้าเข้าคณะ</label><select id="im_duty"></select></div>
      </div>
-     <div class="note i" style="margin-bottom:10px"><span>📋</span><div>
-       คัดลอกตารางรายชื่อจาก <b>Word</b> หรือ <b>Excel</b> มาวางในช่องด้านล่างได้เลย ระบบแยกคอลัมน์ให้เอง<br>
-       ลำดับคอลัมน์: <b>คำนำหน้า · ชื่อ-สกุล · ตำแหน่ง · หน่วยงาน · บทบาท</b>
-       (ถ้าวางมา 3 ช่องจะอ่านเป็น ชื่อ-สกุล · ตำแหน่ง · บทบาท)<br>
-       คำนำหน้าเขียนติดกับชื่อก็ได้ เช่น “นายสาคร เสียงเย็น” ระบบแยกให้</div></div>
+     
      <div class="fld"><label>วางรายชื่อตรงนี้</label>
        <textarea id="im_text" rows="9" oninput="imPreview()" placeholder="นายสาคร เสียงเย็น\tรอง ผอ.สพป.อุดรธานี เขต 1\tประธานกรรมการ
 นางเอื้อมพรพิชญ์ แสงศิลา\tผอ.กลุ่มนิเทศ ติดตามและประเมินผลฯ\tรองประธานกรรมการ"></textarea></div>
@@ -6921,7 +6905,7 @@ function editUnit(old){
        <input id="u_name" value="${esc(isNew?'':String(old))}" placeholder="เช่น จุดแข่งขันที่ 5 โรงเรียนบ้านเลื่อม"></div>
      ${isNew? `<label style="font-size:14.3px"><input type="checkbox" id="u_seed" checked>
         สร้างคณะประจำจุดให้อัตโนมัติ (ดำเนินงาน · อาคารสถานที่ · ประชาสัมพันธ์ · จราจร · พยาบาล · ยานพาหนะ · พิธีเปิด-ปิด · ปฏิคม)</label>`
-      : `<div class="note i"><span>✏️</span><div>เปลี่ยนชื่อแล้ว ระบบจะตามไปแก้ให้ทั้งคณะกรรมการและรายชื่อของจุดนี้</div></div>`}`,
+      : ``}`,
     async()=>{
       const name=$('#u_name').value.trim();
       if(!name) throw new Error('กรุณากรอกชื่อจุดแข่งขัน');
@@ -6982,9 +6966,7 @@ async function delCommittee(id){
 async function seedCommittee(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   openModal('สร้างชุดคณะกรรมการตั้งต้น',
-    `<div class="note i" style="margin-bottom:10px"><span>✨</span><div>
-      ระบบจะสร้าง <b>13 คณะกรรมการเขตพื้นที่</b> ตามรูปแบบคำสั่งที่ใช้อยู่<br>
-      ถ้าพิมพ์ชื่อจุดแข่งขันไว้ด้วย จะสร้าง <b>8 คณะประจำจุด</b> ให้ทุกจุดอัตโนมัติ · คณะที่มีชื่อซ้ำจะไม่ถูกสร้างทับ</div></div>
+    `
      <div class="fld"><label>จุดแข่งขัน (พิมพ์บรรทัดละ 1 จุด เว้นว่างได้ถ้ายังไม่ต้องการ)</label>
        <textarea id="sd_units" rows="5" placeholder="จุดแข่งขันที่ 1 โรงเรียนบ้านหมากแข้ง
 จุดแข่งขันที่ 2 โรงเรียนอนุบาลอุดรธานี
@@ -7353,10 +7335,9 @@ async function viewCrit(actId){
           <td class="num">${c.max_score}</td><td class="num">${Math.round(c.max_score/tot*100)}%</td></tr>`).join('') +
         `<tr><td></td><td><b>รวม</b></td><td class="num"><b>${tot}</b></td><td class="num"><b>100%</b></td></tr>` +
         `</tbody></table>
-         <div class="note g" style="margin-top:12px"><span>🏅</span><div>เกณฑ์เหรียญ: 80.00 ขึ้นไป = ทอง ·
-           70.00–79.99 = เงิน · 60.00–69.99 = ทองแดง · ต่ำกว่า 60 = เข้าร่วม (คะแนนเท่ากันได้เหรียญและอันดับเท่ากัน)</div></div>`
+         `
       : '<div class="note b"><span>⚠️</span><div>รายการนี้ยังไม่ได้กำหนดเกณฑ์การให้คะแนน — กรรมการจะกรอกคะแนนไม่ได้จนกว่าเขตจะตั้งเกณฑ์</div></div>') +
-    `<p class="hint" style="margin-top:12px">เกณฑ์ชุดนี้กำหนดโดยสำนักงานเขต ใช้เหมือนกันทั้งรอบคัดเลือกระดับกลุ่มและระดับเขต</p>`,
+    ``,
     ()=>false);
   $('#mOk').style.display='none';
 }
@@ -7547,9 +7528,7 @@ async function manageCats(){
         : '<span class="pill w">เฉพาะกลุ่ม '+(c.group_list||[]).map(groupName).join(', ')+'</span>'}</td>
     <td style="width:96px"><button class="btn g sm" onclick="doRename(this)">บันทึกชื่อ</button></td></tr>`;
   openModal('จัดการหมวดหมู่กิจกรรม',
-    `<div class="note i" style="margin-bottom:12px"><span>🔗</span><div>
-       หมวดหมู่เป็น<b>ข้อมูลกลางชุดเดียว</b> — เปลี่ยนชื่อที่นี่แล้ว <b>หน้าเว็บระดับเขตและทุกกลุ่มโรงเรียนทั้ง 20 กลุ่ม
-       จะเปลี่ยนตามทันที</b> ทั้งเมนูกรอง ตารางรายการ และเอกสารที่พิมพ์ออกไป</div></div>
+    `
      <table><thead><tr><th>ชื่อหมวดหมู่</th><th style="width:70px">รายการ</th>
        <th style="width:220px">ขอบเขต</th><th></th></tr></thead>
        <tbody id="catList">${cats.map(row).join('')}</tbody></table>
@@ -7668,7 +7647,7 @@ function editAct(id){
                   style="width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px">
            <span class="hint" style="white-space:nowrap">นาที</span>
          </div>
-         <div class="hint" id="f_dur_hint">เว้นว่างทั้งสองช่องได้ ถ้ายังไม่กำหนดเวลา</div></div>
+         </div>
        ${f('จำนวนกรรมการ','judges_required','number')}</div>
      <div class="grid g2">${f('โควตาส่งเข้าระดับเขต','quota_to_district','number','จำนวนทีมที่กลุ่มส่งขึ้นเขตต่อรายการ')}
        <div class="fld"><label>สถานะ</label><select id="f_status">
@@ -8232,8 +8211,7 @@ function scPaintLock(box){
     el.innerHTML=`<div class="note ok"><span>📣</span><div>
       <b>ประกาศผลแล้ว ${pub} ทีม</b> — แสดงบนหน้าเว็บสาธารณะเรียบร้อย
       ${L.published_at?'<span class="hint"> · '+ (thStamp(L.published_at)||qq(L.published_at)) +'</span>':''}<br>
-      <span class="hint">กดปุ่ม <b>พิมพ์ผลการจัดอันดับ</b> เพื่อออกเอกสาร ·
-        ถ้าต้องแก้ไข กด <b>แก้ไขผลที่ประกาศแล้ว</b> แล้วใส่รหัสผ่านผู้ดูแล</span></div></div>`;
+      </div></div>`;
   }else if(L.locked){
     el.innerHTML=`<div class="note i"><span>🔒</span><div>
       <b>ยืนยันและล็อกคะแนนแล้ว</b> — กดปุ่ม “ประกาศผล” ได้เลย<br>
@@ -8244,8 +8222,7 @@ function scPaintLock(box){
     const full = L.teams && L.scored>=L.teams;
     el.innerHTML=`<div class="note ${full?'i':'w'}"><span>${full?'📝':'⏳'}</span><div>
       <b>ยังไม่ได้ประกาศผล</b> — กรอกคะแนนแล้ว ${L.scored} จาก ${L.teams} ทีม<br>
-      <span class="hint">กรอกครบและตรวจทานแล้ว กด <b>บันทึกผล</b> แล้วกด <b>ประกาศผล</b>
-        ผลจะขึ้นหน้าเว็บสาธารณะทันที</span></div></div>`;
+      </div></div>`;
   }
   scApplyLock();
 }
@@ -8355,10 +8332,7 @@ function reopenResults(){
        <b>${qq(act.act_name||'')}</b> ${qq(act.level||'')}<br>
        ผลรายการนี้จะถูก<b>ถอนออกจากหน้าเว็บสาธารณะ</b> และปลดล็อกให้แก้คะแนนได้
        · แก้เสร็จต้องกด “ประกาศผล” ใหม่อีกครั้ง</div></div>
-     <div class="note i" style="margin-bottom:10px"><span>🔑</span><div>
-       ต้องใช้บัญชี${dist? '<b>ผู้ดูแลเขตพื้นที่</b>'
-                        : '<b>ผู้ดูแลกลุ่ม '+qq(groupName(SCOPE))+'</b> หรือผู้ดูแลเขตพื้นที่'}
-       ยืนยันทุกครั้ง ระบบจะบันทึกชื่อผู้แก้และเหตุผลไว้ตรวจสอบ</div></div>
+     
      <div class="grid g2">
        <div class="fld"><label>ชื่อผู้ใช้</label><input id="rp_user" autocomplete="off"></div>
        <div class="fld"><label>รหัสผ่าน</label><input id="rp_pass" type="password" autocomplete="off"></div></div>
@@ -8593,7 +8567,7 @@ async function doPromoteBatch(){
     $('#prMsg').innerHTML=`<div class="note g"><span>✅</span><div>
       โอนสำเร็จ <b>${r.ok}</b> รายการ · รวม <b>${r.teams}</b> ทีม
       ${(r.failed&&r.failed.length)? '<div class="hint" style="margin-top:6px">ไม่สำเร็จ '+r.failed.length+' รายการ: '+r.failed.map(f=>f.act_id+' ('+f.error+')').join(', ')+'</div>':''}
-      <div class="hint" style="margin-top:4px">รายการที่โอนแล้วย้ายลงไปอยู่ในตาราง “โอนเข้าเขตแล้ว” ด้านล่าง</div></div></div>`;
+      </div></div>`;
     $('#prAll').checked=false;
     await loadPromotable();
   }catch(e){ $('#prMsg').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
@@ -9496,7 +9470,7 @@ function renderSchedMgr(pre){
   }).catch(e=>{
     body.style.display='none';
     gate.innerHTML='<div class="note r"><span>!</span><div>โหลดไม่สำเร็จ — '+(e.message||e)+
-      '<br><span class="hint">ถ้าเพิ่งอัปเดตระบบ ให้ Deploy เวอร์ชันใหม่ของ Code.gs ก่อน</span></div></div>';
+      '<br></div></div>';
   });
 }
 
@@ -9558,7 +9532,7 @@ function editVenue(id){
        <div class="fld"><label>เบอร์โทร</label><input id="v_phone" value="${q(v.phone)}"></div>
      </div>
      <div class="fld"><label>หมายเหตุ</label><input id="v_note" value="${q(v.note)}"></div>
-     <div class="hint">สนามนี้จะอยู่ใน${smScopeName()} และเลือกใช้ได้ในตารางแข่งขันของขอบเขตนี้</div>`,
+     `,
     async()=>{
       const o={venue_id:id||'', name:$('#v_name').value.trim(), room:$('#v_room').value.trim(),
         address:$('#v_addr').value.trim(), contact:$('#v_contact').value.trim(),
