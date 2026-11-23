@@ -602,9 +602,9 @@ body[data-scope="group"]{
 /* พื้นหลังหน้าเว็บ — ไล่สีนวล ๆ พร้อมแสงจาง ๆ สองจุด ให้ไม่แบน */
 body{
   background:
-    radial-gradient(900px 420px at 86% -10%, color-mix(in srgb,var(--g-hot) 9%,transparent), transparent 62%),
-    radial-gradient(760px 380px at 4% -4%, color-mix(in srgb,var(--g-red) 7%,transparent), transparent 58%),
-    linear-gradient(180deg,#FBF7F9 0%, #F6EDF2 44%, #F1E5EC 100%);
+    radial-gradient(900px 420px at 86% -10%, color-mix(in srgb,var(--g-hot) 6%,transparent), transparent 62%),
+    radial-gradient(760px 380px at 4% -4%, rgba(226,102,44,.05), transparent 58%),
+    linear-gradient(180deg,#FBF8F6 0%, #F6F1EE 44%, #F1EBE7 100%);
   background-attachment:fixed;
 }
 /* ---- แถบเครื่องมือบนสุด ---- */
@@ -662,31 +662,37 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#0B0706 0%,#3
   background:var(--grad-stat);
   box-shadow:0 2px 6px rgba(22,0,11,.16), 0 12px 30px rgba(22,0,11,.18);
   transition:box-shadow .18s, transform .14s;
-  --grad-stat:linear-gradient(135deg,#3D0019 0%,#78002F 52%,#9A003D 100%);
+  --grad-stat:linear-gradient(135deg,#B9501E 0%,#E2662C 52%,#E88440 100%);
 }
 /* ชั้นแสง — ไฮไลต์มุมขวาบนและเงาจาง ๆ ด้านล่าง ทำให้การ์ดดูนูนมีมิติ ไม่แบน */
 .stat::before{
   content:"";position:absolute;inset:0;height:auto;border-radius:inherit;pointer-events:none;
   background:
     radial-gradient(430px 160px at 88% -34%, rgba(255,255,255,.32), transparent 68%),
-    linear-gradient(180deg, rgba(255,255,255,.15) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.38) 100%);
+    linear-gradient(180deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,var(--scrim,.38)) 100%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.26), inset 0 0 0 1px rgba(255,255,255,.08);
 }
 .stat>*{position:relative;z-index:1}
-.stat .l{color:rgba(255,255,255,.92);font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.30)}
-.stat .v{color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.34)}
-.stat .s{color:rgba(255,255,255,.88);text-shadow:0 1px 3px rgba(0,0,0,.28)}
-.stat a,.stat b{color:#fff}
+.stat .l{color:color-mix(in srgb,var(--sink,#fff) 92%, transparent);font-weight:600;
+  text-shadow:0 1px 3px color-mix(in srgb,var(--sink,#fff) 0%, rgba(0,0,0,.30))}
+.stat .v{color:var(--sink,#fff);text-shadow:0 2px 12px rgba(0,0,0,.22)}
+.stat .s{color:color-mix(in srgb,var(--sink,#fff) 88%, transparent);text-shadow:none}
+.stat a,.stat b{color:var(--sink,#fff)}
+/* การ์ดสีอ่อน — ลดม่านเงาดำด้านล่างลง เพราะใช้ตัวอักษรเข้มอยู่แล้ว */
+.stat[style],.stat{--scrim:.38}
+.stat.s2,.stat.s3,
+.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+2),
+.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+3){--scrim:.10}
 .stat:hover{box-shadow:0 4px 10px rgba(22,0,11,.20), 0 18px 42px rgba(22,0,11,.26);transform:translateY(-3px)}
 /* สี่สีประจำการ์ด — ไล่จากเข้มไปสด ให้เข้าชุดกับโทนดำ-แดงของเว็บ */
-.stat.s1{background:linear-gradient(135deg,#3D0019 0%,#78002F 52%,#9A003D 100%)}
-.stat.s2{background:linear-gradient(135deg,#6B002C 0%,#A50342 52%,#C30F51 100%)}
-.stat.s3{background:linear-gradient(135deg,#8C0038 0%,#C71254 52%,#DC2364 100%)}
-.stat.s4{background:linear-gradient(135deg,#AD0747 0%,#DC2364 52%,#F24A83 100%)}
+.stat.s1{background:linear-gradient(135deg,#B9501E 0%,#E2662C 52%,#E88440 100%)}
+.stat.s2{background:linear-gradient(135deg,#D8A93E 0%,#E5B144 52%,#C9C54D 100%);--sink:#3A2E06}
+.stat.s3{background:linear-gradient(135deg,#8FC9A8 0%,#79BD9E 52%,#60B4C0 100%);--sink:#0D3038}
+.stat.s4{background:linear-gradient(135deg,#2F6DAE 0%,#4087B9 52%,#5F6BB3 100%)}
 /* การ์ดที่ไม่ได้ระบุสี (หน้าทำเนียบรายชื่อ / เกียรติบัตร) ให้ไล่สีสลับกันไปเองตามลำดับ */
-.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+2){background:linear-gradient(135deg,#6B002C 0%,#A50342 52%,#C30F51 100%)}
-.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+3){background:linear-gradient(135deg,#8C0038 0%,#C71254 52%,#DC2364 100%)}
-.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+0){background:linear-gradient(135deg,#AD0747 0%,#DC2364 52%,#F24A83 100%)}
+.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+2){background:linear-gradient(135deg,#D8A93E 0%,#E5B144 52%,#C9C54D 100%);--sink:#3A2E06}
+.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+3){background:linear-gradient(135deg,#8FC9A8 0%,#79BD9E 52%,#60B4C0 100%);--sink:#0D3038}
+.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+0){background:linear-gradient(135deg,#2F6DAE 0%,#4087B9 52%,#5F6BB3 100%)}
 /* เว็บกลุ่มโรงเรียน — ใบแรกใช้โทนส้มอิฐประจำกลุ่ม */
 body[data-scope="group"] .stat.s1{background:linear-gradient(135deg,#3A1407 0%,#7A2B0C 52%,#99380F 100%)}
 body[data-scope="group"] .stat.s2{background:linear-gradient(135deg,#5E220A 0%,#9C3A12 52%,#B8481A 100%)}
@@ -3989,11 +3995,12 @@ function renderBanner(){
 /* ---------- สีประจำกลุ่มโรงเรียน ----------
    20 กลุ่ม 20 สี ไล่รอบวงล้อสีให้กลุ่มที่อยู่ติดกันไม่ซ้ำกัน
    ทุกสีผ่านเกณฑ์ความชัดของตัวอักษรสีขาว (WCAG AA) */
-/* ชุดสีประจำกลุ่ม — โทนเดียวกันทั้งชุด ไล่จากไวน์เข้มไปชมพูกุหลาบทีละระดับ
-   กลุ่มที่อยู่ติดกันจึงกลมกลืนกัน และมองรวมทั้งหน้าเป็นชุดสีเดียวของงาน */
+/* ชุดสีประจำกลุ่ม — ไล่ต่อเนื่องจากโทนอุ่นไปโทนเย็น
+   ส้ม → ทอง → เขียวมะนาว → เขียวน้ำทะเล → ฟ้า → น้ำเงิน → คราม
+   กลุ่มที่อยู่ติดกันจึงกลมกลืนกัน และมองรวมทั้งหน้าเป็นแถบไล่สีชุดเดียว */
 const GROUP_COLORS=[
-  '#4A001F','#570024','#650029','#72002E','#7F0033','#8C0038','#9A003D','#A40342','#AD0747','#B60B4B',
-  '#BE0E50','#C71254','#D01659','#D71C5E','#DC2364','#E02B6A','#E53371','#E93B77','#EE427D','#F24A83'];
+  '#E2662C','#E27332','#E27F39','#E28D3E','#E49F41','#E5B144','#DABD48','#C4C54D','#AFCC52','#95C675',
+  '#79BD9E','#60B4C0','#55A5BE','#4A96BC','#4087B9','#387AB4','#306DAE','#3B6AAF','#4D6AB1','#5F6BB3'];
 /** สีตัวอักษรที่อ่านชัดบนสีพื้นนั้น — สีอ่อนใช้ตัวหนังสือเข้ม สีเข้มใช้ตัวหนังสือขาว
  *  คำนวณจากค่าความสว่างจริงของสี จึงอ่านง่ายเสมอทุกสีในชุด */
 function inkOn(hex){
