@@ -1206,10 +1206,6 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn g sm" id="scModeBtn" onclick="scToggleMode()">⇄ สลับวิธีคีย์คะแนน</button>
         <button class="btn g sm" onclick="printDoc('scoresheet')">🖨️ ใบให้คะแนนกระดาษ</button>
       </div>
-      <div class="note i" id="scTotalNote" style="display:none;margin-bottom:12px"><span>🧮</span><div>
-        <b>ระดับเขต — กรอกคะแนนรวมของแต่ละทีม</b> ตามแบบรายงานคะแนนที่คณะกรรมการสรุปส่งมา
-        ระบบจะคิดเหรียญและจัดอันดับให้อัตโนมัติ ตรวจทานถูกต้องแล้วจึงไปที่หน้า
-        <b>ตรวจทาน &amp; ประกาศผล</b> เพื่อประกาศผลอย่างเป็นทางการ</div></div>
       <div id="scLock" style="margin-bottom:12px"></div>
       <div class="card"><div class="cb" style="padding:0;overflow:auto"><table id="scTbl"></table></div></div>
       <div class="row" style="margin-top:12px" id="scBtns">
@@ -1233,8 +1229,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       </div>
       <div id="pbWarn"></div>
       <div class="card" style="margin-top:12px"><div class="cb" style="padding:0;overflow:auto"><table id="pbTbl"></table></div></div>
-      <div class="note g" style="margin-top:13px"><span>⚖️</span><div><b>เกณฑ์เหรียญ</b> — 80.00 ขึ้นไป = ทอง · 70.00–79.99 = เงิน · 60.00–69.99 = ทองแดง · ต่ำกว่า 60 = เข้าร่วม
-        <br>คะแนนเท่ากันได้เหรียญและอันดับเท่ากันเสมอ (1, 2, 2, 4)</div></div>
+      
     </section>
 
     <!-- ---------- โอนตัวแทน ---------- -->
@@ -1245,11 +1240,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div id="prGroupBox">
         <div id="prWin" style="margin-bottom:13px"></div>
 
-        <div class="note i" style="margin-bottom:13px"><span>🏆</span><div>
-          <b>เกณฑ์ตัวแทนเข้าเขต — ชนะเลิศอันดับ 1 และได้เหรียญทองเท่านั้น</b>
-          <div class="hint" style="margin-top:4px">ติ๊กเลือกได้หลายรายการแล้วกดโอนพร้อมกัน ·
-            คะแนนเท่ากันที่อันดับ 1 ระบบส่งขึ้นทั้งคู่ตามกฎ “เท่ากันได้เท่ากัน” ·
-            รายการที่โอนแล้วจะย้ายลงไปอยู่ด้านล่าง</div></div></div>
+        
 
         <div class="card" style="margin-bottom:14px">
           <div class="ch"><h3>รายการที่รอโอน</h3><span class="sp"></span>
@@ -1369,8 +1360,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           <div class="fld" style="margin-top:10px"><label>ลิงก์เอกสารประกอบ (ถ้ามี — Google Drive ที่เปิดให้ดูได้)</label>
             <input id="ap_doc" placeholder="https://drive.google.com/..."></div>
 
-          <div class="note i" style="margin-top:14px"><span>🎯</span><div><b>เลือกกิจกรรมที่ขอเป็นกรรมการตัดสิน 3 อันดับ</b>
-            — เลือกกลุ่มสาระก่อน แล้วเลือกรายการแข่งขัน · อันดับ 1 คือกิจกรรมที่ถนัดที่สุด (อย่างน้อย 1 อันดับ)</div></div>
+          
           <div id="apPicks" style="margin-top:10px"></div>
 
           <label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;cursor:pointer">
@@ -1518,9 +1508,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         </div>
         <span class="sp"></span>
         <button class="btn" onclick="editRuleDoc('ALL')">📚 ไฟล์ทั้งเล่ม</button></div>
-      <div class="note i" style="margin-bottom:12px"><span>📘</span><div>
-        <b>หนึ่งกลุ่มสาระ = หนึ่งไฟล์</b> อัปไฟล์ใหม่ทับของเดิมได้เลย ระบบเก็บเฉพาะไฟล์ล่าสุด ·
-        อัปโหลดเข้าระบบได้ไม่เกิน 20 MB ถ้าไฟล์ใหญ่กว่านั้นให้อัปขึ้น Google Drive เองแล้ววางลิงก์แทน</div></div>
+      
       <div class="card"><div class="cb" style="padding:0;overflow:auto;max-height:72vh"><table id="rmTbl"></table></div></div>
     </section>
 
@@ -1555,7 +1543,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <div class="fld"><label>ตั้งแต่วันที่</label><div id="st_open_at_wrap"></div></div>
             <div class="fld"><label>ถึงวันที่</label><div id="st_close_at_wrap"></div></div>
           </div>
-          <div class="note i"><span>🔗</span><div id="siteScopeNote"></div></div>
+          
         </div></div>
       </div>
     </section>
@@ -1729,7 +1717,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
     <section class="page" id="p-perm">
       <div class="hd"><div><h2>เปิด-ปิดระบบ &amp; สิทธิ์การพิมพ์</h2><p id="pmSub"></p></div>
         <span class="sp"></span><button class="btn" onclick="savePerm()">บันทึกการตั้งค่า</button></div>
-      <div class="note i" style="margin-bottom:12px"><span>🔐</span><div id="pmNote"></div></div>
+      
 
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>บัตรประจำตัว</h3>
         <span class="sp"></span><span id="pmCardState"></span></div>
@@ -1882,10 +1870,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div class="hd"><div><h2>จัดการผู้ดูแล</h2><p id="adSub"></p></div>
         <span class="sp"></span><button class="btn" onclick="newAdmin()">+ เพิ่มผู้ดูแล</button></div>
 
-      <div class="note i" style="margin-bottom:12px"><span>🔑</span><div>
-        <b>ผู้ดูแลหลัก</b> ทำได้ทุกอย่าง รวมถึงจัดการผู้ใช้ ล้างข้อมูล และเปลี่ยนปีการศึกษา ·
-        <b>ผู้ดูแลรอง</b> ทำได้เฉพาะเมนูที่เปิดสิทธิ์ให้ และแตะเรื่องที่สงวนไว้ไม่ได้
-        <div class="hint" style="margin-top:6px">ต้องมีผู้ดูแลหลักอย่างน้อย 1 คนเสมอ ระบบจะกันไม่ให้ถอดคนสุดท้ายออก</div></div></div>
+      
 
       <div class="card"><div class="ch"><h3>รายชื่อผู้ดูแล &amp; บัญชีผู้ใช้</h3><span class="sp"></span>
         <select id="ad_level" onchange="searchAccounts()"
@@ -1897,10 +1882,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
                style="min-width:210px;padding:8px 12px;border:1px solid var(--line);border-radius:10px">
         <button class="btn g" onclick="searchAccounts()">ค้นหา</button></div>
         <div class="cb" id="adTools" style="padding:14px 16px 4px">
-          <div class="note i" style="margin-bottom:10px"><span>🔐</span><div>
-            ระบบไม่แสดงรหัสผ่านเดิมเพื่อความปลอดภัย — ถ้าผู้ใช้ลืมรหัส ให้กด <b>รีเซ็ตรหัสผ่าน</b> ที่ท้ายแถวนั้น
-            ระบบจะออกรหัสใหม่และแสดงให้เห็นครั้งเดียว กรุณาคัดลอกส่งให้เจ้าตัวทันที
-            <div class="hint" id="adScopeNote" style="margin-top:6px"></div></div></div>
+          
           <div class="row" style="margin-bottom:10px" id="adPassTools">
             <label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:15.3px;cursor:pointer">
               <input type="checkbox" id="ac_showpass" onchange="searchAccounts()" style="width:18px;height:18px">
@@ -1909,13 +1891,6 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <button class="btn g sm" onclick="printAccounts()">🖨️ พิมพ์บัญชี + รหัสผ่าน</button>
             <span class="sp"></span>
             <button class="btn g" id="acCsvBtn" onclick="exportAccounts()">ดาวน์โหลดรายชื่อ + รหัสผ่าน (CSV)</button></div>
-          <div class="hint" id="acPrintHint" style="display:none;margin:-4px 0 10px">
-            เลือก <b>กลุ่มโรงเรียน</b> และ <b>ระดับบัญชี</b> ที่ช่องด้านบนก่อนกดพิมพ์
-            เอกสารจะมีเฉพาะบัญชีตามที่กรองไว้ เช่น เลือกกลุ่มเมือง 1 + ระดับโรงเรียน
-            จะได้สลิปของโรงเรียนในกลุ่มเมือง 1 ครบทุกโรงเรียนในแผ่นเดียว</div>
-          <div class="note w" id="acPassNote" style="display:none;margin-bottom:10px"><span>🔒</span>
-            <div>ท่านเปิดดูรหัสผ่านได้<b>เฉพาะโรงเรียนในกลุ่มของท่าน</b> — ระบบบันทึกทุกครั้งที่เปิดดูไว้ในประวัติการใช้งาน
-              <br>โปรดส่งรหัสให้แต่ละโรงเรียนเป็นรายโรงเรียน อย่าส่งรวมเป็นรายการเดียว</div></div>
           <div id="acMsg" style="margin-bottom:10px"></div>
           <div id="acNote" style="margin-bottom:10px"></div>
         </div>
@@ -1978,10 +1953,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
     <section class="page" id="p-backup">
       <div class="hd"><div><h2>สำรอง &amp; กู้คืนข้อมูล</h2><p id="bkSub"></p></div></div>
 
-      <div class="note i" style="margin-bottom:13px"><span>💾</span><div>
-        <b>สำรองข้อมูลไว้เองได้ทุกเมื่อ — ควรทำก่อนแข่งทุกครั้ง และก่อนแก้ข้อมูลจำนวนมาก</b>
-        <div class="hint" style="margin-top:4px">ไฟล์ <b>.json</b> ใช้กู้คืนกลับเข้าระบบได้ ·
-          ไฟล์ <b>.xlsx</b> ไว้เปิดดู พิมพ์ หรือส่งต่อ · เก็บไฟล์ไว้ในเครื่องหรือ Google Drive ของกลุ่ม</div></div></div>
+      
 
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>① ดาวน์โหลดไฟล์สำรอง</h3>
         <span class="sp"></span><span class="hint" id="bkScope"></span></div>
@@ -1998,11 +1970,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div class="card"><div class="ch"><h3>② กู้คืนข้อมูลจากไฟล์สำรอง</h3>
         <span class="sp"></span><span class="hint">ใช้ไฟล์ .json ที่ดาวน์โหลดจากข้อ ①</span></div>
         <div class="cb">
-          <div class="note b" style="margin-bottom:12px"><span>⚠️</span><div>
-            <b>การกู้คืนจะเขียนทับข้อมูลการแข่งขันของกลุ่มตัวเองทั้งหมด</b> —
-            ผู้สมัคร รายชื่อนักเรียน ครูผู้ฝึกสอน คะแนน ผลการแข่งขัน สนาม ตารางแข่งขัน และทำเนียบกรรมการของกลุ่ม
-            <div class="hint" style="margin-top:4px">ไม่แตะทะเบียนโรงเรียน รายการแข่งขัน เกณฑ์การให้คะแนน บัญชีผู้ใช้ และข้อมูลของกลุ่มอื่น ·
-              รายการที่เคยโอนขึ้นเขตจะถูกถอนออก ให้โอนใหม่อีกครั้งหลังกู้คืนเสร็จ</div></div></div>
+          
           <div class="row">
             <input type="file" id="bkFile" accept=".json,application/json" onchange="pickRestore()"
                    style="max-width:430px;padding:8px;border:1px solid var(--line);border-radius:10px">
@@ -2052,10 +2020,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>② สำรองข้อมูลก่อนล้างเสมอ</h3>
         <span class="sp"></span><span id="ssBkState" class="hint"></span></div>
         <div class="cb">
-          <div class="note w" style="margin-bottom:12px"><span>💾</span><div>
-            <b>วิธีที่ปลอดภัยที่สุดคือทำสำเนาไฟล์ Google Sheet ทั้งไฟล์</b> —
-            เปิด Google Sheets → <b>ไฟล์ → ทำสำเนา</b> → ตั้งชื่อเช่น <code>sillapa-2569-สำรอง</code><br>
-            ไฟล์ที่ดาวน์โหลดจากปุ่มด้านล่างเป็นสำเนาสำรองไว้เก็บนอกระบบ (เปิดดูย้อนหลังได้ แต่ยังไม่มีระบบนำกลับเข้าอัตโนมัติ)</div></div>
+          
           <div class="row">
             <button class="btn" onclick="downloadBackup()">⬇️ สำรองทั้งหมด (.json)</button>
             <button class="btn g" onclick="exportResultsCsv()">⬇️ ผลการแข่งขัน (.csv)</button>
@@ -2088,6 +2053,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
               <div class="fld"><label>ปีการศึกษาใหม่ (พ.ศ.)</label><input id="ss_newyear" type="number"></div>
             </div>
           </div>
+          
           <div class="note b" style="margin-bottom:12px"><span>⚠️</span><div id="ssWarn"></div></div>
           <label style="display:flex;gap:9px;align-items:center;font-size:14.3px;margin-bottom:11px;cursor:pointer">
             <input type="checkbox" id="ss_ack" style="width:18px;height:18px">
@@ -2125,7 +2091,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           <div class="fld"><label id="ca_numlbl">รูปแบบเลขที่เกียรติบัตร</label>
             <input id="ca_numfmt" placeholder="74/สพป.อด.1/{seq:04d}">
             <div class="hint" id="ca_numhint"></div></div>
-          <div class="note i"><span>🔗</span><div id="caScopeNote"></div></div>
+          
         </div></div>
 
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>พื้นหลังและข้อความ 4 ประเภท</h3>
@@ -2165,8 +2131,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <span class="sp"></span><button class="btn g sm" onclick="countCerts()">↻ นับใหม่</button></div>
         <div class="cb"><div class="grid g4" id="caCount"><div class="hint">กด “นับใหม่” เพื่อดึงจากผลการแข่งขันที่ประกาศแล้ว</div></div></div></div>
 
-      <div class="note i"><span>👥</span><div>รายชื่อ<b>คณะกรรมการดำเนินงาน</b>ย้ายไปอยู่ที่เมนูของตัวเองแล้ว
-        <button class="btn g sm" style="margin-left:8px" onclick="go('staff')">ไปหน้าคณะกรรมการดำเนินงาน</button></div></div>
+      
     </section>
 
     <!-- ---------- คณะกรรมการดำเนินงาน (หลังบ้าน) ---------- -->
@@ -2203,9 +2168,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn g sm" onclick="clearStaffGroup()">🗑️ ล้างรายชื่อในคณะนี้</button></div>
         <div class="cb" style="padding:0;overflow:auto"><table id="stTbl"></table></div></div>
 
-      <div class="note i" style="margin-top:12px"><span>💡</span><div>
-        <b>คณะ</b> คือฝ่ายที่พิมพ์ลงคำสั่ง เกียรติบัตร และบัตรประจำตัว · คนเดียวอยู่ได้หลายคณะ (เพิ่มคนละแถว) ·
-        ปุ่ม <b>🎖️</b> ท้ายแถวพาไปออกเกียรติบัตรของคนนั้นทันที</div></div>
+      
     </section>
 
     <!-- ---------- คณะกรรมการ & ดาวน์โหลดรายชื่อ (หลังบ้าน) ---------- -->
@@ -2216,10 +2179,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn g" onclick="orderDocx()">⬇ รายชื่อ (Word)</button>
         <button class="btn" onclick="orderPreview()">👁️ ดูตัวอย่าง / พิมพ์</button></div>
 
-      <div class="note i" style="margin-bottom:14px"><span>📎</span><div>
-        หน้านี้ใช้ <b>ตั้งชื่อคณะ</b> และ <b>ดาวน์โหลดบัญชีรายชื่อ</b> ไปแปะในบันทึกข้อความหรือคำสั่งที่พิมพ์เอง<br>
-        ไฟล์ Word ที่ได้มีเฉพาะ <b>ชื่อคณะ</b> และ <b>รายชื่อพร้อมตำแหน่งและบทบาท</b> เรียงเลขไทย ๑.๑ ๑.๒
-        ไม่มีหัวคำสั่งและไม่มีบล็อกลงนาม เปิดใน Word แล้วคัดลอกไปวางได้ทันที</div></div>
+      
 
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>จุดแข่งขัน</h3><span class="sp"></span>
         <button class="btn g sm" onclick="editUnit(null)">+ เพิ่มจุดแข่งขัน</button></div>
@@ -4609,7 +4569,7 @@ function renderSite(){
   dateSelSet('st_close_at', (DB.config||{}).close_at||'');
   $('#fld_event').style.display = isDist?'':'none';
   $('#fld_dates').style.display = isDist?'':'none';
-  $('#siteScopeNote').innerHTML = isDist
+  const _ssn=$('#siteScopeNote'); if(_ssn) _ssn.innerHTML = isDist
     ? 'แบนเนอร์ชุดนี้แสดงบน<b>หน้าเว็บสาธารณะระดับเขต</b> · แต่ละกลุ่มตั้งแบนเนอร์ของตัวเองแยกได้'
     : 'แบนเนอร์ชุดนี้แสดงเฉพาะ<b>หน้าเว็บของ '+groupName(SCOPE)+'</b> · ถ้าเว้นว่างจะใช้ค่าเริ่มต้นของระบบ';
   previewBanner();
@@ -4647,9 +4607,7 @@ async function saveSite(){
 
 /* ---------- หลังบ้าน: จัดการข่าว & เอกสาร ---------- */
 function renderNewsMgr(){
-  $('#nmSub').textContent = SCOPE==='ALL'
-    ? 'ข่าวของเขตแสดงบนหน้าเว็บเขตและทุกกลุ่มโรงเรียน · หน้านี้แสดงข่าวของกลุ่มด้วยเพื่อกำกับดูแล แต่หน้าเว็บเขตจะไม่แสดงข่าวของกลุ่ม'
-    : 'ข่าวของ '+groupName(SCOPE)+' แสดงเฉพาะเว็บกลุ่มนี้ (ข่าวจากเขตจะไหลลงมาแสดงด้วย)';
+  $('#nmSub').textContent = SCOPE==='ALL' ? 'ระดับเขต' : groupName(SCOPE);
   const seeAll = (SCOPE==='ALL' && ME && ME.role==='district_admin') ? 'Y' : '';
   api('listNews',{scope:SCOPE==='ALL'?'':SCOPE, all:seeAll}).then(rows=>{
     window.__NEWS=rows;
@@ -4695,9 +4653,7 @@ function editNews(id){
      <div class="fld"><label>รายละเอียด</label>
        <textarea id="n_body" rows="7" style="resize:vertical">${n.body||''}</textarea></div>
      <label style="font-size:14.3px"><input type="checkbox" id="n_pin" ${n.pin==='Y'?'checked':''}> ปักหมุดไว้บนสุด</label>
-     <div class="hint" style="margin-top:4px">ข่าวที่ปักหมุดจะขึ้นเป็น<b>ภาพใหญ่</b>บนหน้าแรกและหน้าข่าว — ปักได้สูงสุด 2 เรื่อง
-       ถ้าปักเกิน 2 เรื่อง ส่วนที่เกินจะอยู่ในรายการด้านล่างพร้อมป้าย “ปักหมุด”
-       <br>ถ้าไม่ปักหมุดเลย ระบบจะใช้ข่าวล่าสุด 1 เรื่องเป็นภาพใหญ่ให้เอง · แนะนำภาพแนวนอน กว้างอย่างน้อย 1200 พิกเซล</div>`,
+`,
     async()=>{
       const o={id:id||'', title:$('#n_title').value.trim(), date:dateSelVal('n_date'),
         scope:$('#n_scope').value, image:$('#n_image').value.trim(),
@@ -5156,7 +5112,7 @@ function renderPerm(keepInput){
   const g=SCOPE!=='ALL';
   $('#pmSub').textContent=(g?groupName(SCOPE):'ระดับเขต — สพป.อุดรธานี เขต 1')+
     ' · ควบคุมว่าใครพิมพ์อะไรได้ตอนไหน';
-  $('#pmNote').innerHTML = g
+  const _pmn=$('#pmNote'); if(_pmn) _pmn.innerHTML = g
     ? 'ค่าที่ตั้งในหน้านี้ใช้กับ <b>'+groupName(SCOPE)+'</b> เท่านั้น และจะทับค่าที่เขตตั้งไว้'
     : 'ค่าที่ตั้งในหน้านี้เป็นค่าเริ่มต้นของทั้งเขต — กลุ่มโรงเรียนที่ต้องการต่างจากนี้ ตั้งทับได้ในเว็บของกลุ่มตนเอง';
   if(!keepInput){
@@ -6453,7 +6409,7 @@ function renderCertAdm(){
   $('#caSub').textContent = SCOPE==='ALL'? 'ระดับเขต — เปิด/ปิดและตั้งค่าเทมเพลตกลาง'
                                           : 'เว็บกลุ่ม — '+groupName(SCOPE)+' (เปิด/ปิดของกลุ่มเอง)';
   $('#ca_minwrap').style.display = SCOPE==='ALL'?'':'none';
-  $('#caScopeNote').innerHTML = SCOPE==='ALL'
+  const _csn=$('#caScopeNote'); if(_csn) _csn.innerHTML = SCOPE==='ALL'
     ? 'สวิตช์นี้คุมหน้าเว็บ<b>ระดับเขต</b> · แต่ละกลุ่มเปิด/ปิดของตัวเองแยกได้'
     : 'สวิตช์นี้คุมเฉพาะหน้าเว็บของ<b> '+groupName(SCOPE)+'</b> · ถ้าไม่ตั้งค่าจะใช้ค่าของเขต';
   api('certConfig',{scope:SCOPE}).then(cc=>{
@@ -8814,9 +8770,8 @@ async function searchAccounts(){
     const canPass = !!(r.can_see_pass && isOwner());
     const pt=$('#adPassTools'); if(pt) pt.style.display = canPass? '' : 'none';
     const dl=$('#acCsvBtn'); if(dl) dl.style.display = (ME&&ME.role==='district_admin')? '' : 'none';
-    const pn=$('#acPassNote');
-    if(pn) pn.style.display = (canPass && ME && ME.role==='group_admin')? '' : 'none';
-    const ph=$('#acPrintHint'); if(ph) ph.style.display = canPass? '' : 'none';
+    const pn=$('#acPassNote'); if(pn) pn.style.display='none';
+    const ph=$('#acPrintHint'); if(ph) ph.style.display='none';
     drawAdmins();
   }catch(e){ ACC=[]; ACC_TOTAL=0; drawAdmins();
     const n=$('#acNote'); if(n) n.innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
