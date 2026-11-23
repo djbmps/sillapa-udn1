@@ -772,6 +772,71 @@ th{background:linear-gradient(180deg,#FDF4F8,#F6E7EF);
   .newshero .nhshade,.newshero .nhicon{display:none}
   .newshero .nhin,.newshero h3,.newshero p,.newshero .nhtag{color:#222!important;text-shadow:none!important} }
 
+/* ---- การ์ดทางลัดบนหน้าแรก ---- */
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.quick a{display:flex;flex-direction:column;gap:3px;padding:16px 16px 15px;border-radius:13px;
+  color:#fff;cursor:pointer;position:relative;overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,.16);transition:transform .12s, box-shadow .14s, filter .14s}
+.quick a:hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.22)}
+.quick a i{font-style:normal;font-size:25.3px;line-height:1;margin-bottom:5px}
+.quick a b{font-size:16.3px;font-weight:700}
+.quick a span{font-size:13.3px;color:rgba(255,255,255,.88)}
+@media(max-width:1000px){ .quick{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:480px){ .quick{grid-template-columns:1fr} }
+
+/* ---- คลังภาพกิจกรรม ---- */
+.gal{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.gal .gi{position:relative;aspect-ratio:4/3;border-radius:11px;overflow:hidden;cursor:pointer;
+  background:var(--line-2) center/cover no-repeat;
+  box-shadow:0 1px 3px rgba(0,0,0,.14);transition:transform .12s, box-shadow .14s}
+.gal .gi:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.gal .gi .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 11px 9px;color:#fff;font-size:13.3px;
+  line-height:1.45;background:linear-gradient(180deg,transparent,rgba(8,6,5,.86));
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:1000px){ .gal{grid-template-columns:repeat(3,1fr)} }
+@media(max-width:620px){ .gal{grid-template-columns:repeat(2,1fr)} }
+
+/* ---- ดูภาพเต็มจอ ---- */
+.lbx{position:fixed;inset:0;z-index:300;background:rgba(6,4,6,.94);display:none;
+  align-items:center;justify-content:center;padding:52px 64px 70px}
+.lbx.on{display:flex}
+.lbx img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.lbx .lcap{position:absolute;left:0;right:0;bottom:0;padding:16px 24px 20px;text-align:center;
+  color:#fff;font-size:15.3px;line-height:1.5;background:linear-gradient(180deg,transparent,rgba(0,0,0,.72))}
+.lbx .lcap em{display:block;font-style:normal;font-size:13.3px;color:rgba(255,255,255,.72);margin-top:3px}
+.lbx .lnav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;
+  background:rgba(255,255,255,.14);color:#fff;font-size:23.3px;display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.22);transition:background .14s}
+.lbx .lnav:hover{background:rgba(255,255,255,.28)}
+.lbx .lprev{left:14px} .lbx .lnext{right:14px}
+.lbx .lclose{position:absolute;top:14px;right:16px;width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:20.3px}
+.lbx .lnum{position:absolute;top:18px;left:20px;color:rgba(255,255,255,.80);font-size:14.3px}
+@media(max-width:620px){ .lbx{padding:46px 10px 76px} .lbx .lnav{width:38px;height:38px;font-size:19.3px} }
+
+/* ---- ป้ายนับถอยหลังบนแบนเนอร์ ---- */
+.cdown{display:inline-flex;align-items:center;gap:7px;margin-left:8px;vertical-align:middle;
+  font-size:12.8px;font-weight:700;padding:4px 12px;border-radius:999px;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.30);color:#fff;
+  backdrop-filter:blur(6px);box-shadow:0 2px 10px rgba(0,0,0,.22)}
+.cdown.live{background:rgba(31,201,138,.26);border-color:rgba(31,201,138,.55)}
+.cdown.done{background:rgba(255,255,255,.12);color:rgba(255,255,255,.86)}
+
+/* ---- รายการข่าว — การ์ดตาราง ภาพใหญ่ด้านบน ---- */
+.newsgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.newsgrid .newscard{display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden;margin-bottom:0}
+.newsgrid .newscard .th{width:100%;height:auto;aspect-ratio:16/9;border-radius:0;flex:none;
+  font-size:34px;background-color:var(--line-2)}
+.newsgrid .newscard .nbd{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1}
+.newsgrid .newscard .mt{margin-top:0;margin-bottom:5px}
+.newsgrid .newscard h4{font-size:16.3px;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.newsgrid .newscard p{margin-top:7px;-webkit-line-clamp:3}
+@media(max-width:1000px){ .newsgrid{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:620px){ .newsgrid{grid-template-columns:1fr} }
+@media print{ .newsgrid{grid-template-columns:1fr} }
+
 /* ---- ป้ายสถานะ ---- */
 .pill.i{background:linear-gradient(135deg,var(--pri-soft),#fff)}
 /* ---- หน้าเข้าสู่ระบบ ---- */
@@ -866,7 +931,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
     <button class="btn g" id="pubLogout" style="display:none" onclick="logoutNow()">ออกจากระบบ</button>
   </div></div>
   <div class="banner" id="banner"><div class="shade"></div>
-    <div class="bin"><span class="kw" id="bKw">งานศิลปหัตถกรรมนักเรียน</span>
+    <div class="bin"><span class="kw" id="bKw">งานศิลปหัตถกรรมนักเรียน</span><span class="cdown" id="cdPill" style="display:none"></span>
       <h1 id="bH1">งานศิลปหัตถกรรมนักเรียน</h1>
       <p id="bP">ระดับเขตพื้นที่การศึกษา · สพป.อุดรธานี เขต 1 · ปีการศึกษา 2569</p></div>
   </div>
@@ -992,10 +1057,20 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div id="homeNewsWrap" style="margin-top:20px;display:none">
         <div style="display:flex;align-items:center;gap:10px;margin:0 0 12px">
           <h3 style="font-size:18.3px">ข่าวประชาสัมพันธ์</h3><span class="sp" style="flex:1"></span>
-          <span class="hint" id="homeNewsCount"></span></div>
+          <span class="hint" id="homeNewsCount"></span>
+          <button class="btn g sm" id="homeNewsAll" onclick="go('news')" style="display:none">ดูข่าวทั้งหมด →</button></div>
         <div id="homeNews"></div>
       </div>
-      <div class="grid g2" style="margin-top:16px" id="homeGrid2">
+      <!-- ---------- ทางลัดสำคัญ ---------- -->
+      <div class="quick" id="homeQuick"></div>
+      <!-- ---------- คลังภาพกิจกรรม ---------- -->
+      <div id="homeGalWrap" style="margin-top:22px;display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin:0 0 12px">
+          <h3 style="font-size:18.3px">คลังภาพกิจกรรม</h3><span class="sp" style="flex:1"></span>
+          <span class="hint" id="homeGalCount"></span></div>
+        <div class="gal" id="homeGal"></div>
+      </div>
+      <div class="grid g2" style="margin-top:22px" id="homeGrid2">
         <div class="card" id="homeGroupCard"><div class="ch"><h3>กลุ่มโรงเรียนในเขต</h3><span class="sp"></span><button class="btn g sm" id="homeGroupsMore">ดูทั้งหมด</button></div>
           <div class="cb" style="padding:0;max-height:340px;overflow:auto"><table id="homeGroups"></table></div></div>
         <div class="card"><div class="ch"><h3>ตารางเหรียญ</h3><span class="sp"></span>
@@ -4140,6 +4215,97 @@ function renderPubNav(){
   if(lo) lo.style.display = ME? '' : 'none';
 }
 
+/* ============================================================================
+   หน้าแรกแบบเว็บงาน — นับถอยหลัง · ทางลัด · คลังภาพกิจกรรม · ดูภาพเต็มจอ
+   ============================================================================ */
+/** แปลงวันที่ พ.ศ. (2570-03-09) เป็นวันที่จริงของเครื่อง */
+function beDate(v){
+  const t=String(v==null?'':v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!t) return null;
+  const y=Number(t[1]); if(!y) return null;
+  return new Date(y>2400? y-543 : y, Number(t[2])-1, Number(t[3]));
+}
+/** ป้ายนับถอยหลังบนแบนเนอร์ — อ่านวันแข่งขันจากหน้า “ตั้งค่าการแข่งขัน” */
+function drawCountdown(){
+  const el=$('#cdPill'); if(!el) return;
+  const c=DB.config||{};
+  const a=beDate(c.open_at), b=beDate(c.close_at)||a;
+  if(!a){ el.style.display='none'; return; }
+  const t0=new Date(); t0.setHours(0,0,0,0);
+  const d=Math.round((a-t0)/86400000), dEnd=Math.round(((b||a)-t0)/86400000);
+  el.style.display='';
+  el.className='cdown';
+  if(d>0)        el.innerHTML='⏳ อีก <b style="font-size:14.8px">'+d.toLocaleString()+'</b> วัน ถึงวันแข่งขัน';
+  else if(dEnd>=0){ el.className='cdown live'; el.innerHTML='🔴 กำลังแข่งขัน · วันที่ '+(1-d)+' ของงาน'; }
+  else           { el.className='cdown done'; el.innerHTML='🏁 การแข่งขันเสร็จสิ้นแล้ว'; }
+}
+/** การ์ดทางลัด 4 ปุ่มบนหน้าแรก */
+function drawQuick(){
+  const box=$('#homeQuick'); if(!box) return;
+  const certOpen = isOpen('cert_open');
+  const items=[
+    ['acts','📋','รายการแข่งขัน', (DB.activities||[]).length+' รายการ · ทุกกลุ่มสาระ','#BB4C1E'],
+    ['sched','🗓️','ตารางแข่งขัน','วัน เวลา และสนามแข่งขัน','#9D7E22'],
+    ['results','🏆','ผลการแข่งขัน','ผลและอันดับที่ประกาศแล้ว','#3E8991'],
+    certOpen
+      ? ['cert','🎖️','เกียรติบัตร','ดาวน์โหลดเกียรติบัตรออนไลน์','#2F6DA0']
+      : ['medals','🥇','ตารางเหรียญ','สรุปเหรียญรางวัลรายโรงเรียน','#2F6DA0']
+  ];
+  box.innerHTML=items.map(([pg,ic,tt,sub,col])=>
+    `<a onclick="go('${pg}')" style="background:${col}"><i>${ic}</i><b>${tt}</b><span>${sub}</span></a>`).join('');
+}
+/** คลังภาพกิจกรรม — รวมภาพจากข่าวประชาสัมพันธ์ทุกเรื่องที่มีภาพ */
+let GAL=[];
+function drawGallery(rows){
+  const wrap=$('#homeGalWrap'), box=$('#homeGal'); if(!wrap||!box) return;
+  GAL=(rows||[]).filter(n=>n.image).map(n=>({url:imgSrc(n.image), title:n.title||'',
+    meta:dstr(n.date)+' · '+(n.scope==='ALL'?'ประกาศจากเขต':'ข่าวของ '+groupName(n.scope))}));
+  if(!GAL.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  const cnt=$('#homeGalCount'); if(cnt) cnt.textContent=GAL.length+' ภาพ';
+  box.innerHTML=GAL.map((g,i)=>
+    `<div class="gi" onclick="lbxOpen(${i})" style="background-image:url('${g.url}')">
+       <div class="cap">${qq(g.title)}</div></div>`).join('');
+}
+/* ---------- ดูภาพเต็มจอ ---------- */
+let LBX=0;
+function lbxBox(){
+  let b=$('#lbx');
+  if(!b){
+    b=document.createElement('div'); b.id='lbx'; b.className='lbx';
+    b.innerHTML=`<button class="lclose" onclick="lbxClose()" title="ปิด">✕</button>
+      <div class="lnum" id="lbxNum"></div>
+      <button class="lnav lprev" onclick="event.stopPropagation();lbxGo(-1)" title="ภาพก่อนหน้า">‹</button>
+      <img id="lbxImg" alt="" onclick="event.stopPropagation()">
+      <button class="lnav lnext" onclick="event.stopPropagation();lbxGo(1)" title="ภาพถัดไป">›</button>
+      <div class="lcap" id="lbxCap"></div>`;
+    b.onclick=lbxClose;
+    document.body.appendChild(b);
+  }
+  return b;
+}
+function lbxOpen(i){
+  if(!GAL.length) return;
+  LBX=i; const b=lbxBox(); b.classList.add('on');
+  document.body.style.overflow='hidden'; lbxPaint();
+}
+function lbxPaint(){
+  const g=GAL[LBX]; if(!g) return;
+  $('#lbxImg').src=g.url;
+  $('#lbxCap').innerHTML=qq(g.title)+'<em>'+qq(g.meta)+'</em>';
+  $('#lbxNum').textContent=(LBX+1)+' / '+GAL.length;
+  const one=GAL.length<2;
+  $('#lbx').querySelectorAll('.lnav').forEach(n=>n.style.display=one?'none':'');
+}
+function lbxGo(d){ if(!GAL.length) return; LBX=(LBX+d+GAL.length)%GAL.length; lbxPaint(); }
+function lbxClose(){ const b=$('#lbx'); if(b) b.classList.remove('on'); document.body.style.overflow=''; }
+document.addEventListener('keydown',e=>{
+  const b=$('#lbx'); if(!b||!b.classList.contains('on')) return;
+  if(e.key==='Escape') lbxClose();
+  else if(e.key==='ArrowLeft') lbxGo(-1);
+  else if(e.key==='ArrowRight') lbxGo(1);
+});
+
 /* ---------- ข่าวประชาสัมพันธ์ ---------- */
 function renderNews(){
   api('listNews',{scope:SCOPE==='ALL'?'':SCOPE}).then(rows=>{
@@ -4159,16 +4325,17 @@ function dstr(v){
  *  ข่าวที่ "ปักหมุด" จะขึ้นเป็นภาพใหญ่ ปักหมุดได้สูงสุด 2 เรื่อง (เรียงเคียงกัน)
  *  ถ้ายังไม่ได้ปักหมุดเรื่องใดเลย ใช้ข่าวล่าสุดเป็นข่าวเด่นแทน 1 เรื่อง
  *  ปักหมุดเกิน 2 เรื่อง ส่วนที่เกินจะอยู่ในรายการแถวเล็กพร้อมป้าย “ปักหมุด” ตามปกติ */
-function newsList(rows){
+function newsList(rows, limit){
   if(!rows||!rows.length) return '';
   let hero=rows.filter(n=>String(n.pin||'').toUpperCase()==='Y').slice(0,2);
   if(!hero.length) hero=[rows[0]];
   const inHero=new Set(hero);
   const rest=rows.filter(n=>!inHero.has(n));
   const at=n=>rows.indexOf(n);
+  const show = limit? rest.slice(0,limit) : rest;
   return `<div class="newsheros${hero.length>1?' two':''}">`
     + hero.map(n=>newsHero(n,at(n))).join('') + `</div>`
-    + rest.map(n=>newsCard(n,at(n))).join('');
+    + (show.length? `<div class="newsgrid">`+show.map(n=>newsCard(n,at(n))).join('')+`</div>` : '');
 }
 /** ข่าวเด่น — ภาพใหญ่เต็มความกว้าง ตัวหนังสือวางทับบนภาพ */
 function newsHero(n,i){
@@ -4184,12 +4351,14 @@ function newsHero(n,i){
       <p>${qq((n.body||'').slice(0,160))}</p>
     </div></div>`;
 }
+/** การ์ดข่าว — ภาพใหญ่ด้านบน หัวข้อและคำโปรยด้านล่าง */
 function newsCard(n,i){
   return `<div class="newscard" onclick="openNews(${i})">
     <div class="th" style="${n.image?`background-image:url('${imgSrc(n.image)}')`:''}">${n.image?'':'📰'}</div>
-    <div><h4>${n.pin==='Y'?'<span class="pill i">ปักหมุด</span> ':''}${qq(n.title)}</h4>
+    <div class="nbd">
       <div class="mt">${qq(dstr(n.date))} · ${n.scope==='ALL'?'ประกาศจากเขต':'ข่าวของ '+qq(groupName(n.scope))}</div>
-      <p>${qq((n.body||'').slice(0,180))}</p></div></div>`;
+      <h4>${n.pin==='Y'?'<span class="pill i">ปักหมุด</span> ':''}${qq(n.title)}</h4>
+      <p>${qq((n.body||'').slice(0,160))}</p></div></div>`;
 }
 function openNews(i){
   const n=(window.__NEWS||[])[i]; if(!n) return;
@@ -6988,6 +7157,7 @@ function renderPage(p){
 }
 
 function renderHome(){
+  drawCountdown(); drawQuick();
   const S=schoolsOf(SCOPE), A=actsOf();
   const stats = SCOPE==='ALL'
     ? [['โรงเรียนในเขต',S.length,'4 อำเภอ · 20 กลุ่ม'],
@@ -7033,8 +7203,10 @@ function renderHome(){
     if(!rows.length && !canPost){ if(wrap) wrap.style.display='none'; return; }
     if(wrap) wrap.style.display='block';
     const cnt=$('#homeNewsCount'); if(cnt) cnt.textContent = rows.length? rows.length+' เรื่อง' : '';
+    drawGallery(rows);
+    const all=$('#homeNewsAll'); if(all) all.style.display = rows.length>5? '' : 'none';
     $('#homeNews').innerHTML = rows.length
-      ? newsList(rows)
+      ? newsList(rows, 4)
       : `<div class="note i"><span>📭</span><div>ยังไม่มีข่าวประชาสัมพันธ์ — ข่าวที่เพิ่มจะขึ้นตรงนี้เป็นอันดับแรกของหน้าแรก
          <div style="margin-top:9px"><button class="btn sm" onclick="go('newsmgr')">📣 ไปเพิ่มข่าว</button></div></div></div>`;
   }).catch(()=>{ const w=$('#homeNewsWrap'); if(w) w.style.display='none'; });
