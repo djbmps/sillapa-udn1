@@ -634,7 +634,7 @@ body[data-scope="group"] .banner{
    — มือถือภาพเต็มความกว้างจอ · จอใหญ่ภาพกว้างเท่าเนื้อหา ไม่สูงเกินไป */
 .banner{width:100%}
 .banner.hasimg{min-height:0;max-height:none;
-  height:clamp(120px, calc(min(100vw, 1180px) / var(--bnar, 4)), 460px)}
+  height:clamp(150px, calc(min(100vw, 1180px) / var(--bnar, 4.21)), 300px)}
 /* ชั้นพื้นหลัง: ภาพเดียวกันขยายเต็มแล้วเบลอ ใช้เติมพื้นที่ข้าง ๆ แทนแถบดำว่าง ๆ */
 .banner .bnbg{position:absolute;inset:0;z-index:0;background-image:var(--bnimg);
   background-size:cover;background-position:center;transform:scale(1.14);
@@ -643,12 +643,11 @@ body[data-scope="group"] .banner{
 .banner .bnfg{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);
   width:min(100%,1180px);z-index:1;background-image:var(--bnimg);
   background-size:contain;background-position:center;background-repeat:no-repeat}
-/* ใส่ภาพของตนเองแล้ว — ซ่อนข้อความที่ระบบเขียนทับ เพราะในภาพมีชื่องาน/ชื่อกลุ่มอยู่แล้ว */
-.banner.ownimg .shade{background:none}
-.banner.ownimg #bKw,.banner.ownimg #bH1,.banner.ownimg #bP{display:none}
-.banner.ownimg .bin{padding:0 26px 12px}
-.banner.ownimg .cdown{background:rgba(12,6,10,.62);border-color:rgba(255,255,255,.3);
-  backdrop-filter:blur(6px)}
+/* ใส่ภาพของตนเองแล้ว — ม่านเข้มเฉพาะฝั่งซ้ายใต้ตัวหนังสือ ให้อ่านชื่องานได้ชัดโดยไม่บังภาพ */
+.banner.ownimg .shade{background:
+  linear-gradient(90deg,rgba(8,2,6,.70) 0%,rgba(8,2,6,.34) 38%,rgba(8,2,6,0) 66%),
+  linear-gradient(180deg,rgba(8,2,6,0) 38%,rgba(8,2,6,.58) 100%)}
+.banner.ownimg .bin{padding:18px 26px 16px}
 .banner .shade{z-index:2}
 .banner .bin{z-index:3}
 .banner.hasimg{background-image:none}
@@ -1557,7 +1556,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <div class="card"><div class="ch"><h3>แบนเนอร์หัวเว็บ</h3></div><div class="cb">
           <div class="fld"><label>ภาพแบนเนอร์หัวเว็บ</label>
             <div class="updrop" id="bnDrop"><b>📤 คลิกเพื่อเลือกไฟล์ หรือลากรูปมาวางตรงนี้</b>
-              รองรับ JPG / PNG / WebP · แนะนำแนวยาว 1600×300 px (อัตราส่วนราว 5:1) ภาพจะเต็มความกว้างพอดี · เว้นว่างจะใช้พื้นหลังของระบบ</div>
+              รองรับ JPG / PNG / WebP · แนะนำ 2360×560 px (อัตราส่วน 4.2:1) ภาพจะพอดีความกว้างเนื้อหาและคมชัดบนจอละเอียด · เว้นว่างจะใช้พื้นหลังของระบบ</div>
             <div class="upbar" id="bnBar"><i></i></div>
             <div class="upthumb" id="bnThumb" style="display:none"></div>
             <details style="margin-top:9px"><summary class="hint" style="cursor:pointer">หรือวางลิงก์รูปเอง</summary>
