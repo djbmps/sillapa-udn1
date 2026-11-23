@@ -837,6 +837,20 @@ th{background:linear-gradient(180deg,#FDF4F8,#F6E7EF);
 @media(max-width:620px){ .newsgrid{grid-template-columns:1fr} }
 @media print{ .newsgrid{grid-template-columns:1fr} }
 
+/* ---- ตารางแข่งขัน: หัวข้อวันที่ และหัวข้อหมวดกิจกรรม ---- */
+tr.schday td{background:linear-gradient(180deg,var(--pri),color-mix(in srgb,var(--pri) 82%,#000));
+  color:#fff;font-weight:700;font-size:16.3px;padding:9px 12px;letter-spacing:.01em}
+tr.schcat td{background:var(--line-2);color:var(--ink);font-weight:700;font-size:14.3px;
+  padding:7px 12px;box-shadow:inset 3px 0 0 var(--pri)}
+@media print{ tr.schday td{background:#eee!important;color:#111!important}
+  tr.schcat td{background:#f6f6f6!important;box-shadow:none!important} }
+
+/* ---- จอคิว: หัวข้อสนามแข่งขัน ---- */
+.screen .qv{display:flex;align-items:baseline;gap:10px;color:#fff;font-size:22.3px;font-weight:700;
+  margin:18px 0 8px;padding-bottom:7px;border-bottom:2px solid rgba(255,255,255,.18)}
+.screen .qv:first-child{margin-top:0}
+.screen .qv i{font-style:normal;font-size:14.8px;font-weight:400;color:rgba(255,255,255,.62)}
+
 /* ---- ป้ายสถานะ ---- */
 .pill.i{background:linear-gradient(135deg,var(--pri-soft),#fff)}
 /* ---- หน้าเข้าสู่ระบบ ---- */
@@ -2248,7 +2262,8 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
 <div class="screen" id="s-queue">
   <button class="esc" onclick="closeScreen()">✕ ออกจากโหมดจอฉาย (Esc)</button>
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
-    <div><h2 style="font-size:26.3px">คิวการแข่งขัน</h2><div style="color:#B39C88;font-size:15.3px">NOW / NEXT รายสนาม</div></div>
+    <div><h2 style="font-size:26.3px">คิวการแข่งขัน</h2>
+      <div style="color:#B39C88;font-size:15.3px" id="queueSub"></div></div>
     <div style="margin-left:auto;font-size:37.3px;font-weight:700;font-variant-numeric:tabular-nums" id="clk2">--:--</div>
   </div>
   <div id="queueBoard"></div>
@@ -9396,7 +9411,7 @@ function drawMedals(){
   tbl($('#medTbl'),['อันดับ','โรงเรียน','ชนะเลิศ','รองชนะเลิศอันดับ 1','รองชนะเลิศอันดับ 2','ทอง','เงิน','ทองแดง'],
     rows.map((m,i)=>medalRow(m,i)).join(''));
 }
-const SCH_HEAD=['รายการแข่งขัน','ระดับชั้น','วันที่','เวลา','สนามแข่งขัน','สถานะ'];
+const SCH_HEAD=['รายการแข่งขัน','ระดับชั้น','เวลา','สนามแข่งขัน','สถานะ'];
 function renderSched(){
   $('#schSub').textContent = (SCOPE==='ALL'?'ระดับเขตพื้นที่':groupName(SCOPE));
   const adm = ME && (ME.role==='district_admin'||ME.role==='group_admin');
@@ -9411,11 +9426,35 @@ function renderSched(){
   api('queue',{group:SCOPE==='ALL'?'':SCOPE}).then(q=>{
     $('#schCount').textContent = q.length? q.length+' รายการ' : '';
     if(!q.length){ schEmpty('ยังไม่ประกาศตารางแข่งขัน — โปรดติดตามประกาศจากสำนักงานเขตพื้นที่การศึกษา'); return; }
-    tbl($('#schTbl'),SCH_HEAD,
-      q.map(x=>`<tr><td><b>${x.act||''}</b></td><td>${x.level||''}</td><td>${thDateLong(x.date)}</td>
-        <td>${tmRange(x.start,x.end)}</td><td>${x.venue||''}</td><td>${x.status||''}</td></tr>`).join(''));
+    tbl($('#schTbl'),SCH_HEAD, schRows(q));
   }).catch(()=>{ $('#schCount').textContent=''; schEmpty('ยังไม่ประกาศตารางแข่งขัน'); });
 }
+/** จัดแถวตารางแข่งขัน — แบ่งหัวข้อตาม “วันที่” แล้วแยกย่อยตาม “หมวดกิจกรรม”
+ *  ภายในหมวดเรียงตามเวลาเริ่ม แล้วจึงตามรหัส/ชื่อรายการ
+ *  ใช้ร่วมกันทั้งเว็บระดับเขตและเว็บของกลุ่มโรงเรียน                               */
+function schRows(q){
+  const key=x=>String(x.date||'');
+  const cat=x=>String(x.cat||'ไม่ระบุหมวดหมู่');
+  const rows=(q||[]).slice().sort((a,b)=>
+       String(a.date||'').localeCompare(String(b.date||''))
+    || cat(a).localeCompare(cat(b),'th')
+    || String(a.start||'').localeCompare(String(b.start||''))
+    || String(a.code||'').localeCompare(String(b.code||''))
+    || String(a.act||'').localeCompare(String(b.act||''),'th'));
+  const n=SCH_HEAD.length;
+  let out='', d='', c='';
+  rows.forEach(x=>{
+    if(key(x)!==d){ d=key(x); c='';
+      out+=`<tr class="schday"><td colspan="${n}">${thDateLong(x.date)||'ยังไม่ระบุวันที่'}</td></tr>`; }
+    if(cat(x)!==c){ c=cat(x);
+      out+=`<tr class="schcat"><td colspan="${n}">${qq(c)}</td></tr>`; }
+    out+=`<tr><td><b>${qq(x.act||'')}</b></td><td>${qq(x.level||'')}</td>
+      <td style="white-space:nowrap">${tmRange(x.start,x.end)}</td>
+      <td>${qq(x.venue||'')}</td><td>${qq(x.status||'')}</td></tr>`;
+  });
+  return out;
+}
+
 /** 08:30 + 11:30 → 08:30–11:30 น. */
 function tmRange(a,b){
   a=String(a||'').trim(); b=String(b||'').trim();
@@ -10104,16 +10143,54 @@ function openScreen(k){
            <div style="margin-top:6px">หน้าจอนี้จะอัปเดตอัตโนมัติทันทีที่กรรมการประกาศผลรายการแรก</div></div>`;
     });
   } else {
-    api('queue',{group:SCOPE==='ALL'?'':SCOPE}).then(q=>{
-      const qhead=`<div class="lbr hd"><span>ที่</span><span>รายการแข่งขัน</span>
-        <span class="c">เวลา</span><span class="c">สนามแข่งขัน</span><span class="c">สถานะ</span><span></span></div>`;
-      $('#queueBoard').innerHTML = q.length? qhead + q.map((x,i)=>`<div class="lbr"><span class="rk">${i+1}</span><span>${qq(x.act)}</span>
-        <span class="c">${qq(x.start||'')}</span><span class="c">${qq(x.venue||'')}</span><span class="c">${qq(x.status||'')}</span><span></span></div>`).join('')
-        : `<div style="padding:70px;text-align:center;color:#8D7C6D"><div style="font-size:45.3px">🗓️</div>
-           <div style="font-size:23.3px;font-weight:700;color:#fff;margin-top:10px">ยังไม่มีรายการที่จัดตารางแข่งขัน</div>
-           <div style="margin-top:6px">หน้าจอนี้จะแสดงคิวแต่ละสนามทันทีที่แอดมินจัดตารางเวลาให้รายการแข่งขัน</div></div>`;
-    });
+    api('queue',{group:SCOPE==='ALL'?'':SCOPE}).then(q=>{ drawQueueBoard(q); });
   }
+}
+/** วันที่วันนี้ในรูปแบบ พ.ศ. ปปปป-ดด-วว */
+function beToday(){
+  const d=new Date();
+  return (d.getFullYear()+543)+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+/** จอคิวการแข่งขัน — แสดงคิว “ของวันนี้” แยกตามสนามแข่งขัน เรียงตามกิจกรรม
+ *  ถ้าวันนี้ไม่มีคิว จะเลื่อนไปแสดงวันแข่งถัดไปที่ใกล้ที่สุด และบอกวันที่ไว้บนหัวจอ
+ *  ใช้ร่วมกันทั้งเว็บระดับเขตและเว็บของกลุ่มโรงเรียน                                  */
+function drawQueueBoard(q){
+  const box=$('#queueBoard'); if(!box) return;
+  const all=(q||[]);
+  const empty=(t,s)=>`<div style="padding:70px;text-align:center;color:#8D7C6D"><div style="font-size:45.3px">🗓️</div>
+     <div style="font-size:23.3px;font-weight:700;color:#fff;margin-top:10px">${t}</div>
+     <div style="margin-top:6px">${s}</div></div>`;
+  if(!all.length){ box.innerHTML=empty('ยังไม่มีรายการที่จัดตารางแข่งขัน',
+    'หน้าจอนี้จะแสดงคิวแต่ละสนามทันทีที่แอดมินจัดตารางเวลาให้รายการแข่งขัน');
+    setQueueDate(''); return; }
+  const today=beToday();
+  const days=[...new Set(all.map(x=>String(x.date||'')).filter(Boolean))].sort();
+  let day = days.includes(today) ? today : (days.find(d=>d>today) || days[days.length-1]);
+  const rows=all.filter(x=>String(x.date||'')===day);
+  setQueueDate(day, day===today);
+  if(!rows.length){ box.innerHTML=empty('วันนี้ไม่มีรายการแข่งขัน','โปรดดูตารางแข่งขันเต็มที่หน้าเว็บ'); return; }
+  /* จัดกลุ่มตามสนาม แล้วเรียงตามชื่อกิจกรรมภายในสนาม */
+  const byVenue={};
+  rows.forEach(x=>{ const v=String(x.venue||'ยังไม่ระบุสนาม'); (byVenue[v]=byVenue[v]||[]).push(x); });
+  const head=`<div class="lbr hd"><span>ที่</span><span>รายการแข่งขัน</span>
+     <span class="c">ระดับชั้น</span><span class="c">เวลา</span><span class="c">สถานะ</span><span></span></div>`;
+  box.innerHTML = Object.keys(byVenue).sort((a,b)=>a.localeCompare(b,'th')).map(v=>{
+    const list=byVenue[v].sort((a,b)=>
+         String(a.act||'').localeCompare(String(b.act||''),'th')
+      || String(a.start||'').localeCompare(String(b.start||'')));
+    return `<div class="qv">${qq(v)} <i>${list.length} รายการ</i></div>` + head +
+      list.map((x,i)=>`<div class="lbr"><span class="rk">${i+1}</span><span>${qq(x.act||'')}</span>
+        <span class="c">${qq(x.level||'')}</span><span class="c">${qq(x.start||'')}</span>
+        <span class="c">${qq(x.status||'')}</span><span></span></div>`).join('');
+  }).join('');
+}
+/** บอกวันที่ที่กำลังแสดงบนหัวจอคิว */
+function setQueueDate(day, isToday){
+  const el=$('#queueSub'); if(!el) return;
+  const base=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE));
+  el.textContent = day
+    ? base+' · '+(isToday?'คิววันนี้ ':'วันแข่งถัดไป ')+thDateLong(day)
+    : base;
 }
 function closeScreen(){ $$('.screen').forEach(s=>s.classList.remove('on')); document.body.style.overflow=''; }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeScreen();closeModal();} });
