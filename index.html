@@ -629,10 +629,29 @@ body[data-scope="group"] .banner{
 .banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad-line);z-index:2}
 /* ความสูงของแบนเนอร์จะปรับตามสัดส่วนของภาพที่อัปโหลดเอง (ตั้งค่าโดย setBannerImage)
    ภาพจึงแสดงเต็มใบ ไม่ถูกตัดบน-ล่าง — แต่ไม่สูงเกินครึ่งจอบนจอกว้างมาก */
-.banner{max-height:min(62vh,660px)}
-/* ใส่ภาพเองแล้ว — แสดงภาพเต็มใบเสมอ ถ้าจอกว้างกว่าสัดส่วนภาพจะเว้นพื้นสีเข้มไว้ข้าง ๆ */
-.banner.hasimg{background-size:contain;background-color:#140608}
-body[data-scope="group"] .banner.hasimg{background-color:#180C06}
+/* ภาพหัวเว็บแสดงครบทั้งใบ กว้างเท่าเนื้อหาในหน้า (สูงสุด 1180px)
+   ความสูงจึงคิดจากสัดส่วนภาพจริง (--bnar) และปรับตามอุปกรณ์เอง
+   — มือถือภาพเต็มความกว้างจอ · จอใหญ่ภาพกว้างเท่าเนื้อหา ไม่สูงเกินไป */
+.banner{width:100%}
+.banner.hasimg{min-height:0;max-height:none;
+  height:clamp(120px, calc(min(100vw, 1180px) / var(--bnar, 4)), 460px)}
+/* ชั้นพื้นหลัง: ภาพเดียวกันขยายเต็มแล้วเบลอ ใช้เติมพื้นที่ข้าง ๆ แทนแถบดำว่าง ๆ */
+.banner .bnbg{position:absolute;inset:0;z-index:0;background-image:var(--bnimg);
+  background-size:cover;background-position:center;transform:scale(1.14);
+  filter:blur(20px) saturate(1.15) brightness(.78)}
+/* ชั้นภาพจริง: กว้างเท่าเนื้อหาในหน้า จัดกลางไว้ เห็นครบทั้งใบ */
+.banner .bnfg{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);
+  width:min(100%,1180px);z-index:1;background-image:var(--bnimg);
+  background-size:contain;background-position:center;background-repeat:no-repeat}
+/* ใส่ภาพของตนเองแล้ว — ซ่อนข้อความที่ระบบเขียนทับ เพราะในภาพมีชื่องาน/ชื่อกลุ่มอยู่แล้ว */
+.banner.ownimg .shade{background:none}
+.banner.ownimg #bKw,.banner.ownimg #bH1,.banner.ownimg #bP{display:none}
+.banner.ownimg .bin{padding:0 26px 12px}
+.banner.ownimg .cdown{background:rgba(12,6,10,.62);border-color:rgba(255,255,255,.3);
+  backdrop-filter:blur(6px)}
+.banner .shade{z-index:2}
+.banner .bin{z-index:3}
+.banner.hasimg{background-image:none}
 /* ม่านเข้มไล่จากซ้าย (ฝั่งตัวหนังสือ) ไปจาง ๆ ทางขวา เพื่อให้ยังเห็นภาพประกอบชัด */
 .banner .shade{background:
   linear-gradient(90deg,rgba(8,2,6,.74) 0%,rgba(8,2,6,.42) 42%,rgba(8,2,6,.06) 72%,rgba(8,2,6,0) 100%),
@@ -1538,7 +1557,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <div class="card"><div class="ch"><h3>แบนเนอร์หัวเว็บ</h3></div><div class="cb">
           <div class="fld"><label>ภาพแบนเนอร์หัวเว็บ</label>
             <div class="updrop" id="bnDrop"><b>📤 คลิกเพื่อเลือกไฟล์ หรือลากรูปมาวางตรงนี้</b>
-              รองรับ JPG / PNG / WebP · แนะนำแนวยาว เช่น 1600×400 px · เว้นว่างจะใช้พื้นหลังไล่สีของระบบ</div>
+              รองรับ JPG / PNG / WebP · แนะนำแนวยาว 1600×300 px (อัตราส่วนราว 5:1) ภาพจะเต็มความกว้างพอดี · เว้นว่างจะใช้พื้นหลังของระบบ</div>
             <div class="upbar" id="bnBar"><i></i></div>
             <div class="upthumb" id="bnThumb" style="display:none"></div>
             <details style="margin-top:9px"><summary class="hint" style="cursor:pointer">หรือวางลิงก์รูปเอง</summary>
@@ -4056,30 +4075,41 @@ function driveAlt(u){
   const m=String(u||'').match(/googleusercontent\.com\/d\/([A-Za-z0-9_-]{15,})/);
   return m ? 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1600' : '';
 }
-/** ใส่ภาพหัวเว็บ แล้วปรับความสูงของแถบให้ตรงสัดส่วนภาพจริง ภาพจะได้ไม่ถูกตัด */
+/** ใส่ภาพหัวเว็บ — ตั้งสัดส่วนของแถบตามภาพจริง ภาพจึงแสดงครบทั้งใบ ไม่ถูกตัด
+    และความสูงจะถูกจำกัดตามขนาดอุปกรณ์ (ดู CSS .banner) พื้นที่ที่เหลือข้าง ๆ
+    เติมด้วยภาพเดียวกันแบบเบลอ จึงดูต่อเนื่องเป็นผืนเดียว */
 function setBannerImage(url){
   const b=$('#banner'); if(!b) return;
-  const fallback=()=>{ b.classList.remove('hasimg');
-    b.style.backgroundImage=`url("${DEFAULT_BANNER}")`; b.style.aspectRatio=''; };
-  if(!url){ fallback(); return; }
-  const show=(src,im)=>{ b.style.backgroundImage=`url("${src}")`;
-    b.style.aspectRatio = (im.naturalWidth && im.naturalHeight)
-      ? im.naturalWidth+' / '+im.naturalHeight : '';
-    b.classList.add('hasimg'); };
-  b.style.backgroundImage=`url("${url}")`;
+  if(!b.querySelector('.bnbg')){
+    const bg=document.createElement('div'); bg.className='bnbg';
+    const fg=document.createElement('div'); fg.className='bnfg';
+    b.insertBefore(fg, b.firstChild); b.insertBefore(bg, fg);
+  }
+  const show=(src,im)=>{
+    b.style.setProperty('--bnimg', `url("${src}")`);
+    if(im && im.naturalWidth && im.naturalHeight)
+      b.style.setProperty('--bnar', (im.naturalWidth/im.naturalHeight).toFixed(4));
+    b.classList.add('hasimg');
+  };
+  const useDefault=()=>{ const d=new Image();
+    d.onload=()=>show(DEFAULT_BANNER,d);
+    d.onerror=()=>{ b.classList.remove('hasimg'); };
+    d.src=DEFAULT_BANNER; };
+  if(!url){ useDefault(); return; }
   const i1=new Image();
   i1.onload=()=>show(url,i1);
   i1.onerror=()=>{
-    const alt=driveAlt(url); if(!alt){ fallback(); return; }
+    const alt=driveAlt(url); if(!alt){ useDefault(); return; }
     const i2=new Image();
     i2.onload=()=>show(alt,i2);
-    i2.onerror=fallback;
+    i2.onerror=useDefault;
     i2.src=alt;
   };
   i1.src=url;
 }
 function renderBanner(){
   const c=siteCfg(), b=$('#banner');
+  b.classList.toggle('ownimg', !!c.banner_url);
   setBannerImage(c.banner_url? imgSrc(c.banner_url) : '');
   $('#bKw').textContent = SCOPE==='ALL'? shortName() : 'รอบคัดเลือกระดับกลุ่มโรงเรียน';
   $('#bH1').textContent = c.banner_title || (SCOPE==='ALL'? shortName() : groupName(SCOPE));
