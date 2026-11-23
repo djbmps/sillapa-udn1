@@ -9440,6 +9440,7 @@ function tmRange(a,b){
    ขอบเขต: ระดับเขตใช้รหัส 'DISTRICT' · กลุ่มโรงเรียนใช้รหัสกลุ่มของตนเอง
    ปุ่มเปิด-ปิด 2 ชั้น — เปิดทั้งตารางบนหน้าเว็บ (sched_public) และเปิดรายรายการ (published) */
 let SM={scope:'DISTRICT', open:'N', schedule:[], venues:[]};
+let SM_KEY='';   /* ขอบเขตของข้อมูลที่ค้างอยู่ในหน่วยความจำ — ใช้แสดงผลทันทีระหว่างรอข้อมูลใหม่ */
 function smScope(){ return SCOPE==='ALL' ? 'DISTRICT' : SCOPE; }
 function smScopeName(){ return SCOPE==='ALL' ? 'ระดับเขตพื้นที่' : groupName(SCOPE); }
 function venName(id){
@@ -9455,19 +9456,27 @@ function actLevel(id){
   return a? (a.level||'') : '';
 }
 
+function smPaint(){ drawSmOpen(); drawVenues(); fillSmFilters(); drawSched(); }
 function renderSchedMgr(pre){
   const gate=$('#smGate'), body=$('#smBody');
   if(!ME){ body.style.display='none';
     gate.innerHTML='<div class="note"><span>🔒</span><div>กรุณาเข้าสู่ระบบก่อน</div></div>'; return; }
-  gate.innerHTML='<div class="note"><span>⏳</span><div>กำลังโหลดตารางแข่งขัน…</div></div>';
-  body.style.display='none';
   $('#smSub').textContent = smScopeName();
-  Promise.resolve(pre || api('listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()})).then(r=>{
-    SM.scope=r.scope||smScope(); SM.open=r.open||'N';
+  const key=smScope();
+  /* เคยเปิดหน้านี้ในรอบนี้แล้ว — แสดงของเดิมทันที แล้วค่อยดึงข้อมูลใหม่มาทับเบื้องหลัง
+     ผู้ใช้จึงไม่ต้องรอหน้าจอว่างทุกครั้งที่กลับเข้ามา */
+  const warm = !pre && SM_KEY===key;
+  if(warm){ gate.innerHTML=''; body.style.display=''; smPaint(); }
+  else { gate.innerHTML='<div class="note"><span>⏳</span><div>กำลังโหลดตารางแข่งขัน…</div></div>';
+         body.style.display='none'; }
+  Promise.resolve(pre || api('listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:key})).then(r=>{
+    SM.scope=r.scope||key; SM.open=r.open||'N';
     SM.schedule=r.schedule||[]; SM.venues=r.venues||[];
+    SM_KEY=key;
     gate.innerHTML=''; body.style.display='';
-    drawSmOpen(); drawVenues(); fillSmFilters(); drawSched();
+    smPaint();
   }).catch(e=>{
+    if(warm) return;           /* มีข้อมูลเดิมแสดงอยู่แล้ว ไม่ต้องล้างหน้าจอ */
     body.style.display='none';
     gate.innerHTML='<div class="note r"><span>!</span><div>โหลดไม่สำเร็จ — '+(e.message||e)+
       '<br></div></div>';
