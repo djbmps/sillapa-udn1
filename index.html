@@ -570,6 +570,129 @@ body[data-view="admin"] .utilbar{display:none}
   .page:has(> .printarea:not(:empty)) > *:not(.printarea){display:none!important}
   @page{size:A4;margin:10mm}
 }
+
+/* ============================================================================
+   ชั้นไล่สี (gradient) — ดำ + แดงไวน์เดิม ให้เว็บดูมีมิติและดูพรีเมียม
+   วางไว้ท้ายสุดเพื่อทับของเดิมโดยไม่ต้องแก้กฎเดิม ถอดออกได้ทั้งบล็อกถ้าไม่ชอบ
+   ============================================================================ */
+:root{
+  --g-ink:#0B0409;            /* ดำอมไวน์ — ไม่ใช่ดำสนิท จะดูนุ่มกว่า */
+  --g-ink2:#1C0711;
+  --g-wine:#4A0020;
+  --g-red:#A00040;
+  --g-hot:#F82068;
+  --grad-bar:linear-gradient(100deg,#0B0409 0%,#260011 34%,#6B002C 72%,#A00040 100%);
+  --grad-night:linear-gradient(180deg,#1C0711 0%,#0B0409 100%);
+  --grad-btn:linear-gradient(135deg,#B30047 0%,#86003A 100%);
+  --grad-btn-h:linear-gradient(135deg,#F82068 0%,#A00040 100%);
+  --grad-dark:linear-gradient(135deg,#150611 0%,#330016 55%,#5E0022 100%);
+  --grad-line:linear-gradient(90deg,transparent,#A00040 18%,#F82068 50%,#A00040 82%,transparent);
+  --sh-lift:0 12px 34px rgba(58,0,24,.16),0 2px 6px rgba(58,0,24,.08);
+  --sh-deep:0 18px 46px rgba(11,4,9,.30);
+}
+/* เว็บกลุ่มโรงเรียนใช้สีประจำของตัวเอง (ส้มอิฐ) แต่ยังไล่จากดำเหมือนกัน */
+body[data-scope="group"]{
+  --g-wine:#4A1A08; --g-red:#9C3A12; --g-hot:#E2691F;
+  --grad-bar:linear-gradient(100deg,#0B0706 0%,#240D04 34%,#6B2609 72%,#9C3A12 100%);
+  --grad-btn:linear-gradient(135deg,#AE4115 0%,#7E2E0C 100%);
+  --grad-btn-h:linear-gradient(135deg,#E2691F 0%,#9C3A12 100%);
+  --grad-dark:linear-gradient(135deg,#140A06 0%,#361205 55%,#6B2609 100%);
+  --grad-line:linear-gradient(90deg,transparent,#9C3A12 18%,#E2691F 50%,#9C3A12 82%,transparent);
+}
+/* พื้นหลังหน้าเว็บ — ไล่สีนวล ๆ พร้อมแสงจาง ๆ สองจุด ให้ไม่แบน */
+body{
+  background:
+    radial-gradient(900px 420px at 86% -10%, color-mix(in srgb,var(--g-hot) 9%,transparent), transparent 62%),
+    radial-gradient(760px 380px at 4% -4%, color-mix(in srgb,var(--g-red) 7%,transparent), transparent 58%),
+    linear-gradient(180deg,#FBF7F9 0%, #F6EDF2 44%, #F1E5EC 100%);
+  background-attachment:fixed;
+}
+/* ---- แถบเครื่องมือบนสุด ---- */
+.utilbar{background:var(--grad-bar);border-bottom:1px solid rgba(255,255,255,.10);
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,.06)}
+.utilbar select{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22);backdrop-filter:blur(4px)}
+/* ---- แถบเมนูหลัก ---- */
+.pnav{background:var(--grad-night);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 10px 28px rgba(11,4,9,.28)}
+.pnav::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--grad-line);opacity:.9}
+.pnav button.pl{position:relative;transition:color .15s,background .15s}
+.pnav button.pl.on{color:#fff;border-bottom-color:transparent}
+.pnav button.pl.on::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:3px;border-radius:3px 3px 0 0;
+  background:linear-gradient(90deg,var(--g-red),var(--g-hot));
+  box-shadow:0 0 14px color-mix(in srgb,var(--g-hot) 65%,transparent);z-index:1}
+/* ---- ภาพหัวเว็บ — เพิ่มม่านไล่สีให้ตัวหนังสือลอยเด่นและดูลึก ---- */
+/* สีพื้นสำรองตอนยังไม่ได้ใส่ภาพแบนเนอร์ (ภาพจริงจะทับชั้นนี้เอง) */
+.banner{background:linear-gradient(115deg,#0B0409 0%,#3D0019 42%,#8A0038 74%,var(--g-hot) 112%)}
+body[data-scope="group"] .banner{background:linear-gradient(115deg,#0B0706 0%,#3A1407 42%,#8A3310 74%,#E2691F 112%)}
+.banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad-line);z-index:2}
+.banner .shade{background:
+  linear-gradient(180deg,rgba(8,2,6,.18) 0%,rgba(8,2,6,.52) 46%,rgba(8,2,6,.92) 100%),
+  radial-gradient(620px 240px at 76% 26%, color-mix(in srgb,var(--g-hot) 24%,transparent), transparent 72%)}
+.banner .kw{background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.08));
+  border-color:rgba(255,255,255,.34);backdrop-filter:blur(6px);box-shadow:0 2px 10px rgba(0,0,0,.22)}
+/* ---- แถบเมนูหลังบ้าน (ซ้ายมือ) ---- */
+.side{background:var(--grad-night);box-shadow:inset -1px 0 0 rgba(255,255,255,.06), 4px 0 24px rgba(11,4,9,.18)}
+.side .nv.on{background:linear-gradient(90deg,color-mix(in srgb,var(--g-red) 42%,transparent),transparent 86%);
+  color:#fff;box-shadow:inset 3px 0 0 var(--g-hot)}
+/* ---- ปุ่ม ---- */
+.btn{background:var(--grad-btn);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 3px 10px rgba(96,0,40,.26);
+  transition:background .16s, box-shadow .16s, transform .12s}
+.btn:hover{background:var(--grad-btn-h);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.26), 0 7px 20px rgba(160,0,64,.34);transform:translateY(-1px)}
+.btn:active{transform:translateY(0);box-shadow:inset 0 2px 5px rgba(0,0,0,.22)}
+.btn.g{background:linear-gradient(180deg,#fff,#FDF5F8);box-shadow:0 1px 2px rgba(58,0,24,.07)}
+.btn.g:hover{background:linear-gradient(180deg,#fff,var(--pri-soft));border-color:var(--pri);
+  box-shadow:0 5px 14px rgba(58,0,24,.12);transform:translateY(-1px)}
+.btn.d{background:var(--grad-dark);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 3px 12px rgba(11,4,9,.34)}
+.btn.d:hover{background:linear-gradient(135deg,#260012,#7A002E 60%,var(--g-red));transform:translateY(-1px)}
+.btn[disabled]{box-shadow:none;transform:none}
+/* ---- การ์ด ---- */
+.card{background:linear-gradient(180deg,#fff 0%,#FFFAFC 100%);
+  box-shadow:0 1px 2px rgba(58,0,24,.06), 0 10px 28px rgba(58,0,24,.07)}
+.newscard{background:linear-gradient(180deg,#fff 0%,#FFFAFC 100%);
+  box-shadow:0 1px 2px rgba(58,0,24,.06), 0 8px 22px rgba(58,0,24,.07)}
+.newscard:hover{box-shadow:0 10px 30px rgba(58,0,24,.16);transform:translateY(-2px)}
+/* ---- การ์ดตัวเลขสรุป ---- */
+.stat{box-shadow:0 1px 2px rgba(58,0,24,.06), 0 10px 26px rgba(58,0,24,.08);
+  transition:box-shadow .16s, transform .12s}
+.stat:hover{box-shadow:0 14px 34px rgba(58,0,24,.14);transform:translateY(-2px)}
+.stat::before{height:5px;background:linear-gradient(90deg,var(--pri),color-mix(in srgb,var(--pri) 45%,#fff));
+  border-radius:var(--r) var(--r) 0 0}
+/* ---- ส่วนท้ายเว็บ ---- */
+.pfoot{background:var(--grad-night);position:relative}
+.pfoot::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--grad-line)}
+/* ---- หัวตาราง — ไล่สีอ่อน ๆ ให้แยกจากเนื้อตาราง ---- */
+th{background:linear-gradient(180deg,#FDF4F8,#F6E7EF);
+   box-shadow:inset 0 -1px 0 color-mix(in srgb,var(--pri) 18%,transparent)}
+.docsheet th{background:#F1ECE7;box-shadow:none}
+.idc th,.cert th{box-shadow:none}
+/* ---- ป้ายสถานะ ---- */
+.pill.i{background:linear-gradient(135deg,var(--pri-soft),#fff)}
+/* ---- หน้าเข้าสู่ระบบ ---- */
+.login .l{background:linear-gradient(150deg,#0B0409 0%,#3D0019 38%,#78002F 68%,#A00040 100%)}
+/* ---- แบนเนอร์ตัวอย่างในหลังบ้าน ---- */
+.bnprev{background:linear-gradient(115deg,#0B0409,#3D0019 45%,var(--g-red)) center/cover no-repeat}
+.hero{background:linear-gradient(118deg,#0B0409 0%,#2E0014 42%,#8A0038 78%,var(--g-hot) 130%)}
+body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1005 42%,#8A3310 78%,#E2691F 130%)}
+/* จอฉายผลสด/คิว — พื้นดำไล่สี ให้ตัวเลขเด่นเวลาฉายขึ้นจอใหญ่ */
+.screen{background:
+  radial-gradient(900px 500px at 50% -10%, color-mix(in srgb,var(--g-red) 26%,transparent), transparent 66%),
+  linear-gradient(180deg,#120610 0%,#070306 100%)}
+.screen .lbr{background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.07);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.screen .lbr.hd{background:transparent;border:0;box-shadow:none}
+.screen .lbr.t1{background:linear-gradient(135deg,rgba(240,200,99,.26),rgba(240,200,99,.06));
+  border-color:rgba(240,200,99,.34)}
+.screen .lbr.t2{background:linear-gradient(135deg,rgba(198,208,219,.22),rgba(198,208,219,.05));
+  border-color:rgba(198,208,219,.30)}
+.screen .lbr.t3{background:linear-gradient(135deg,rgba(210,146,92,.22),rgba(210,146,92,.05));
+  border-color:rgba(210,146,92,.30)}
+@media print{
+  body{background:#fff!important}
+  .card,.newscard,.stat{background:#fff!important;box-shadow:none!important}
+}
 </style>
 </head>
 <body data-scope="district" data-view="public">
