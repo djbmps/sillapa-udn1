@@ -581,7 +581,7 @@ body[data-view="admin"] .utilbar{display:none}
   --g-wine:#4A0020;
   --g-red:#A00040;
   --g-hot:#F82068;
-  --grad-bar:linear-gradient(100deg,#0B0409 0%,#260011 34%,#6B002C 72%,#A00040 100%);
+  --grad-bar:linear-gradient(100deg,#0B0409 0%,#20000F 36%,#550023 74%,#7E0034 100%);
   --grad-night:linear-gradient(180deg,#1C0711 0%,#0B0409 100%);
   --grad-btn:linear-gradient(135deg,#B30047 0%,#86003A 100%);
   --grad-btn-h:linear-gradient(135deg,#F82068 0%,#A00040 100%);
@@ -625,9 +625,11 @@ body{
 .banner{background:linear-gradient(115deg,#0B0409 0%,#3D0019 42%,#8A0038 74%,var(--g-hot) 112%)}
 body[data-scope="group"] .banner{background:linear-gradient(115deg,#0B0706 0%,#3A1407 42%,#8A3310 74%,#E2691F 112%)}
 .banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad-line);z-index:2}
+/* ม่านเข้มไล่จากซ้าย (ฝั่งตัวหนังสือ) ไปจาง ๆ ทางขวา เพื่อให้ยังเห็นภาพประกอบชัด */
 .banner .shade{background:
-  linear-gradient(180deg,rgba(8,2,6,.18) 0%,rgba(8,2,6,.52) 46%,rgba(8,2,6,.92) 100%),
-  radial-gradient(620px 240px at 76% 26%, color-mix(in srgb,var(--g-hot) 24%,transparent), transparent 72%)}
+  linear-gradient(90deg,rgba(8,2,6,.74) 0%,rgba(8,2,6,.42) 42%,rgba(8,2,6,.06) 72%,rgba(8,2,6,0) 100%),
+  linear-gradient(180deg,rgba(8,2,6,.06) 0%,rgba(8,2,6,.26) 52%,rgba(8,2,6,.66) 100%),
+  radial-gradient(660px 280px at 84% 28%, color-mix(in srgb,var(--g-hot) 15%,transparent), transparent 76%)}
 .banner .kw{background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.08));
   border-color:rgba(255,255,255,.34);backdrop-filter:blur(6px);box-shadow:0 2px 10px rgba(0,0,0,.22)}
 /* ---- แถบเมนูหลังบ้าน (ซ้ายมือ) ---- */
