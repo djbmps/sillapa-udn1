@@ -627,6 +627,12 @@ body{
 body[data-scope="group"] .banner{
   background-image:linear-gradient(115deg,#0B0706 0%,#3A1407 42%,#8A3310 74%,#E2691F 112%)}
 .banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad-line);z-index:2}
+/* ความสูงของแบนเนอร์จะปรับตามสัดส่วนของภาพที่อัปโหลดเอง (ตั้งค่าโดย setBannerImage)
+   ภาพจึงแสดงเต็มใบ ไม่ถูกตัดบน-ล่าง — แต่ไม่สูงเกินครึ่งจอบนจอกว้างมาก */
+.banner{max-height:min(62vh,660px)}
+/* ใส่ภาพเองแล้ว — แสดงภาพเต็มใบเสมอ ถ้าจอกว้างกว่าสัดส่วนภาพจะเว้นพื้นสีเข้มไว้ข้าง ๆ */
+.banner.hasimg{background-size:contain;background-color:#140608}
+body[data-scope="group"] .banner.hasimg{background-color:#180C06}
 /* ม่านเข้มไล่จากซ้าย (ฝั่งตัวหนังสือ) ไปจาง ๆ ทางขวา เพื่อให้ยังเห็นภาพประกอบชัด */
 .banner .shade{background:
   linear-gradient(90deg,rgba(8,2,6,.74) 0%,rgba(8,2,6,.42) 42%,rgba(8,2,6,.06) 72%,rgba(8,2,6,0) 100%),
@@ -4044,9 +4050,37 @@ function eventDateLine(){
 /** ภาพแบนเนอร์เริ่มต้นของระบบ — เงาร่างเด็ก ๆ ทำกิจกรรม (ฟ้อนรำ · ร้องเพลง · วาดภาพ · ชกมวย · เขียนหนังสือ)
     ฝังมากับไฟล์หน้าเว็บ จึงแสดงได้เสมอแม้ยังไม่ได้อัปโหลดภาพของตนเอง */
 const DEFAULT_BANNER = 'banner-wine.webp';
+/** ลิงก์สำรองของรูปใน Google Drive — รูปที่เพิ่งอัปโหลดใหม่ ๆ มักยังไม่พร้อมบน lh3
+    ต้องรอสักพัก ทำให้ภาพหัวเว็บไม่ขึ้นทันที จึงสลับไปใช้ลิงก์ thumbnail ของ Drive แทน */
+function driveAlt(u){
+  const m=String(u||'').match(/googleusercontent\.com\/d\/([A-Za-z0-9_-]{15,})/);
+  return m ? 'https://drive.google.com/thumbnail?id='+m[1]+'&sz=w1600' : '';
+}
+/** ใส่ภาพหัวเว็บ แล้วปรับความสูงของแถบให้ตรงสัดส่วนภาพจริง ภาพจะได้ไม่ถูกตัด */
+function setBannerImage(url){
+  const b=$('#banner'); if(!b) return;
+  const fallback=()=>{ b.classList.remove('hasimg');
+    b.style.backgroundImage=`url("${DEFAULT_BANNER}")`; b.style.aspectRatio=''; };
+  if(!url){ fallback(); return; }
+  const show=(src,im)=>{ b.style.backgroundImage=`url("${src}")`;
+    b.style.aspectRatio = (im.naturalWidth && im.naturalHeight)
+      ? im.naturalWidth+' / '+im.naturalHeight : '';
+    b.classList.add('hasimg'); };
+  b.style.backgroundImage=`url("${url}")`;
+  const i1=new Image();
+  i1.onload=()=>show(url,i1);
+  i1.onerror=()=>{
+    const alt=driveAlt(url); if(!alt){ fallback(); return; }
+    const i2=new Image();
+    i2.onload=()=>show(alt,i2);
+    i2.onerror=fallback;
+    i2.src=alt;
+  };
+  i1.src=url;
+}
 function renderBanner(){
   const c=siteCfg(), b=$('#banner');
-  b.style.backgroundImage = `url("${c.banner_url? imgSrc(c.banner_url) : DEFAULT_BANNER}")`;
+  setBannerImage(c.banner_url? imgSrc(c.banner_url) : '');
   $('#bKw').textContent = SCOPE==='ALL'? shortName() : 'รอบคัดเลือกระดับกลุ่มโรงเรียน';
   $('#bH1').textContent = c.banner_title || (SCOPE==='ALL'? shortName() : groupName(SCOPE));
   const sub=(c.banner_subtitle||'').trim(), dl=(SCOPE==='ALL'? eventDateLine() : '');
