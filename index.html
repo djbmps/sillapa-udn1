@@ -622,8 +622,10 @@ body{
   box-shadow:0 0 14px color-mix(in srgb,var(--g-hot) 65%,transparent);z-index:1}
 /* ---- ภาพหัวเว็บ — เพิ่มม่านไล่สีให้ตัวหนังสือลอยเด่นและดูลึก ---- */
 /* สีพื้นสำรองตอนยังไม่ได้ใส่ภาพแบนเนอร์ (ภาพจริงจะทับชั้นนี้เอง) */
-.banner{background:linear-gradient(115deg,#0B0409 0%,#3D0019 42%,#8A0038 74%,var(--g-hot) 112%)}
-body[data-scope="group"] .banner{background:linear-gradient(115deg,#0B0706 0%,#3A1407 42%,#8A3310 74%,#E2691F 112%)}
+.banner{background-image:linear-gradient(115deg,#0B0409 0%,#3D0019 42%,#8A0038 74%,var(--g-hot) 112%);
+  background-size:cover;background-position:center;background-repeat:no-repeat}
+body[data-scope="group"] .banner{
+  background-image:linear-gradient(115deg,#0B0706 0%,#3A1407 42%,#8A3310 74%,#E2691F 112%)}
 .banner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--grad-line);z-index:2}
 /* ม่านเข้มไล่จากซ้าย (ฝั่งตัวหนังสือ) ไปจาง ๆ ทางขวา เพื่อให้ยังเห็นภาพประกอบชัด */
 .banner .shade{background:
@@ -662,7 +664,7 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#0B0706 0%,#3
   background:var(--grad-stat);
   box-shadow:0 1px 3px rgba(0,0,0,.16);
   transition:box-shadow .16s, transform .12s, filter .14s;
-  --grad-stat:#A8431A;
+  --grad-stat:#BB4C1E;
 }
 /* ไม่ใส่ชั้นแสงสะท้อน — ใช้สีพื้นเรียบ ตัวอักษรจึงคมชัด ไม่ดูเบลอ */
 .stat::before{content:none}
@@ -673,19 +675,19 @@ body[data-scope="group"] .banner{background:linear-gradient(115deg,#0B0706 0%,#3
 .stat a,.stat b{color:#fff}
 .stat:hover{filter:brightness(1.12);box-shadow:0 4px 12px rgba(0,0,0,.22);transform:translateY(-1px)}
 /* สี่สีประจำการ์ด — ไล่จากเข้มไปสด ให้เข้าชุดกับโทนดำ-แดงของเว็บ */
-.stat.s1{background:#A8431A}
-.stat.s2{background:#887E24}
-.stat.s3{background:#397E85}
-.stat.s4{background:#2A618F}
+.stat.s1{background:#BB4C1E}
+.stat.s2{background:#8E8427}
+.stat.s3{background:#3E8991}
+.stat.s4{background:#2F6DA0}
 /* การ์ดที่ไม่ได้ระบุสี (หน้าทำเนียบรายชื่อ / เกียรติบัตร) ให้ไล่สีสลับกันไปเองตามลำดับ */
-.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+2){background:#887E24}
-.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+3){background:#397E85}
-.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+0){background:#2A618F}
+.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+2){background:#8E8427}
+.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+3){background:#3E8991}
+.stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+0){background:#2F6DA0}
 /* เว็บกลุ่มโรงเรียน — ใบแรกใช้โทนส้มอิฐประจำกลุ่ม */
-body[data-scope="group"] .stat.s1{background:#7E2F0E}
-body[data-scope="group"] .stat.s2{background:#9C3A12}
-body[data-scope="group"] .stat.s3{background:#8E5A1C}
-body[data-scope="group"] .stat.s4{background:#A8491A}
+body[data-scope="group"] .stat.s1{background:#8E3A12}
+body[data-scope="group"] .stat.s2{background:#AE4416}
+body[data-scope="group"] .stat.s3{background:#9E6620}
+body[data-scope="group"] .stat.s4{background:#BA541F}
 body[data-scope="group"] .stat:not(.s1):not(.s2):not(.s3):not(.s4):nth-child(4n+1){
   background:linear-gradient(135deg,#6B2309 0%,#C04A16 50%,#E66A25 100%)}
 /* ---- ส่วนท้ายเว็บ ---- */
@@ -3977,8 +3979,8 @@ function renderBanner(){
    ส้ม → ทอง → เขียวมะนาว → เขียวน้ำทะเล → ฟ้า → น้ำเงิน → คราม
    กลุ่มที่อยู่ติดกันจึงกลมกลืนกัน และมองรวมทั้งหน้าเป็นแถบไล่สีชุดเดียว */
 const GROUP_COLORS=[
-  '#A8431A','#A84D1A','#A8561B','#A75F1B','#A2671B','#9E701C','#95771F','#887E24','#7B8529','#658446',
-  '#4E8168','#397E85','#35788C','#317292','#2D6A94','#2A618F','#27588A','#2C5087','#334A84','#3B4381'];
+  '#BB4C1E','#BB561E','#BB5F1F','#B9681F','#B1701F','#A9781F','#9D7E22','#8E8427','#7E892B','#698A4C',
+  '#528A70','#3E8991','#3A849A','#367EA2','#3377A5','#2F6DA0','#2C639A','#315B97','#3A5494','#434D91'];
 /** สีตัวอักษรที่อ่านชัดบนสีพื้นนั้น — สีอ่อนใช้ตัวหนังสือเข้ม สีเข้มใช้ตัวหนังสือขาว
  *  คำนวณจากค่าความสว่างจริงของสี จึงอ่านง่ายเสมอทุกสีในชุด */
 function inkOn(hex){
