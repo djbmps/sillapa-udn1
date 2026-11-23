@@ -1904,9 +1904,15 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           <div class="row" style="margin-bottom:10px" id="adPassTools">
             <label style="display:flex;gap:8px;align-items:center;font-weight:600;font-size:15.3px;cursor:pointer">
               <input type="checkbox" id="ac_showpass" onchange="searchAccounts()" style="width:18px;height:18px">
-              แสดงรหัสผ่าน</label>
+              แสดงรหัสผ่านทุกบัญชีในตาราง</label>
+            <button class="btn g sm" onclick="acHideAll()">🙈 ซ่อนรหัสทั้งหมด</button>
+            <button class="btn g sm" onclick="printAccounts()">🖨️ พิมพ์บัญชี + รหัสผ่าน</button>
             <span class="sp"></span>
             <button class="btn g" id="acCsvBtn" onclick="exportAccounts()">ดาวน์โหลดรายชื่อ + รหัสผ่าน (CSV)</button></div>
+          <div class="hint" id="acPrintHint" style="display:none;margin:-4px 0 10px">
+            เลือก <b>กลุ่มโรงเรียน</b> และ <b>ระดับบัญชี</b> ที่ช่องด้านบนก่อนกดพิมพ์
+            เอกสารจะมีเฉพาะบัญชีตามที่กรองไว้ เช่น เลือกกลุ่มเมือง 1 + ระดับโรงเรียน
+            จะได้สลิปของโรงเรียนในกลุ่มเมือง 1 ครบทุกโรงเรียนในแผ่นเดียว</div>
           <div class="note w" id="acPassNote" style="display:none;margin-bottom:10px"><span>🔒</span>
             <div>ท่านเปิดดูรหัสผ่านได้<b>เฉพาะโรงเรียนในกลุ่มของท่าน</b> — ระบบบันทึกทุกครั้งที่เปิดดูไว้ในประวัติการใช้งาน
               <br>โปรดส่งรหัสให้แต่ละโรงเรียนเป็นรายโรงเรียน อย่าส่งรวมเป็นรายการเดียว</div></div>
@@ -5693,14 +5699,15 @@ function drawAdmins(){
   rows.sort((a,b)=> adOrder(a.role)-adOrder(b.role)          /* เขต → กลุ่ม → โรงเรียน */
     || String(a.group_code||'').localeCompare(String(b.group_code||''))   /* เรียงกลุ่มตามรหัส g01…g20 */
     || String(a.username).localeCompare(String(b.username)));
-  const head=['ชื่อ-สกุล','ชื่อผู้ใช้'].concat(show?['รหัสผ่าน']:[])
+  const canP = ACC_CANPASS && isOwner();
+  const head=['ชื่อ-สกุล','ชื่อผู้ใช้'].concat(canP?['รหัสผ่าน']:[])
     .concat(['ระดับ','สังกัด','ประเภท / สิทธิ์','สถานะ','จัดการ']);
   tbl($('#adTbl'), head, rows.map(x=>{
     const a=amap[String(x.username)], i=a? ADMINS.indexOf(a) : -1;
     const nm=String(x.name||x.username).replace(/'/g,'');
     return `<tr><td><b>${cleanTxt(x.name||'')}</b></td>
       <td style="font-family:ui-monospace,monospace">${x.username}</td>
-      ${show? `<td><code style="font-size:15.3px;font-weight:700;letter-spacing:.5px">${x.pass_code||''}</code></td>`:''}
+      ${canP? passCell(x, show) : ''}
       <td>${AD_LVTXT[x.role]||x.role}</td>
       <td>${cleanTxt(x.where||'')}</td>
       <td style="max-width:300px">${a? (a.is_owner==='Y'?'<span class="pill w">ผู้ดูแลหลัก</span> ':'<span class="hint">ผู้ดูแลรอง</span> ')+permChips(a)
@@ -5716,6 +5723,80 @@ function drawAdmins(){
   if(n) n.innerHTML = (ACC_TOTAL>300)
     ? `<div class="note w"><span>ℹ️</span><div>พบ ${ACC_TOTAL} บัญชี แสดง 300 รายการแรก — พิมพ์คำค้นหรือเลือกกลุ่มให้แคบลง</div></div>`
     : `<div class="hint">แสดง ${rows.length} รายการ</div>`;
+}
+/** พิมพ์บัญชีผู้ใช้ + รหัสผ่านออกมาเป็นสลิปรายโรงเรียน ตัดแจกได้เลย
+ *  ผู้ดูแลเขตพิมพ์ได้ทุกบัญชีตามตัวกรองที่เลือก · ผู้ดูแลกลุ่มได้เฉพาะกลุ่มตนเอง
+ *  (เซิร์ฟเวอร์เป็นผู้จำกัดขอบเขตให้ หน้าเว็บเพียงแสดงผลเท่านั้น)                     */
+async function printAccounts(){
+  if(!isOwner()) return alert('เฉพาะผู้ดูแลหลักเท่านั้น');
+  const btn=(window.event&&window.event.target&&window.event.target.closest)
+    ? window.event.target.closest('button') : null;
+  const done=btnBusy(btn,'กำลังเตรียมเอกสาร…');
+  try{
+    const gsel=$('#ac_group');
+    const lv=($('#ad_level')&&$('#ad_level').value)||'';
+    const r=await api('listAccounts',{q:(($('#ad_q')&&$('#ad_q').value)||'').trim(),
+      kind:(lv==='other'?'':lv), group_code:(gsel? gsel.value : ''), show_pass:'1'});
+    const items=(r.items||[]).filter(x=>x.pass_code);
+    if(!items.length) return alert('ไม่มีบัญชีให้พิมพ์');
+    const site=location.origin+location.pathname;
+    const cfg=DB.config||{};
+    const head=(cfg.event_name||'งานศิลปหัตถกรรมนักเรียน')+' · '+(cfg.district_name||'สพป.อุดรธานี เขต 1');
+    const where = (ME&&ME.role==='group_admin') ? groupName(ME.scope)
+                : ((gsel&&gsel.value)? groupName(gsel.value) : 'ทุกกลุ่มโรงเรียน');
+    const slip=x=>`<div class="slip">
+      <div class="sh">${cleanTxt(head)}</div>
+      <div class="sn">${cleanTxt(x.name||x.username)}</div>
+      <div class="sw">${cleanTxt(x.where||'')}</div>
+      <table class="st"><tr><th>ชื่อผู้ใช้</th><td><b>${cleanTxt(x.username)}</b></td></tr>
+        <tr><th>รหัสผ่าน</th><td><b>${cleanTxt(x.pass_code)}</b></td></tr>
+        <tr><th>เว็บไซต์</th><td>${cleanTxt(site)}</td></tr></table>
+      <div class="sf">โปรดเก็บรักษาเป็นความลับ · เปลี่ยนรหัสผ่านได้ที่เมนูบัญชีของท่าน</div></div>`;
+    const w=window.open('','_blank','width=960,height=760');
+    if(!w) return alert('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ — กรุณาอนุญาต popup แล้วลองใหม่');
+    w.document.write(`<!doctype html><meta charset="utf-8">
+      <title>บัญชีผู้ใช้และรหัสผ่าน · ${cleanTxt(where)}</title>
+      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+      <style>
+        *{box-sizing:border-box}
+        body{font-family:"IBM Plex Sans Thai",sans-serif;margin:0;padding:14mm 10mm;color:#1a1a1a}
+        h1{font-size:19px;margin:0 0 3px}
+        .sub{font-size:13.5px;color:#555;margin-bottom:14px}
+        .wrap{display:grid;grid-template-columns:1fr 1fr;gap:7mm}
+        .slip{border:1px dashed #999;border-radius:6px;padding:7mm 6mm;break-inside:avoid;page-break-inside:avoid}
+        .sh{font-size:11.5px;color:#666}
+        .sn{font-size:16px;font-weight:700;margin-top:3px;line-height:1.35}
+        .sw{font-size:12.5px;color:#555;margin-bottom:7px}
+        .st{width:100%;border-collapse:collapse;font-size:14.5px}
+        .st th{text-align:left;width:76px;font-weight:400;color:#555;padding:3px 0;vertical-align:top}
+        .st td{padding:3px 0}
+        .st b{font-family:ui-monospace,Consolas,monospace;font-size:16.5px;letter-spacing:.6px}
+        .sf{font-size:11px;color:#777;margin-top:7px;border-top:1px solid #eee;padding-top:5px}
+        @media print{ body{padding:10mm 8mm} }
+      </style>
+      <h1>บัญชีผู้ใช้และรหัสผ่าน · ${cleanTxt(where)}</h1>
+      <div class="sub">${cleanTxt(head)} · พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')} · ${items.length} บัญชี
+        — เอกสารลับ ตัดตามเส้นประแล้วส่งให้แต่ละโรงเรียน</div>
+      <div class="wrap">${items.map(slip).join('')}</div>`);
+    w.document.close();
+    setTimeout(()=>{ w.focus(); w.print(); }, 700);
+    $('#acMsg').innerHTML='<div class="note w"><span>🔒</span><div><b>เอกสารนี้มีรหัสผ่าน</b> — '+
+      'ตัดตามเส้นประแล้วส่งให้แต่ละโรงเรียนเป็นรายโรงเรียน อย่าส่งทั้งแผ่นให้ผู้อื่น</div></div>';
+  }catch(e){ alert(e.message); }
+  finally{ done(); }
+}
+
+/** ช่องรหัสผ่านในตารางบัญชี — ปกติซ่อนเป็นจุด กดปุ่มจึงแสดงทีละบัญชี */
+function passCell(x, showAll){
+  const un=String(x.username||'').replace(/'/g,'');
+  const open = showAll || PASS_SHOWN[String(x.username)];
+  if(open && x.pass_code)
+    return `<td style="white-space:nowrap">
+      <code style="font-size:15.3px;font-weight:700;letter-spacing:.5px">${cleanTxt(x.pass_code)}</code>
+      <button class="btn g sm" style="margin-left:6px" onclick="acPeek('${un}')" title="ซ่อนรหัสผ่าน">🙈 ซ่อน</button></td>`;
+  return `<td style="white-space:nowrap">
+    <span style="letter-spacing:3px;color:var(--ink-3)">••••••</span>
+    <button class="btn g sm" style="margin-left:6px" onclick="acPeek('${un}')" title="แสดงรหัสผ่านของบัญชีนี้">👁️ ดูรหัส</button></td>`;
 }
 function adPermBoxes(checked){
   const set=new Set(checked||[]);
@@ -8700,6 +8781,18 @@ async function doResetReq(id, decision){
 
 /* ---------- บัญชีผู้ใช้ & รีเซ็ตรหัสผ่าน (ผู้ดูแลหลัก) ---------- */
 let ACC=[], ACC_TOTAL=0, ACQ=0;
+/* บัญชีที่ผู้ใช้กดปุ่ม “ดูรหัส” ไว้ — แสดงทีละบัญชี ไม่เปิดพรวดทั้งตาราง */
+let ACC_CANPASS=false, PASS_SHOWN={};
+/** ปุ่มดูรหัส/ซ่อนรหัสรายบัญชี — ถ้ายังไม่มีรหัสในมือ จะไปขอจากเซิร์ฟเวอร์ให้ก่อน */
+async function acPeek(un){
+  const k=String(un);
+  PASS_SHOWN[k] = !PASS_SHOWN[k];
+  const have=(ACC||[]).some(x=>x.pass_code);
+  if(PASS_SHOWN[k] && !have) await searchAccounts();   /* โหลดรหัสผ่านรอบแรก */
+  else drawAdmins();
+}
+/** ซ่อนรหัสที่เปิดดูไว้ทั้งหมด */
+function acHideAll(){ PASS_SHOWN={}; const c=$('#ac_showpass'); if(c) c.checked=false; searchAccounts(); }
 function adQDebounce(){ clearTimeout(ACQ); ACQ=setTimeout(searchAccounts,400); }
 async function searchAccounts(){
   try{
@@ -8708,11 +8801,13 @@ async function searchAccounts(){
       gsel.innerHTML='<option value="">ทุกกลุ่ม</option>'+
         (DB.groups||[]).map(g=>`<option value="${g.group_code}">${g.group_name}</option>`).join('');
     const show=$('#ac_showpass')&&$('#ac_showpass').checked;
+    const peeking=Object.keys(PASS_SHOWN).some(k=>PASS_SHOWN[k]);
     const lv=($('#ad_level')&&$('#ad_level').value)||'';
     const kind = (lv==='other') ? '' : lv;
     const r=await api('listAccounts',{q:(($('#ad_q')&&$('#ad_q').value)||'').trim(),
-      kind:kind, group_code:(gsel? gsel.value : ''), show_pass: show?'1':''});
+      kind:kind, group_code:(gsel? gsel.value : ''), show_pass:(show||peeking)?'1':''});
     ACC=r.items||[]; ACC_TOTAL=Number(r.total||ACC.length);
+    ACC_CANPASS=!!r.can_see_pass;
     const at=$('#adTools'); if(at) at.style.display = isOwner()? '' : 'none';
     /* ผู้ดูแลหลักของกลุ่มเปิดดูรหัสผ่านของโรงเรียนในกลุ่มตนเองได้ (เซิร์ฟเวอร์จำกัดขอบเขตให้แล้ว)
        ส่วนปุ่มดาวน์โหลดรายชื่อ+รหัสผ่านทั้งไฟล์ ยังสงวนไว้ให้ผู้ดูแลเขตเท่านั้น */
@@ -8721,6 +8816,7 @@ async function searchAccounts(){
     const dl=$('#acCsvBtn'); if(dl) dl.style.display = (ME&&ME.role==='district_admin')? '' : 'none';
     const pn=$('#acPassNote');
     if(pn) pn.style.display = (canPass && ME && ME.role==='group_admin')? '' : 'none';
+    const ph=$('#acPrintHint'); if(ph) ph.style.display = canPass? '' : 'none';
     drawAdmins();
   }catch(e){ ACC=[]; ACC_TOTAL=0; drawAdmins();
     const n=$('#acNote'); if(n) n.innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
