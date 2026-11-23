@@ -1906,7 +1906,10 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
               <input type="checkbox" id="ac_showpass" onchange="searchAccounts()" style="width:18px;height:18px">
               แสดงรหัสผ่าน</label>
             <span class="sp"></span>
-            <button class="btn g" onclick="exportAccounts()">ดาวน์โหลดรายชื่อ + รหัสผ่าน (CSV)</button></div>
+            <button class="btn g" id="acCsvBtn" onclick="exportAccounts()">ดาวน์โหลดรายชื่อ + รหัสผ่าน (CSV)</button></div>
+          <div class="note w" id="acPassNote" style="display:none;margin-bottom:10px"><span>🔒</span>
+            <div>ท่านเปิดดูรหัสผ่านได้<b>เฉพาะโรงเรียนในกลุ่มของท่าน</b> — ระบบบันทึกทุกครั้งที่เปิดดูไว้ในประวัติการใช้งาน
+              <br>โปรดส่งรหัสให้แต่ละโรงเรียนเป็นรายโรงเรียน อย่าส่งรวมเป็นรายการเดียว</div></div>
           <div id="acMsg" style="margin-bottom:10px"></div>
           <div id="acNote" style="margin-bottom:10px"></div>
         </div>
@@ -8711,7 +8714,13 @@ async function searchAccounts(){
       kind:kind, group_code:(gsel? gsel.value : ''), show_pass: show?'1':''});
     ACC=r.items||[]; ACC_TOTAL=Number(r.total||ACC.length);
     const at=$('#adTools'); if(at) at.style.display = isOwner()? '' : 'none';
-    const pt=$('#adPassTools'); if(pt) pt.style.display = (ME&&ME.role==='district_admin')? '' : 'none';
+    /* ผู้ดูแลหลักของกลุ่มเปิดดูรหัสผ่านของโรงเรียนในกลุ่มตนเองได้ (เซิร์ฟเวอร์จำกัดขอบเขตให้แล้ว)
+       ส่วนปุ่มดาวน์โหลดรายชื่อ+รหัสผ่านทั้งไฟล์ ยังสงวนไว้ให้ผู้ดูแลเขตเท่านั้น */
+    const canPass = !!(r.can_see_pass && isOwner());
+    const pt=$('#adPassTools'); if(pt) pt.style.display = canPass? '' : 'none';
+    const dl=$('#acCsvBtn'); if(dl) dl.style.display = (ME&&ME.role==='district_admin')? '' : 'none';
+    const pn=$('#acPassNote');
+    if(pn) pn.style.display = (canPass && ME && ME.role==='group_admin')? '' : 'none';
     drawAdmins();
   }catch(e){ ACC=[]; ACC_TOTAL=0; drawAdmins();
     const n=$('#acNote'); if(n) n.innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; }
