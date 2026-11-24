@@ -1127,13 +1127,8 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <!-- แถบทางลัดสีถูกตัดออกจากหน้าแรกตามที่ผู้ดูแลเขตกำหนด
            เมนูด้านบนมีลิงก์เหล่านี้ครบอยู่แล้ว จึงไม่ต้องแสดงซ้ำ
            (ฟังก์ชันวาดแถบยังอยู่ ถ้าต้องการกลับมาใช้ ให้ใส่ <div class="quick" id="homeQuick"></div> กลับที่ตรงนี้) -->
-      <!-- ---------- คลังภาพกิจกรรม ---------- -->
-      <div id="homeGalWrap" style="margin-top:22px;display:none">
-        <div style="display:flex;align-items:center;gap:10px;margin:0 0 12px">
-          <h3 style="font-size:18.3px">คลังภาพกิจกรรม</h3><span class="sp" style="flex:1"></span>
-          <span class="hint" id="homeGalCount"></span></div>
-        <div class="gal" id="homeGal"></div>
-      </div>
+      <!-- คลังภาพกิจกรรมถูกตัดออกจากหน้าแรก — ภาพข่าวแสดงอยู่ในรายการข่าวอยู่แล้ว
+           (ฟังก์ชัน drawGallery ยังอยู่ ถ้าต้องการกลับมาใช้ ให้ใส่กล่อง homeGalWrap กลับที่ตรงนี้) -->
       <div class="grid g2" style="margin-top:22px" id="homeGrid2">
         <div class="card" id="homeGroupCard"><div class="ch"><h3>กลุ่มโรงเรียนในเขต</h3><span class="sp"></span><button class="btn g sm" id="homeGroupsMore">ดูทั้งหมด</button></div>
           <div class="cb" style="padding:0;max-height:340px;overflow:auto"><table id="homeGroups"></table></div></div>
