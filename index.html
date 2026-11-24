@@ -4926,13 +4926,20 @@ function clearImg(thumbId){
 /* ============================ บัตรประจำตัว (A6) ============================ */
 let CARDCFG=null, CARDPEOPLE=[], CURCARD='student', CARDSEL={};
 
+/** บรรทัดหน่วยงานบนหัวบัตร — เว็บของกลุ่มโรงเรียนให้ขึ้นชื่อกลุ่มนำหน้าชื่อเขต */
+function cardOrgLine(cfg){
+  const dist=(cfg&&cfg.district_name)||districtName()||'';
+  if(SCOPE==='ALL') return qq(dist);
+  const g=groupName(SCOPE)||'';
+  return qq(g) + (dist? ' · '+qq(dist) : '');
+}
 function cardHTML(it,t,cfg){
   const bg=t&&t.bg_url;
   const num=(String(t.show_number||'Y')==='Y')
     ? `<div class="no">เลขที่บัตร ${String(it.no||0).padStart(4,'0')}</div>` : '';
   return `<div class="idc ${bg?'':'noimg'}" ${bg?`style="background-image:url('${imgSrc(bg)}')"`:''}>
     ${bg?'':`<div class="hd2">${(cfg&&cfg.event_name)||eventName()}
-      <small>${(cfg&&cfg.district_name)||''}</small></div>`}
+      <small>${cardOrgLine(cfg)}</small></div>`}
     <div class="ph" style="top:${t.y_photo||26}%;width:${t.photo_w||35}%;aspect-ratio:3/4">
       ${it.photo_url? `<img src="${imgSrc(it.photo_url)}" alt="">`
         : '<div class="none">ยังไม่มี<br>รูปถ่าย</div>'}</div>
