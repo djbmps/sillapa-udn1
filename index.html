@@ -3798,16 +3798,34 @@ async function checkRev(force){
   }catch(e){}
   finally{ REV_BUSY=false; }
 }
-function revToast(){
+/** ข้อความแจ้งสั้น ๆ มุมล่างจอ — ใช้ร่วมกันทั้งระบบ (ส่งข้อความว่างเพื่อซ่อน) */
+function toast(msg, ms){
   let t=$('#revToast');
   if(!t){ t=document.createElement('div'); t.id='revToast';
     t.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:9999;'+
       'background:var(--ink,#1f2937);color:#fff;padding:11px 18px;border-radius:12px;font-size:15.3px;'+
       'box-shadow:0 10px 30px rgba(0,0,0,.25);opacity:0;transition:opacity .25s';
     document.body.appendChild(t); }
-  t.textContent='🔄 รายการแข่งขันมีการอัปเดตจากสำนักงานเขต — ปรับให้เป็นรายการล่าสุดแล้ว';
-  t.style.opacity='1';
-  clearTimeout(window.__revT); window.__revT=setTimeout(()=>{ t.style.opacity='0'; }, 5000);
+  clearTimeout(window.__revT);
+  if(!msg){ t.style.opacity='0'; return; }
+  t.textContent=msg; t.style.opacity='1';
+  window.__revT=setTimeout(()=>{ t.style.opacity='0'; }, ms||4000);
+}
+function revToast(){ toast('🔄 รายการแข่งขันมีการอัปเดตจากสำนักงานเขต — ปรับให้เป็นรายการล่าสุดแล้ว', 5000); }
+
+/* ---------- บันทึกแบบไม่ต้องรอ ----------
+   เซิร์ฟเวอร์ของ Google ใช้เวลาราว 3-5 วินาทีต่อการบันทึก 1 ครั้ง (เป็นค่าคงที่ของระบบ ลดไม่ได้)
+   จึงให้หน้าเว็บแสดงผลทันที แล้วส่งไปบันทึกเบื้องหลัง ผู้ใช้ทำงานต่อได้เลยไม่ต้องรอ
+   บันทึกสำเร็จ → นำข้อมูลจริงจากเซิร์ฟเวอร์มาแทนที่
+   บันทึกไม่สำเร็จ → คืนข้อมูลเดิมให้ครบ แล้วแจ้งเตือนทันที                                */
+function bgSave(action, params, apply, revert, okMsg){
+  toast('⏳ กำลังบันทึก…', 60000);
+  return api(action, params)
+    .then(r=>{ try{ if(apply) apply(r); }catch(e){}
+               toast('✓ '+(okMsg||'บันทึกแล้ว')); return r; })
+    .catch(e=>{ try{ if(revert) revert(); }catch(e2){}
+                toast('');
+                alert('บันทึกไม่สำเร็จ — '+((e&&e.message)||e)+'\n\nระบบคืนข้อมูลเดิมให้แล้ว กรุณาลองใหม่อีกครั้ง'); });
 }
 function startRevWatch(){
   if(window.__REVW) return; window.__REVW=1;
@@ -9574,7 +9592,9 @@ function renderSchedMgr(pre){
          body.style.display='none'; }
   Promise.resolve(pre || api('listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:key})).then(r=>{
     SM.scope=r.scope||key; SM.open=r.open||'N';
-    SM.schedule=r.schedule||[]; SM.venues=r.venues||[];
+    /* แถวที่ยังบันทึกเบื้องหลังไม่เสร็จ ให้คงอยู่ต่อ ไม่ถูกข้อมูลชุดใหม่ลบหายไป */
+    const pv=(SM.venues||[]).filter(v=>v._saving), ps=(SM.schedule||[]).filter(s=>s._saving);
+    SM.schedule=(r.schedule||[]).concat(ps); SM.venues=(r.venues||[]).concat(pv);
     SM_KEY=key;
     gate.innerHTML=''; body.style.display='';
     smPaint();
@@ -9623,11 +9643,13 @@ function drawVenues(){
   tbl($('#smVTbl'),['รหัส','ชื่อสนามแข่งขัน','ผู้ประสานงาน','ใช้ในตาราง (กิจกรรม)',''],
     SM.venues.map(v=>{
       const used=SM.schedule.filter(s=>String(s.venue_id)===String(v.venue_id)).length;
-      return `<tr><td>${v.venue_id}</td><td><b>${v.name||''}</b></td>
+      const busy=!!v._saving;      /* แถวที่กำลังบันทึกเบื้องหลัง — ยังแก้ไข/ลบไม่ได้ */
+      return `<tr${busy?' style="opacity:.62"':''}><td>${busy?'⏳':v.venue_id}</td><td><b>${v.name||''}</b></td>
         <td>${[v.contact,v.phone].filter(Boolean).join(' · ')}</td>
         <td class="num">${used||'—'}</td>
-        <td style="white-space:nowrap"><button class="btn g sm" onclick="editVenue('${v.venue_id}')">แก้ไข</button>
-          <button class="btn g sm" onclick="delVenue('${v.venue_id}')">ลบ</button></td></tr>`;
+        <td style="white-space:nowrap">${busy? '<span class="hint">กำลังบันทึก…</span>'
+          : `<button class="btn g sm" onclick="editVenue('${v.venue_id}')">แก้ไข</button>
+          <button class="btn g sm" onclick="delVenue('${v.venue_id}')">ลบ</button>`}</td></tr>`;
     }).join(''));
 }
 function editVenue(id){
@@ -9650,18 +9672,28 @@ function editVenue(id){
         address:$('#v_addr').value.trim(), contact:$('#v_contact').value.trim(),
         phone:$('#v_phone').value.trim(), note:$('#v_note').value.trim()};
       if(!o.name) throw new Error('กรุณากรอกชื่อสนามแข่งขัน');
-      const rr=await apiThen('saveVenue',{venue:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
-        'listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-      renderSchedMgr(rr.then);
+      /* ขึ้นในตารางให้เห็นทันที แล้วค่อยบันทึกเบื้องหลัง */
+      const keep=SM.venues.slice();
+      const tmp=Object.assign({}, SM.venues.find(v=>String(v.venue_id)===String(id))||{}, o,
+        {group_code:(SCOPE==='ALL'?'DISTRICT':SCOPE), _saving:1});
+      SM.venues = id ? SM.venues.map(v=>String(v.venue_id)===String(id)? tmp : v)
+                     : SM.venues.concat([tmp]);
+      drawVenues(); fillSmFilters();
+      bgSave('saveVenue',{venue:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+        row=>{ SM.venues=SM.venues.map(v=> v===tmp ? row : v); drawVenues(); fillSmFilters(); },
+        ()=>{ SM.venues=keep; drawVenues(); fillSmFilters(); },
+        'บันทึกสนามแข่งขันแล้ว');
+      return true;                       /* ปิดหน้าต่างทันที ไม่ต้องรอเซิร์ฟเวอร์ */
     });
 }
 async function delVenue(id){
   const v=SM.venues.find(x=>String(x.venue_id)===String(id))||{};
   if(!confirm('ลบสนามแข่งขัน “'+(v.name||id)+'” ?')) return;
-  try{ const rr=await apiThen('deleteVenue',{venue_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
-      'listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-    renderSchedMgr(rr.then); }
-  catch(e){ alert(e.message||e); }
+  const keep=SM.venues.slice();
+  SM.venues=SM.venues.filter(x=>String(x.venue_id)!==String(id));
+  drawVenues(); fillSmFilters();
+  bgSave('deleteVenue',{venue_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+    null, ()=>{ SM.venues=keep; drawVenues(); fillSmFilters(); }, 'ลบสนามแข่งขันแล้ว');
 }
 
 /* ---------- ตารางแข่งขัน ---------- */
@@ -9670,7 +9702,8 @@ function fillSmFilters(){
   $('#smDate').innerHTML='<option value="">ทุกวัน</option>'+
     dates.map(d=>`<option value="${d}">${thDateLong(d)}</option>`).join('');
   $('#smVen').innerHTML='<option value="">ทุกสนาม</option>'+
-    SM.venues.map(v=>`<option value="${v.venue_id}">${v.name||v.venue_id}</option>`).join('');
+    SM.venues.filter(v=>!v._saving)
+      .map(v=>`<option value="${v.venue_id}">${v.name||v.venue_id}</option>`).join('');
 }
 function drawSched(){
   const q=($('#smQ')?.value||'').trim().toLowerCase();
@@ -9688,8 +9721,8 @@ function drawSched(){
   $('#smCount').textContent = rows.length+' / '+SM.schedule.length+' รายการ';
   tbl($('#smTbl'),['รายการแข่งขัน','ระดับชั้น','วันที่','เวลา','สนาม / ห้อง','สถานะ','บนหน้าเว็บ',''],
     rows.map(s=>{
-      const on=s.published==='Y';
-      return `<tr><td><b>${actName(s.act_id)}</b><br><span class="hint">${s.act_id}</span></td>
+      const on=s.published==='Y', busy=!!s._saving;
+      return `<tr${busy?' style="opacity:.62"':''}><td><b>${actName(s.act_id)}</b><br><span class="hint">${s.act_id}</span></td>
         <td>${actLevel(s.act_id)}</td>
         <td style="white-space:nowrap">${s.date? thDateLong(dstr(s.date)) : '—'}</td>
         <td style="white-space:nowrap">${tmRange(s.start_time,s.end_time)}</td>
@@ -9697,8 +9730,9 @@ function drawSched(){
         <td>${s.status||''}</td>
         <td><button class="btn${on?'':' g'} sm" onclick="smPubOne('${s.sched_id}')"
               title="${on?'กดเพื่อซ่อนจากหน้าเว็บ':'กดเพื่อแสดงบนหน้าเว็บ'}">${on?'✓ เปิด':'ปิดอยู่'}</button></td>
-        <td style="white-space:nowrap"><button class="btn g sm" onclick="editSched('${s.sched_id}')">แก้ไข</button>
-          <button class="btn g sm" onclick="delSched('${s.sched_id}')">ลบ</button></td></tr>`;
+        <td style="white-space:nowrap">${busy? '<span class="hint">กำลังบันทึก…</span>'
+          : `<button class="btn g sm" onclick="editSched('${s.sched_id}')">แก้ไข</button>
+          <button class="btn g sm" onclick="delSched('${s.sched_id}')">ลบ</button>`}</td></tr>`;
     }).join(''));
 }
 const SCH_STATUS=['รอแข่งขัน','กำลังแข่งขัน','แข่งเสร็จแล้ว','เลื่อน','งด'];
@@ -9739,9 +9773,18 @@ function editSched(id){
       if(!o.act_id) throw new Error('กรุณาเลือกรายการแข่งขัน');
       if(SM.schedule.some(x=>String(x.act_id)===String(o.act_id) && String(x.sched_id)!==String(id)))
         if(!confirm('รายการนี้มีอยู่ในตารางแล้ว — เพิ่มอีกรอบหรือไม่?')) return false;
-      const rr=await apiThen('saveSchedule',{schedule:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
-        'listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-      renderSchedMgr(rr.then);
+      /* ขึ้นในตารางให้เห็นทันที แล้วค่อยบันทึกเบื้องหลัง */
+      const keep=SM.schedule.slice();
+      const tmp=Object.assign({}, SM.schedule.find(x=>String(x.sched_id)===String(id))||{}, o,
+        {group_code:(SCOPE==='ALL'?'DISTRICT':SCOPE), status:o.status||'รอแข่งขัน', _saving:1});
+      SM.schedule = id ? SM.schedule.map(x=>String(x.sched_id)===String(id)? tmp : x)
+                       : SM.schedule.concat([tmp]);
+      drawSched(); fillSmFilters(); drawSmOpen();
+      bgSave('saveSchedule',{schedule:o, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+        row=>{ SM.schedule=SM.schedule.map(x=> x===tmp ? row : x); drawSched(); fillSmFilters(); drawSmOpen(); },
+        ()=>{ SM.schedule=keep; drawSched(); fillSmFilters(); drawSmOpen(); },
+        'บันทึกลงตารางแข่งขันแล้ว');
+      return true;                       /* ปิดหน้าต่างทันที ไม่ต้องรอเซิร์ฟเวอร์ */
     });
 }
 /** 830 · 8.30 · 8:30 → 08:30 */
@@ -9754,18 +9797,20 @@ function hhmm(v){
 async function delSched(id){
   const s=SM.schedule.find(x=>String(x.sched_id)===String(id))||{};
   if(!confirm('ลบ “'+actName(s.act_id)+'” ออกจากตารางแข่งขัน?')) return;
-  try{ const rr=await apiThen('deleteSchedule',{sched_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
-      'listSchedule',{group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-    renderSchedMgr(rr.then); }
-  catch(e){ alert(e.message||e); }
+  const keep=SM.schedule.slice();
+  SM.schedule=SM.schedule.filter(x=>String(x.sched_id)!==String(id));
+  drawSched(); fillSmFilters(); drawSmOpen();
+  bgSave('deleteSchedule',{sched_id:id, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+    null, ()=>{ SM.schedule=keep; drawSched(); fillSmFilters(); drawSmOpen(); }, 'ลบออกจากตารางแล้ว');
 }
 async function smPubOne(id){
   const s=SM.schedule.find(x=>String(x.sched_id)===String(id)); if(!s) return;
-  const to = s.published==='Y' ? 'N' : 'Y';
-  try{
-    await api('publishSchedule',{ids:id, publish:to, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()});
-    s.published=to; drawSmOpen(); drawSched();
-  }catch(e){ alert(e.message||e); }
+  if(s._saving) return;
+  const from = s.published==='Y' ? 'Y' : 'N', to = from==='Y' ? 'N' : 'Y';
+  s.published=to; drawSmOpen(); drawSched();      /* สลับให้เห็นทันที */
+  bgSave('publishSchedule',{ids:id, publish:to, group:SCOPE==='ALL'?'':SCOPE, sched_scope:smScope()},
+    null, ()=>{ s.published=from; drawSmOpen(); drawSched(); },
+    to==='Y'?'เปิดเผยบนหน้าเว็บแล้ว':'ซ่อนจากหน้าเว็บแล้ว');
 }
 async function smPubAll(to){
   const n=SM.schedule.length;
