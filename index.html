@@ -2381,6 +2381,8 @@ let TOKEN = LS.getItem(K.token) || '';
 let ME = null; try{ ME=JSON.parse(LS.getItem(K.me)||'null') }catch(e){}
 let SCOPE = LS.getItem(K.scope) || 'ALL';
 let DB = null;              // ข้อมูลจาก bootstrap
+/** วันที่ของข้อมูลจำนวนนักเรียน (DMC) ที่นำเข้าล่าสุด — แก้ที่เดียวเมื่อปรับข้อมูลใหม่ */
+const DMC_ASOF = '10 พฤศจิกายน 2569';
 let PAGE='home';
 let VIEW = LS.getItem(K.view) || 'public';
 const DEMO = ()=> !API;
@@ -7316,11 +7318,11 @@ function renderHome(){
   const S=schoolsOf(SCOPE), A=actsOf();
   const stats = SCOPE==='ALL'
     ? [['โรงเรียนในเขต',S.length,'4 อำเภอ · 20 กลุ่ม'],
-       ['นักเรียนทั้งหมด',S.reduce((a,b)=>a+Number(b.n_total||0),0).toLocaleString(),'ข้อมูล DMC'],
+       ['นักเรียนทั้งหมด',S.reduce((a,b)=>a+Number(b.n_total||0),0).toLocaleString(),'ข้อมูล DMC '+DMC_ASOF],
        ['โรงเรียนขยายโอกาส',S.filter(x=>x.is_expansion==='Y').length,'ลงรายการ ม.1-3 ได้'],
        ['รายการแข่งขัน',A.length,'เปิดแข่ง '+A.filter(a=>a.status==='เปิด').length+' รายการ']]
     : [['โรงเรียนสมาชิก',S.length,groupName(SCOPE)],
-       ['นักเรียนในกลุ่ม',S.reduce((a,b)=>a+Number(b.n_total||0),0).toLocaleString(),''],
+       ['นักเรียนในกลุ่ม',S.reduce((a,b)=>a+Number(b.n_total||0),0).toLocaleString(),'ข้อมูล DMC '+DMC_ASOF],
        ['โรงเรียนขยายโอกาส',S.filter(x=>x.is_expansion==='Y').length,'ลงรายการ ม.1-3 ได้'],
        ['รายการแข่งขัน',A.length,'เปิดแข่ง '+A.filter(a=>a.status==='เปิด').length+' รายการ']];
   $('#homeStats').innerHTML=stats.map((s,i)=>`<div class="stat s${(i%4)+1}"><div class="l">${s[0]}</div><div class="v">${s[1]}</div><div class="s">${s[2]}</div></div>`).join('');
@@ -7461,7 +7463,7 @@ function renderSchools(){
   if(q) r=r.filter(s=>(s.school_name+s.tambon+s.smis).includes(q));
   $('#rgSub').textContent=(SCOPE==='ALL'?'ทั้งเขต 214 โรงเรียน':groupName(SCOPE));
   $('#rgCount').textContent='แสดง '+r.length+' โรงเรียน · นักเรียนรวม '+
-    r.reduce((a,b)=>a+Number(b.n_total||0),0).toLocaleString()+' คน';
+    r.reduce((a,b)=>a+Number(b.n_total||0),0).toLocaleString()+' คน · ข้อมูล ณ '+DMC_ASOF;
   tbl($('#rgTbl'),['SMIS','โรงเรียน','ตำบล','อำเภอ','กลุ่ม','นักเรียน','เปิดสอน','ขนาด','สมัครได้','บัญชี'],
     r.slice(0,400).map(s=>`<tr><td class="num" style="color:var(--ink-3)">${s.smis}</td>
       <td><b>${cleanName(s.school_name)}</b></td><td>${s.tambon}</td><td>${s.amphoe}</td>
