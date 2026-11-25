@@ -1172,6 +1172,23 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <div class="cb" style="padding:0;overflow:auto"><table id="schTbl"></table></div></div>
     </section>
 
+    <!-- ---------- ผู้เข้าแข่งขัน (หน้าเว็บสาธารณะ) ---------- -->
+    <section class="page" id="p-entrants">
+      <div class="hd"><div><h2>ผู้เข้าแข่งขัน</h2><p id="enSub"></p></div></div>
+      <div class="grid g4" id="enStat" style="margin-bottom:12px"></div>
+      <div class="row" style="margin-bottom:12px">
+        <input id="enQ" placeholder="ค้นชื่อรายการ โรงเรียน หรือชื่อผู้เข้าแข่งขัน…" oninput="drawEntrants()"
+               style="flex:1;min-width:230px;padding:9px 13px;border:1px solid var(--line);border-radius:10px">
+        <select id="enCat" onchange="drawEntrants()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;max-width:330px"></select>
+        <select id="enLvl" onchange="drawEntrants()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
+        <select id="enOnly" onchange="drawEntrants()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff">
+          <option value="Y">เฉพาะรายการที่มีผู้สมัคร</option>
+          <option value="">ทุกรายการ</option>
+        </select>
+      </div>
+      <div id="enBody"></div>
+    </section>
+
     <section class="page" id="p-acts">
       <div class="hd"><div><h2>รายการแข่งขัน</h2><p id="actsSub"></p></div></div>
       <div class="row" style="margin-bottom:12px">
@@ -1599,6 +1616,13 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <div class="fld"><label>ตั้งแต่วันที่</label><div id="st_open_at_wrap"></div></div>
             <div class="fld"><label>ถึงวันที่</label><div id="st_close_at_wrap"></div></div>
           </div>
+          <div class="fld" id="fld_entdetail"><label>หน้าผู้เข้าแข่งขันสาธารณะ — แสดงละเอียดแค่ไหน</label>
+            <select id="st_pub_entry_detail">
+              <option value="full">ชื่อนักเรียนและครูผู้ฝึกสอน (แบบเว็บ สพฐ.)</option>
+              <option value="school">ชื่อโรงเรียน ไม่มีชื่อบุคคล</option>
+              <option value="count">จำนวนทีมและจำนวนโรงเรียนเท่านั้น</option>
+            </select>
+            <div class="hint">ใช้ทั้งเว็บระดับเขตและเว็บของทุกกลุ่มโรงเรียน · เปลี่ยนแล้วมีผลภายใน 3 นาที</div></div>
           
         </div></div>
       </div>
@@ -2977,6 +3001,28 @@ function demoApi(action,p){
         activities:new Set(e.map(x=>x.act_id)).size,
         schools:new Set(e.map(x=>String(x.school_smis))).size,
         byAct:e.reduce((m,x)=>{ m[x.act_id]=(m[x.act_id]||0)+1; return m; },{})}; }
+    case 'publicEntries':{
+      const want=String(p.group||'')||'DISTRICT';
+      const S=SEED_SCHOOLS.map(s=>({smis:s[0],school_name:s[1]}));
+      const nm=x=>{const h=S.find(v=>String(v.smis)===String(x)); return h?h.school_name:String(x);};
+      const e=MEM.entries.filter(x=>String(x.status)!=='ตัดสิทธิ์' && String(x.group_code||'')===want);
+      const ids={}; e.forEach(x=>ids[x.entry_id]=1);
+      const st={}, co={};
+      MEM.students.filter(x=>ids[x.entry_id]).forEach(x=>(st[x.entry_id]=st[x.entry_id]||[])
+        .push({name:((x.prefix||'')+(x.first_name||'')+' '+(x.last_name||'')).trim(),level:x.class_level||''}));
+      MEM.coaches.filter(x=>ids[x.entry_id]).forEach(x=>(co[x.entry_id]=co[x.entry_id]||[])
+        .push(((x.prefix||'')+(x.first_name||'')+' '+(x.last_name||'')).trim()));
+      const counts={}; e.forEach(x=>{ const o=counts[x.act_id]=counts[x.act_id]||{teams:0,sc:new Set()};
+        o.teams++; o.sc.add(String(x.school_smis)); });
+      Object.keys(counts).forEach(k=>{ counts[k]={teams:counts[k].teams,schools:counts[k].sc.size}; });
+      return {scope:want, detail:'full', teams:e.length,
+        students:MEM.students.filter(x=>ids[x.entry_id]).length,
+        acts:Object.keys(counts).length,
+        schools:new Set(e.map(x=>String(x.school_smis))).size,
+        counts:counts,
+        rows:e.map(x=>({act_id:x.act_id,smis:String(x.school_smis),school:nm(x.school_smis),
+          students:st[x.entry_id]||[],coaches:co[x.entry_id]||[]})),
+        serverTime:new Date().toISOString().slice(0,16).replace('T',' ')}; }
     case 'listEntries':{
       let e=MEM.entries.slice();
       if(p.group) e=e.filter(x=>x.group_code===p.group);
@@ -3993,6 +4039,7 @@ function roleTh(r){ const t={district_admin:'ผู้ดูแลเขต',gro
 /* ============================ หน้าเว็บสาธารณะ / หลังบ้าน ============================ */
 const PUBLIC_PAGES=[['home','หน้าแรก'],['acts','รายการแข่งขัน'],['rules','เกณฑ์การแข่งขัน'],
   ['apply','สมัครกรรมการตัดสิน'],
+  ['entrants','ผู้เข้าแข่งขัน'],
   ['sched','ตารางแข่งขัน'],['results','ผลการแข่งขัน'],['medals','ตารางเหรียญ'],
   ['cert','เกียรติบัตร'],['subs','ขอเปลี่ยนตัว'],['docs','เอกสารดาวน์โหลด'],
   ['gsites','เว็บกลุ่มโรงเรียน']];
@@ -4687,6 +4734,10 @@ function renderSite(){
   dateSelSet('st_close_at', (DB.config||{}).close_at||'');
   $('#fld_event').style.display = isDist?'':'none';
   $('#fld_dates').style.display = isDist?'':'none';
+  /* ระดับความละเอียดของหน้าผู้เข้าแข่งขันเป็นค่ากลางของทั้งเขต จึงตั้งได้ที่เว็บระดับเขตเท่านั้น */
+  const fe=$('#fld_entdetail');
+  if(fe){ fe.style.display = isDist?'':'none';
+    $('#st_pub_entry_detail').value=(DB.config||{}).pub_entry_detail||'full'; }
   const _ssn=$('#siteScopeNote'); if(_ssn) _ssn.innerHTML = isDist
     ? 'แบนเนอร์ชุดนี้แสดงบน<b>หน้าเว็บสาธารณะระดับเขต</b> · แต่ละกลุ่มตั้งแบนเนอร์ของตัวเองแยกได้'
     : 'แบนเนอร์ชุดนี้แสดงเฉพาะ<b>หน้าเว็บของ '+groupName(SCOPE)+'</b> · ถ้าเว้นว่างจะใช้ค่าเริ่มต้นของระบบ';
@@ -4705,7 +4756,8 @@ async function saveSite(){
   const o={scope:SCOPE};
   ['banner_url','banner_title','banner_subtitle','banner_note','contact'].forEach(k=>o[k]=$('#st_'+k).value.trim());
   if(SCOPE==='ALL'){ o.event_name=$('#st_event_name').value.trim();
-    o.open_at=dateSelVal('st_open_at'); o.close_at=dateSelVal('st_close_at'); }
+    o.open_at=dateSelVal('st_open_at'); o.close_at=dateSelVal('st_close_at');
+    o.pub_entry_detail=$('#st_pub_entry_detail').value; }
   /* ฝั่งเซิร์ฟเวอร์เก็บข้อความแจ้งเตือนของกลุ่มไว้ที่คอลัมน์ tagline ไม่ใช่ banner_note
      ถ้าไม่ส่งชื่อนี้ไปด้วย ข้อความที่กลุ่มพิมพ์จะหายทุกครั้งที่บันทึก */
   if(SCOPE!=='ALL') o.tagline=o.banner_note;
@@ -7338,6 +7390,7 @@ function renderPage(p){
     judges:renderJudges, perm:renderPerm, season:renderSeason, backup:renderBackup, admins:renderAdmins,
     apply:renderApply, judgeapp:renderJudgeApp,
     subs:renderSubsPublic, submgr:renderSubMgr, gsites:renderGSites, schedmgr:renderSchedMgr, region:renderRegion,
+    entrants:renderEntrants,
     rules:renderRules, rulesmgr:renderRulesMgr}[p]||(()=>{}))();
 }
 
@@ -7397,6 +7450,87 @@ function renderHome(){
   }).catch(()=>{ const w=$('#homeNewsWrap'); if(w) w.style.display='none'; });
 }
 
+/* ============================ ผู้เข้าแข่งขัน (หน้าเว็บสาธารณะ) ============================
+   โรงเรียนเปิดดูได้เองโดยไม่ต้องเข้าสู่ระบบ ว่าแต่ละรายการมีกี่ทีมและใครลงแข่งบ้าง
+   เว็บของเขตแสดงทีมระดับเขต เว็บของกลุ่มแสดงทีมของกลุ่มนั้น
+   ระดับความละเอียดตั้งได้ที่หน้า “หน้าเว็บ & แบนเนอร์” (จำนวนล้วน / ถึงชื่อโรงเรียน / ถึงชื่อผู้เข้าแข่งขัน) */
+let ENT=null, ENT_AT=0, ENT_KEY='';
+async function entrants(force){
+  const key=(SCOPE==='ALL'?'':SCOPE);
+  if(ENT && !force && ENT_KEY===key && Date.now()-ENT_AT<120000) return ENT;
+  const r=await api('publicEntries',{group:key});
+  ENT=r; ENT_AT=Date.now(); ENT_KEY=key; return r;
+}
+function renderEntrants(){
+  const A=actsOf();
+  $('#enSub').textContent='กำลังโหลด…';
+  const cats={}; A.forEach(a=>cats[a.category]=(cats[a.category]||0)+1);
+  const lvls={}; A.forEach(a=>lvls[a.level]=1);
+  const kc=$('#enCat').value, kl=$('#enLvl').value;
+  $('#enCat').innerHTML='<option value="">ทุกกลุ่มสาระ</option>'+
+    Object.keys(cats).map(c=>`<option value="${qq(c)}">${qq(c)}</option>`).join('');
+  $('#enLvl').innerHTML='<option value="">ทุกระดับชั้น</option>'+
+    Object.keys(lvls).sort().map(l=>`<option value="${qq(l)}">${qq(l)}</option>`).join('');
+  if(kc) $('#enCat').value=kc;
+  if(kl) $('#enLvl').value=kl;
+  entrants().then(()=>drawEntrants())
+    .catch(e=>{ $('#enSub').textContent='โหลดไม่สำเร็จ — '+(e.message||e);
+      $('#enBody').innerHTML='<div class="note b"><span>!</span><div>'+qq(e.message||e)+'</div></div>'; });
+}
+function drawEntrants(){
+  if(!ENT) return;
+  const where = SCOPE==='ALL' ? 'ระดับเขต — '+districtName() : groupName(SCOPE);
+  $('#enSub').textContent = where+' · ข้อมูล ณ '+String(ENT.serverTime||'').slice(0,16);
+  $('#enStat').innerHTML=[['ทีมที่สมัคร',ENT.teams,'ทีม'],['รายการที่มีผู้สมัคร',ENT.acts,'จาก '+actsOf().length+' รายการ'],
+    ['โรงเรียนที่ส่งเข้าแข่ง',ENT.schools,'โรงเรียน'],['นักเรียนที่เข้าแข่งขัน',ENT.students,'คน']]
+    .map(([l,v,u],i)=>`<div class="stat s${(i%4)+1}"><div class="l">${l}</div>
+      <div class="v">${Number(v||0).toLocaleString()}</div><div class="s">${u}</div></div>`).join('');
+
+  const q=($('#enQ').value||'').trim(), c=$('#enCat').value, l=$('#enLvl').value, only=$('#enOnly').value;
+  const cnt=ENT.counts||{}, byAct={};
+  (ENT.rows||[]).forEach(r=>{ (byAct[r.act_id]=byAct[r.act_id]||[]).push(r); });
+
+  let A=actsOf().slice();
+  if(c) A=A.filter(a=>a.category===c);
+  if(l) A=A.filter(a=>a.level===l);
+  if(only==='Y') A=A.filter(a=>(cnt[a.act_id]||{}).teams);
+  if(q) A=A.filter(a=>{
+    if((a.act_name+' '+(a.act_code||'')+' '+a.category).includes(q)) return true;
+    return (byAct[a.act_id]||[]).some(r=>(r.school||'').includes(q)
+      || (r.students||[]).some(s=>(s.name||'').includes(q))
+      || (r.coaches||[]).some(n=>String(n).includes(q)));
+  });
+  A.sort((x,y)=>String(x.category||'').localeCompare(String(y.category||''),'th')
+    || String(x.act_code||x.act_id).localeCompare(String(y.act_code||y.act_id)));
+
+  if(!A.length){ $('#enBody').innerHTML='<div class="note i"><span>🔎</span><div>ไม่พบรายการตามที่ค้นหา</div></div>'; return; }
+
+  let last=null, h='';
+  A.forEach(a=>{
+    if(a.category!==last){ last=a.category; h+=`<h3 style="margin:22px 0 8px">${qq(a.category||'อื่น ๆ')}</h3>`; }
+    const n=(cnt[a.act_id]||{}).teams||0, ns=(cnt[a.act_id]||{}).schools||0;
+    const rows=byAct[a.act_id]||[];
+    h+=`<div class="card" style="margin-bottom:10px"><div class="ch">
+        <h3 style="min-width:0">${qq(a.act_name)} <span class="hint">· ${qq(a.level||'')}</span></h3>
+        <span class="sp"></span>
+        <span class="pill ${n?'ok':'b'}">${n? n+' ทีม':'ยังไม่มีผู้สมัคร'}</span>
+        ${ns?`<span class="pill i">${ns} โรงเรียน</span>`:''}</div>`;
+    if(rows.length){
+      h+='<div class="cb" style="padding:0;overflow:auto"><table>'+
+         '<thead><tr><th style="width:44px">ที่</th><th>โรงเรียน</th>'+
+         (ENT.detail==='full'?'<th>ผู้เข้าแข่งขัน</th><th>ครูผู้ฝึกสอน</th>':'')+'</tr></thead><tbody>'+
+        rows.map((r,i)=>`<tr><td class="num" style="color:var(--ink-3)">${i+1}</td>
+          <td><b>${qq(cleanName(r.school||''))}</b>${r.from_group?'<br><span class="hint">'+qq(r.from_group)+'</span>':''}</td>`+
+          (ENT.detail==='full'
+            ? `<td>${(r.students||[]).map(s=>qq(s.name)+(s.level?' <span class="hint">'+qq(s.level)+'</span>':'')).join('<br>')||'—'}</td>
+               <td>${(r.coaches||[]).map(qq).join('<br>')||'—'}</td>`
+            : '')+`</tr>`).join('')+'</tbody></table></div>';
+    }
+    h+='</div>';
+  });
+  $('#enBody').innerHTML=h;
+}
+
 function renderActs(){
   const A=actsOf();
   $('#actsSub').textContent=A.length+' รายการ · '+(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE));
@@ -7410,6 +7544,8 @@ function renderActs(){
   if(keep) $('#acCat').value=keep;
   if(keepL) $('#acLvl').value=keepL;
   drawActs();
+  /* เติมจำนวนทีมที่สมัครเบื้องหลัง แล้ววาดซ้ำเมื่อได้ข้อมูล — ตารางขึ้นทันทีไม่ต้องรอ */
+  entrants().then(()=>{ if(PAGE==='acts') drawActs(); }).catch(()=>{});
 }
 function drawActs(){
   const A=actsOf();
@@ -7421,14 +7557,27 @@ function drawActs(){
   if(q)  rows=rows.filter(a=>(a.act_name+' '+(a.act_code||'')).includes(q));
   $('#actsSub').textContent='แสดง '+rows.length+' จาก '+A.length+' รายการ · '+
     (SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE));
-  tbl($('#actTbl'),['รหัส','รายการแข่งขัน','กลุ่มสาระ','ระดับชั้น','จำนวนคน','เวลา','กรรมการ','สถานะ'],
-    rows.map(a=>`<tr><td class="num" style="color:var(--ink-3)">${a.act_code||a.act_id}</td>
+  /* จำนวนทีมที่สมัครแต่ละรายการ — มาจากหน้าผู้เข้าแข่งขัน ใช้ข้อมูลชุดเดียวกัน */
+  const cnt=(ENT&&ENT_KEY===(SCOPE==='ALL'?'':SCOPE))? (ENT.counts||{}) : null;
+  tbl($('#actTbl'),['รหัส','รายการแข่งขัน','กลุ่มสาระ','ระดับชั้น','จำนวนคน','ทีมที่สมัคร','เวลา','กรรมการ','สถานะ',''],
+    rows.map(a=>{
+      const n=cnt? ((cnt[a.act_id]||{}).teams||0) : null;
+      return `<tr><td class="num" style="color:var(--ink-3)">${a.act_code||a.act_id}</td>
       <td><b>${a.act_name}</b>${a.condition?'<br><span class="hint">'+a.condition+'</span>':''}</td>
       <td>${a.category}</td><td>${a.level}</td>
       <td class="num">${a.team_min==a.team_max?a.team_min:a.team_min+'-'+a.team_max} คน<br><span class="hint">ครู ${a.coaches||1}</span></td>
+      <td class="num">${cnt===null? '<span class="hint">…</span>' : (n? '<b>'+n+'</b> ทีม' : '<span class="hint">—</span>')}</td>
       <td class="num">${durShort(a.duration_min)}</td><td class="num">${a.judges_required}</td>
       <td><span class="pill ${a.status==='เปิด'?'ok':'b'}">${a.status}</span></td>
-      <td><button class="btn g sm" onclick="viewCrit('${a.act_id}')">ดูเกณฑ์</button></td></tr>`).join(''));
+      <td style="white-space:nowrap"><button class="btn g sm" onclick="viewCrit('${a.act_id}')">ดูเกณฑ์</button>
+        ${n? `<button class="btn g sm" onclick="goEntrants('${a.act_id}')">ดูผู้สมัคร</button>`:''}</td></tr>`;
+    }).join(''));
+}
+/** จากหน้ารายการแข่งขัน → ไปดูผู้สมัครของรายการนั้น */
+function goEntrants(id){
+  const a=(DB.activities||[]).find(x=>x.act_id===id)||{};
+  go('entrants');
+  setTimeout(()=>{ const q=$('#enQ'); if(q){ q.value=a.act_name||''; drawEntrants(); } }, 60);
 }
 
 /** เวลาแข่งขันแบบสั้น ใช้ในตาราง — เก็บในฐานข้อมูลเป็นนาทีเหมือนเดิม แต่แสดงเป็นชั่วโมงให้อ่านง่าย
