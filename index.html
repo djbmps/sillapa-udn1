@@ -6582,7 +6582,11 @@ function esc(v){ return qq(v); }
 const ROLE_OPTS=['ประธานกรรมการ','รองประธานกรรมการ','กรรมการ','กรรมการและเลขานุการ','กรรมการและผู้ช่วยเลขานุการ'];
 /** เลขลำดับในคำสั่ง — ใช้เลขอารบิก */
 function fmtNo(n){ return String(n==null?'':n); }
-function unitLabel(u){ return String(u||'')===''? 'คณะกรรมการเขตพื้นที่' : String(u); }
+/** ชุดหลัก (unit ว่าง) — เว็บของเขตคือคณะกรรมการเขตพื้นที่ เว็บของกลุ่มคือคณะกรรมการของกลุ่มนั้น */
+function unitLabel(u){
+  if(String(u||'')!=='') return String(u);
+  return SCOPE==='ALL' ? 'คณะกรรมการเขตพื้นที่' : 'คณะกรรมการ'+groupName(SCOPE);
+}
 
 function renderStaff(local){
   $('#stSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
@@ -6616,11 +6620,17 @@ function fillStaffUnit(){
   sel.innerHTML=us.map(u=>`<option value="${esc(u)}">${esc(unitLabel(u))}</option>`).join('');
   sel.value=STAFF_UNIT;
 }
+/** ชื่อคณะในชุดนั้น — เอาจากคณะที่ตั้งไว้ก่อน แล้วเติมชื่อคณะที่พบในบัญชีรายชื่อจริง
+    (บัญชีรายชื่อที่คีย์ไว้ก่อนตั้งคณะ จึงไม่ตกหล่นจากหน้าจอและจากคำสั่งแต่งตั้ง) */
+function dutyNamesOf(unit){
+  const names=committeesOf(unit).map(c=>String(c.name));
+  (window.__STAFF||[]).filter(x=>String(x.unit||'')===String(unit||''))
+    .forEach(x=>{ const d=String(x.duty||'').trim(); if(d && names.indexOf(d)<0) names.push(d); });
+  return names;
+}
 function fillStaffDuty(){
   const sel=$('#st_duty'); if(!sel) return;
-  const names=committeesOf(STAFF_UNIT).map(c=>String(c.name));
-  (window.__STAFF||[]).filter(x=>String(x.unit||'')===String(STAFF_UNIT||''))
-    .forEach(x=>{ const d=String(x.duty||'').trim(); if(d && names.indexOf(d)<0) names.push(d); });
+  const names=dutyNamesOf(STAFF_UNIT);
   if(!names.length){ sel.innerHTML='<option value="">— ยังไม่มีคณะในชุดนี้ —</option>'; STAFF_DUTY=''; return; }
   if(names.indexOf(STAFF_DUTY)<0) STAFF_DUTY=names[0];
   sel.innerHTML='<option value="*">ทุกคณะในชุดนี้</option>'+
@@ -6980,7 +6990,7 @@ function drawCommittees(){
   if(!list.length){
     tbl($('#odTbl'),HEAD,
       `<tr><td colspan="5" style="padding:26px;text-align:center;color:var(--ink-3)">
-        ยังไม่มีคณะกรรมการ — กด “✨ สร้างชุดคณะตั้งต้น” เพื่อสร้างคณะของเขตและคณะประจำจุดแข่งขันให้อัตโนมัติ</td></tr>`);
+        ยังไม่มีคณะกรรมการ — กด “✨ สร้างชุดคณะตั้งต้น” เพื่อสร้างคณะชุดหลักและคณะประจำจุดแข่งขันให้อัตโนมัติ</td></tr>`);
     return;
   }
   let last=null, body='';
@@ -7058,7 +7068,7 @@ function editCommittee(id){
     `<div class="grid g3">
       <div class="fld" style="grid-column:span 2"><label>ชุด / จุดแข่งขัน</label>
         ${selOther('c_unit', us.filter(u=>u!==''), String(c.unit||''), 'เช่น จุดแข่งขันที่ 1 โรงเรียนบ้านหมากแข้ง')}
-        <div class="hint">เว้นว่างไว้ = คณะกรรมการเขตพื้นที่</div></div>
+        <div class="hint">เว้นว่างไว้ = ${esc(unitLabel(''))}</div></div>
       <div class="fld"><label>ลำดับคณะ</label><input id="cm_no" type="number" min="1" value="${Number(c.no)||''}"></div></div>
      <div class="fld"><label>ชื่อคณะ</label><input id="c_name" value="${esc(c.name||'')}"
         placeholder="เช่น คณะกรรมการฝ่ายอาคารสถานที่ แสง สี เสียง"></div>`,
@@ -7103,10 +7113,10 @@ function orderData(){
   const units=staffUnits();
   o.units=units.map(u=>({
     unit:u, label:unitLabel(u),
-    committees:committeesOf(u).map(c=>({
-      name:String(c.name),
+    committees:dutyNamesOf(u).map(n=>({
+      name:String(n),
       members:(window.__STAFF||[])
-        .filter(x=>String(x.unit||'')===String(u||'')&&String(x.duty||'')===String(c.name))
+        .filter(x=>String(x.unit||'')===String(u||'')&&String(x.duty||'')===String(n))
         .sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0))
     })).filter(c=>c.members.length)
   })).filter(u=>u.committees.length);
