@@ -7321,8 +7321,9 @@ function go(p){
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
     schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',staff:'คณะกรรมการดำเนินงาน',order:'คณะกรรมการ & ดาวน์โหลดรายชื่อ',
-    rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ'}[p]||p;
-  $('#bc').innerHTML=(SCOPE==='ALL'?'สพป.อุดรธานี เขต 1':groupName(SCOPE))+' › <b>'+t+'</b>';
+    rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ',
+    entrants:'ผู้เข้าแข่งขัน',gsites:'เว็บกลุ่มโรงเรียน'}[p]||p;
+  $('#bc').innerHTML=(SCOPE==='ALL'?districtName():groupName(SCOPE))+' › <b>'+t+'</b>';
   renderPage(p); if(VIEW==='public') renderPubNav();
   closeMenu(); closeSide();
   const bl=$('#burgerLbl');
@@ -7503,7 +7504,15 @@ function drawEntrants(){
   A.sort((x,y)=>String(x.category||'').localeCompare(String(y.category||''),'th')
     || String(x.act_code||x.act_id).localeCompare(String(y.act_code||y.act_id)));
 
-  if(!A.length){ $('#enBody').innerHTML='<div class="note i"><span>🔎</span><div>ไม่พบรายการตามที่ค้นหา</div></div>'; return; }
+  if(!A.length){
+    const none = !ENT.teams;
+    $('#enBody').innerHTML = none
+      ? '<div class="note i"><span>📝</span><div>ยังไม่มีโรงเรียนสมัครเข้าแข่งขันใน'
+        +(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE))+'<br>'
+        +'<span class="hint">เมื่อโรงเรียนเริ่มสมัคร จำนวนทีมและรายชื่อจะขึ้นที่หน้านี้เอง '
+        +'หรือเลือก “ทุกรายการ” เพื่อดูรายการแข่งขันทั้งหมดก่อน</span></div></div>'
+      : '<div class="note i"><span>🔎</span><div>ไม่พบรายการตามที่ค้นหา</div></div>';
+    return; }
 
   let last=null, h='';
   A.forEach(a=>{
