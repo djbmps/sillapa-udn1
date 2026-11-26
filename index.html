@@ -2246,7 +2246,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn g" onclick="goStaffCert()">🎖️ เกียรติบัตร</button>
         <button class="btn" onclick="openStaffImport()">📥 นำเข้ารายชื่อหลายคน</button></div>
       <div class="row" style="margin:2px 0 14px">
-        <button class="btn sm" onclick="go('staff')">👥 รายชื่อกรรมการ &amp; ดาวน์โหลด</button>
+        <button class="btn sm" onclick="go('staff')">👥 รายชื่อกรรมการ</button>
         <button class="btn g sm" onclick="go('order')">⚙️ ตั้งจุดแข่งขัน &amp; ชุดคณะ</button>
       </div>
 
@@ -2269,27 +2269,17 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         </div>
       </div></div>
 
-      <div class="card" style="margin-bottom:14px"><div class="ch"><h3 id="stTblTitle">บัญชีรายชื่อ</h3><span class="sp"></span>
+      <div class="card"><div class="ch"><h3 id="stTblTitle">บัญชีรายชื่อ</h3><span class="sp"></span>
         <button class="btn g sm" onclick="clearStaffGroup()">🗑️ ล้างรายชื่อในคณะนี้</button></div>
         <div class="cb" style="padding:0;overflow:auto"><table id="stTbl"></table></div></div>
 
-      <!-- ดาวน์โหลด/พิมพ์บัญชีรายชื่อ — รวมไว้ที่เดียว ใช้รายชื่อทุกชุด ทุกคณะ ไม่ใช่เฉพาะที่กรองอยู่ -->
-      <div class="card noprint"><div class="ch"><h3>ดาวน์โหลด &amp; พิมพ์บัญชีรายชื่อ</h3>
-        <span class="sp"></span><span class="hint">ได้ครบทุกจุดแข่งขันและทุกคณะในไฟล์เดียว</span></div>
-        <div class="cb"><div class="row">
-          <button class="btn g" onclick="orderXlsx()">⬇ บัญชีรายชื่อ (Excel)</button>
-          <button class="btn g" onclick="orderDocx()">⬇ บัญชีรายชื่อ (Word)</button>
-          <button class="btn" onclick="orderPreview()">👁️ ดูตัวอย่าง / พิมพ์</button>
-        </div></div></div>
-
-      <div id="orderArea" class="printarea" style="margin-top:16px"></div>
     </section>
 
     <!-- ---------- คณะกรรมการดำเนินงาน · แท็บตั้งจุดแข่งขัน & ชุดคณะ (หลังบ้าน) ---------- -->
     <section class="page" id="p-order">
       <div class="hd"><div><h2>คณะกรรมการดำเนินงาน</h2><p id="odSub"></p></div></div>
       <div class="row" style="margin:2px 0 14px">
-        <button class="btn g sm" onclick="go('staff')">👥 รายชื่อกรรมการ &amp; ดาวน์โหลด</button>
+        <button class="btn g sm" onclick="go('staff')">👥 รายชื่อกรรมการ</button>
         <button class="btn sm" onclick="go('order')">⚙️ ตั้งจุดแข่งขัน &amp; ชุดคณะ</button>
       </div>
 
@@ -6712,7 +6702,6 @@ function renderStaff(local){
   /* วาดจากข้อมูลที่มีในเครื่องได้ทันที (เพิ่งบันทึกเอง) แล้วค่อยซิงก์เบื้องหลัง */
   if(local && window.__STAFF){ fillStaffUnit(); fillStaffDuty(); drawStaff();
     staffSyncBG(); return; }
-  const oa=$('#orderArea'); if(oa) oa.innerHTML='';
   $('#stCount').textContent='กำลังโหลด…';
   Promise.all([api('listStaff',{scope:SCOPE}), api('orderSetup',{scope:SCOPE})])
     .then(([rows,od])=>{ window.__STAFF=rows||[]; ORDER=od||{committees:[],order:{}};
@@ -7209,7 +7198,7 @@ function renderOrder(local){
     ' · ขั้นที่ 1 ตั้งจุดแข่งขันและชุดคณะกรรมการ แล้วไปใส่รายชื่อที่แท็บ “รายชื่อกรรมการ”';
   /* เพิ่งบันทึกเอง — วาดจากข้อมูลในเครื่องทันที แล้วค่อยซิงก์เบื้องหลัง */
   if(local && ORDER && window.__STAFF){ drawCommittees(); staffSyncBG(); return; }
-  $('#orderArea').innerHTML='';
+  const _oa=$('#orderArea'); if(_oa) _oa.innerHTML='';
   Promise.all([api('orderSetup',{scope:SCOPE}), api('listStaff',{scope:SCOPE})]).then(([od,rows])=>{
     ORDER=od||{committees:[],order:{}}; window.__STAFF=rows||[];
     drawCommittees();
@@ -7380,8 +7369,8 @@ function orderPreview(){
     });
   });
   h+='</div>';
-  $('#orderArea').innerHTML=h;
-  $('#orderArea').scrollIntoView({behavior:'smooth'});
+  const box=$('#orderArea'); if(!box) return;   /* หน้านี้ไม่มีกล่องตัวอย่างแล้ว */
+  box.innerHTML=h; box.scrollIntoView({behavior:'smooth'});
 }
 function orderXlsx(){
   const o=orderData();
