@@ -1271,6 +1271,14 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn g sm" onclick="go('print')">🖨️ พิมพ์ใบรายชื่อ</button>
         <button class="btn" id="entAddBtn" onclick="editEntry(null)">+ เพิ่มผู้สมัคร</button></div>
       
+      <!-- รายการที่สมัครไปแล้วทั้งหมด — ให้โรงเรียนตรวจทานได้โดยไม่ต้องไล่เลือกทีละรายการ -->
+      <div class="card" style="margin-bottom:14px"><div class="ch">
+        <h3 id="entMineTitle">รายการที่สมัครแล้ว</h3><span class="sp"></span>
+        <span class="hint" id="entMineCount"></span>
+        <button class="btn g sm" onclick="drawMyEntries(1)">↻ ตรวจสอบอีกครั้ง</button></div>
+        <div class="cb" style="padding:0;overflow:auto;max-height:48vh"><table id="entMine"></table></div></div>
+
+      <label style="font-size:13.8px;font-weight:600;display:block;margin-bottom:5px">เพิ่ม / แก้ไขรายการ</label>
       <div class="row" style="margin-bottom:12px">
         <select id="entAct" onchange="renderEntries()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
       </div>
@@ -8396,12 +8404,63 @@ function fillActSelects(){
 /** รอบการแข่งขันของเว็บที่เปิดอยู่ — เว็บเขต = รอบระดับเขต (DISTRICT) ซึ่งมีเฉพาะทีมตัวแทนที่กลุ่มโอนขึ้นมา
     เว็บกลุ่ม = รอบคัดเลือกของกลุ่มนั้น · ใช้ทั้งหน้าผู้สมัคร ให้คะแนน ผลการแข่งขัน และตารางเหรียญ */
 function entryRound(){ return SCOPE==='ALL' ? 'DISTRICT' : SCOPE; }
+/* ---------- รายการที่สมัครไปแล้วทั้งหมด ----------
+   โรงเรียนเห็นเฉพาะของตนเอง กลุ่มเห็นทั้งกลุ่ม (เซิร์ฟเวอร์บังคับขอบเขตให้อยู่แล้ว)
+   มีไว้ให้ตรวจทานว่าลงรายการใดไปแล้วบ้าง โดยไม่ต้องไล่เลือกทีละรายการจากช่องด้านล่าง */
+let MYENT=null, MYENT_AT=0, MYENT_KEY='';
+async function myEntries(force){
+  const key=entryRound()+'|'+(ME? ME.role+':'+ME.scope : '');
+  if(MYENT && !force && MYENT_KEY===key && Date.now()-MYENT_AT<120000) return MYENT;
+  const r=await api('listEntries',{group:entryRound()});
+  MYENT=r||[]; MYENT_AT=Date.now(); MYENT_KEY=key; return MYENT;
+}
+function drawMyEntries(force){
+  const box=$('#entMine'); if(!box) return;
+  const isSchool=!!(ME&&ME.role==='school');
+  const cnt=$('#entMineCount'), ttl=$('#entMineTitle');
+  if(ttl) ttl.textContent = isSchool? 'รายการที่โรงเรียนของท่านสมัครแล้ว' : 'รายการที่สมัครแล้วทั้งหมด';
+  if(cnt) cnt.textContent='กำลังโหลด…';
+  myEntries(force).then(list=>{
+    const S=schoolsOf('ALL'), A={};
+    (DB.activities||[]).forEach(a=>A[a.act_id]=a);
+    const nameOf=sm=>{const x=S.find(v=>String(v.smis)===String(sm)); return x? cleanName(x.school_name):String(sm||'');};
+    const rows=list.slice().sort((x,y)=>{
+      if(!isSchool){ const c=String(nameOf(x.school_smis)).localeCompare(String(nameOf(y.school_smis)),'th'); if(c) return c; }
+      return String((A[x.act_id]||{}).act_name||'').localeCompare(String((A[y.act_id]||{}).act_name||''),'th');
+    });
+    if(cnt) cnt.textContent = rows.length
+      ? 'สมัครแล้ว '+rows.length+' รายการ'+(isSchool? '' : ' · '+new Set(rows.map(e=>String(e.school_smis))).size+' โรงเรียน')
+      : '';
+    const head=['ที่'].concat(isSchool?[]:['โรงเรียน'])
+      .concat(['รายการแข่งขัน','ระดับชั้น','นักเรียน','ครูผู้ฝึกสอน','สถานะ','จัดการ']);
+    tbl(box, head, rows.map((e,i)=>{ const a=A[e.act_id]||{};
+      return `<tr><td class="num" style="color:var(--ink-3)">${i+1}</td>`+
+        (isSchool? '' : `<td><b>${qq(nameOf(e.school_smis))}</b></td>`)+
+        `<td><b>${qq(a.act_name||e.act_id)}</b>${e.from_group?'<br><span class="pill i">ตัวแทน '+qq(groupName(e.from_group))+'</span>':''}</td>
+        <td style="white-space:nowrap">${qq(a.level||'')}</td>
+        <td>${(e.students||[]).map(x=>qq((x.prefix||'')+x.first_name+' '+x.last_name)).join('<br>')||'—'}</td>
+        <td>${(e.coaches||[]).map(x=>qq((x.prefix||'')+x.name)).join('<br>')||'—'}</td>
+        <td><span class="pill ${e.status==='ยืนยัน'?'ok':'w'}">${qq(e.status||'')}</span></td>
+        <td style="white-space:nowrap"><button class="btn g sm" onclick="goEntryAct('${e.act_id}','${e.entry_id}')">แก้ไข</button>
+          <button class="btn g sm" onclick="delEntry('${e.entry_id}')">ลบ</button></td></tr>`;
+    }).join('') || `<tr><td colspan="${head.length}" style="padding:24px;text-align:center;color:var(--ink-3)">
+      ${isSchool? 'โรงเรียนของท่านยังไม่ได้สมัครรายการใด — เลือกรายการแข่งขันด้านล่างแล้วกด “+ เพิ่มผู้สมัคร”'
+                : 'ยังไม่มีโรงเรียนใดในกลุ่มสมัครเข้าแข่งขัน'}</td></tr>`);
+  }).catch(e=>{ if(cnt) cnt.textContent=''; box.innerHTML='<tbody><tr><td style="padding:18px;color:var(--bad)">โหลดไม่สำเร็จ — '+qq(e.message||e)+'</td></tr></tbody>'; });
+}
+/** กดแก้ไขจากตารางสรุป — เลือกรายการนั้นให้ก่อน แล้วค่อยเปิดฟอร์ม */
+function goEntryAct(actId, entryId){
+  const sel=$('#entAct'); if(sel && sel.value!==actId){ sel.value=actId; renderEntries(); }
+  setTimeout(()=>editEntry(entryId), 60);
+}
+
 function renderEntries(pre){
   const act=$('#entAct').value;
   const dist=(SCOPE==='ALL');
   $('#entSub').textContent = dist? 'ระดับเขต · เฉพาะทีมตัวแทนที่โอนมาจากกลุ่มโรงเรียน' : groupName(SCOPE);
   const ab=$('#entAddBtn'); if(ab) ab.style.display = dist? 'none':'';
   const nt=$('#entDistrictNote'); if(nt) nt.style.display = dist? 'flex':'none';
+  drawMyEntries(!!pre);          /* เพิ่งบันทึกมา = ดึงใหม่ ไม่งั้นใช้ของที่จำไว้ */
   Promise.resolve(pre || api('listEntries',{group:entryRound(), act_id:act})).then(ent=>{
     const S=schoolsOf('ALL');
     window.__ENT=ent;
@@ -8420,7 +8479,9 @@ function renderEntries(pre){
 }
 /** ลบผู้สมัคร — ใช้เมื่อโรงเรียนสมัครผิดรายการหรือสมัครซ้ำ */
 async function delEntry(id){
-  const e=(window.__ENT||[]).find(x=>String(x.entry_id)===String(id))||{};
+  /* อาจกดลบจากตารางสรุปด้านบน ซึ่งไม่ได้อยู่ในรายการของรายการที่เลือกอยู่ จึงหาจากทั้งสองชุด */
+  const e=(window.__ENT||[]).find(x=>String(x.entry_id)===String(id))
+       || (MYENT||[]).find(x=>String(x.entry_id)===String(id)) || {};
   const S=schoolsOf('ALL'), s=S.find(x=>String(x.smis)===String(e.school_smis))||{};
   const who=cleanRaw(s.school_name||e.school_smis||id);
   if(!confirm('ลบผู้สมัครของ “'+who+'” ออกจากรายการนี้?\n\n'
