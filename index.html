@@ -1042,7 +1042,10 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       </div></div>
 
       <div class="ng" data-sec="reg"><span class="ngh" onclick="togSec(this)">การลงทะเบียนแข่งขัน<i class="cv">▾</i></span><div class="ngb">
-        <button class="nv" data-p="entries" data-perm="entries"><i>📝</i>ลงทะเบียนแข่งขัน</button>
+        <button class="nv" data-p="entries" data-perm="entries" data-scope="group"><i>📝</i>ลงทะเบียนแข่งขัน</button>
+        <!-- เว็บระดับเขตไม่มีการสมัครโดยตรง — ทีมที่เข้าแข่งระดับเขตมาจากการโอนของกลุ่มโรงเรียน
+             เมนูรับโอนจึงอยู่ในหมวดการลงทะเบียนแข่งขันของเว็บเขต -->
+        <button class="nv" data-p="promote" data-role="district_admin" data-perm="promote" data-scope="dist"><i>⬆️</i>รับโอนตัวแทนจากกลุ่ม</button>
         <button class="nv" data-p="cards" data-role="district_admin,group_admin,school" data-perm="cards"><i>🪪</i>บัตรประจำตัว</button>
         <button class="nv" data-p="submgr" data-role="district_admin,group_admin,school"><i>🔁</i>ขอเปลี่ยนตัวนักเรียน</button>
       </div></div>
@@ -1059,7 +1062,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
              เมนูนี้จึงเปิดให้เฉพาะผู้ดูแลเขตและผู้ดูแลกลุ่ม (ตามสิทธิ์ score) -->
         <button class="nv" data-p="score" data-role="district_admin,group_admin" data-perm="score"><i>✍️</i>บันทึกคะแนนผลการแข่งขัน</button>
         <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ตรวจทาน &amp; ประกาศผล</button>
-        <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
+        <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote" data-scope="group"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
         <button class="nv" data-p="region" data-role="district_admin" data-perm="promote" data-dist="1"><i>🏅</i>ตัวแทนเข้าภาค</button>
       </div></div>
 
@@ -4012,6 +4015,10 @@ function applyScope(){
   /* เมนูเฉพาะระดับเขต (เช่น กลุ่มโรงเรียน 20 กลุ่ม) */
   $$('.nv[data-dist="1"]').forEach(b=>{
     b.style.display = (!g && (!ME || ME.role==='district_admin')) ? '' : 'none'; });
+  /* เมนูที่ขึ้นกับระดับที่เปิดอยู่ — data-scope="group" มีเฉพาะเว็บกลุ่ม · "dist" มีเฉพาะเว็บเขต
+     (ลงทะเบียนแข่งขันเป็นงานของกลุ่ม · เว็บเขตใช้รับโอนตัวแทนจากกลุ่มแทน) */
+  $$('.nv[data-scope]').forEach(b=>{
+    if((b.dataset.scope==='group') !== g) b.style.display='none'; });
   const np=$('#nvPromote'); if(np) np.textContent=promoteLabel();
   const own = $('#ownerNote');
   if(own) own.style.display = (ME && ME.role!=='district_admin') ? 'flex' : 'none';
@@ -4302,12 +4309,14 @@ function syncNavSections(){
     const btns=[...sec.querySelectorAll('.nv')];
     const show=btns.some(b=> b.style.display!=='none' && !b.classList.contains('hide'));
     sec.style.display = show? '' : 'none';
-    sec.classList.toggle('act', btns.some(b=>b.classList.contains('on')));
+    sec.classList.toggle('act', btns.some(b=>b.classList.contains('on') && b.style.display!=='none'));
   });
 }
 /** กางหมวดที่มีหน้าซึ่งกำลังเปิดอยู่ ให้ผู้ใช้เห็นว่าตัวเองอยู่ตรงไหน */
 function openActiveSec(){
-  const b=document.querySelector('.ng[data-sec] .nv.on'); if(!b) return;
+  /* หน้าเดียวอาจมีปุ่มได้มากกว่า 1 จุด (เช่น โอนตัวแทน) — เอาเฉพาะปุ่มที่แสดงอยู่จริง */
+  const b=[...document.querySelectorAll('.ng[data-sec] .nv.on')]
+    .find(x=>x.style.display!=='none'); if(!b) return;
   const sec=b.closest('.ng'); if(sec && sec.classList.contains('cl')){
     sec.classList.remove('cl');
     const st=navState(); st[sec.dataset.sec||'']=0; navStateSave(st);
