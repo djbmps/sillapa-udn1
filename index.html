@@ -1053,8 +1053,9 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div class="ng" data-sec="jd"><span class="ngh" onclick="togSec(this)">คณะกรรมการ<i class="cv">▾</i></span><div class="ngb">
         <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกกรรมการ</button>
         <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
+        <!-- รวมสองหน้าเดิม (รายชื่อกรรมการ + จุดแข่งขัน/ชุดคณะ) ไว้ในเมนูเดียว
+             สลับกันได้ด้วยแถบแท็บบนหัวหน้าทั้งสองหน้า -->
         <button class="nv" data-p="staff" data-role="district_admin,group_admin" data-perm="certadm"><i>👥</i>คณะกรรมการดำเนินงาน</button>
-        <button class="nv" data-p="order" data-role="district_admin,group_admin" data-perm="certadm"><i>📑</i>คณะกรรมการ &amp; ดาวน์โหลดรายชื่อ</button>
       </div></div>
 
       <div class="ng" data-sec="sc"><span class="ngh" onclick="togSec(this)">บันทึกคะแนน &amp; ประกาศผล<i class="cv">▾</i></span><div class="ngb">
@@ -2241,10 +2242,13 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
     <section class="page" id="p-staff">
       <div class="hd"><div><h2>คณะกรรมการดำเนินงาน</h2><p id="stSub"></p></div>
         <span class="sp"></span>
-        <button class="btn g" onclick="go('order')">📑 ดาวน์โหลดรายชื่อ</button>
         <button class="btn g" onclick="go('cards')">🪪 บัตรประจำตัว</button>
         <button class="btn g" onclick="goStaffCert()">🎖️ เกียรติบัตร</button>
         <button class="btn" onclick="openStaffImport()">📥 นำเข้าหลายคน</button></div>
+      <div class="row" style="margin:2px 0 14px">
+        <button class="btn sm" onclick="go('staff')">👥 รายชื่อคณะกรรมการ</button>
+        <button class="btn g sm" onclick="go('order')">📑 จุดแข่งขัน &amp; ชุดคณะ · ดาวน์โหลดบัญชีรายชื่อ</button>
+      </div>
 
       <div class="grid g4" id="stStat" style="margin-bottom:14px"></div>
 
@@ -2276,13 +2280,15 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
 
     <!-- ---------- คณะกรรมการ & ดาวน์โหลดรายชื่อ (หลังบ้าน) ---------- -->
     <section class="page" id="p-order">
-      <div class="hd"><div><h2>คณะกรรมการ &amp; ดาวน์โหลดรายชื่อ</h2><p id="odSub"></p></div>
+      <div class="hd"><div><h2>คณะกรรมการดำเนินงาน</h2><p id="odSub"></p></div>
         <span class="sp"></span>
         <button class="btn g" onclick="orderXlsx()">⬇ Excel</button>
         <button class="btn g" onclick="orderDocx()">⬇ รายชื่อ (Word)</button>
         <button class="btn" onclick="orderPreview()">👁️ ดูตัวอย่าง / พิมพ์</button></div>
-
-      
+      <div class="row noprint" style="margin:2px 0 14px">
+        <button class="btn g sm" onclick="go('staff')">👥 รายชื่อคณะกรรมการ</button>
+        <button class="btn sm" onclick="go('order')">📑 จุดแข่งขัน &amp; ชุดคณะ · ดาวน์โหลดบัญชีรายชื่อ</button>
+      </div>
 
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>จุดแข่งขัน</h3><span class="sp"></span>
         <button class="btn g sm" onclick="editUnit(null)">+ เพิ่มจุดแข่งขัน</button></div>
@@ -7516,7 +7522,10 @@ function go(p){
   PAGE=p; $$('.page').forEach(x=>x.classList.remove('on'));
   const el=$('#p-'+p); if(el) el.classList.add('on');
   renderSideNav();
-  $$('.nv').forEach(b=>b.classList.toggle('on', b.dataset.p===p));
+  /* หน้า “จุดแข่งขัน & ชุดคณะ” รวมอยู่ในเมนูคณะกรรมการดำเนินงานปุ่มเดียว
+     จึงให้ปุ่มนั้นสว่างค้างไว้เมื่อเปิดหน้านี้ */
+  const navP = (p==='order') ? 'staff' : p;
+  $$('.nv').forEach(b=>b.classList.toggle('on', b.dataset.p===navP));
   openActiveSec(); syncNavSections();
   const t={home:'หน้าหลัก',acts:'รายการแข่งขัน',sched:'ตารางแข่งขัน',results:'ผลการแข่งขัน',medals:'ตารางเหรียญ',
     schools:'ทะเบียนโรงเรียน',groups:'กลุ่มโรงเรียน',dash:'แดชบอร์ด',actedit:'จัดการรายการ & เกณฑ์',
@@ -7527,7 +7536,7 @@ function go(p){
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
-    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',staff:'คณะกรรมการดำเนินงาน',order:'คณะกรรมการ & ดาวน์โหลดรายชื่อ',
+    schedmgr:'ตารางแข่งขัน & สนามแข่งขัน',region:'ตัวแทนเข้าภาค',staff:'คณะกรรมการดำเนินงาน',order:'คณะกรรมการดำเนินงาน · จุดแข่งขัน & ชุดคณะ',
     rules:'เกณฑ์การแข่งขัน',rulesmgr:'ไฟล์เกณฑ์รายกลุ่มสาระ',
     entrants:'ผู้เข้าแข่งขัน',gsites:'เว็บกลุ่มโรงเรียน'}[p]||p;
   $('#bc').innerHTML=(SCOPE==='ALL'?districtName():groupName(SCOPE))+' › <b>'+t+'</b>';
