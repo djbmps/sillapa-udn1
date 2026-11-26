@@ -167,6 +167,11 @@ tbody tr:hover{background:#FCFAF8}
 .stat .l{font-size:13.3px;color:var(--ink-3);font-weight:600}
 .stat .v{font-size:26.3px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--pri)}
 .stat .s{font-size:12.8px;color:var(--ink-3)}
+/* การ์ดสรุปที่กดได้ — ยกขึ้นเล็กน้อยเมื่อชี้ และตีกรอบเมื่อกำลังเลือกอยู่ */
+.stat[role="button"]{transition:transform .14s, box-shadow .14s}
+.stat[role="button"]:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.10)}
+.stat[role="button"]:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.stat[role="button"].on{box-shadow:0 0 0 2px var(--pri) inset}
 .stat.s1{--pri:var(--c1)}.stat.s1{background:linear-gradient(180deg,var(--c1s) 0,#fff 46px)}
 .stat.s2{--pri:var(--c2)}.stat.s2{background:linear-gradient(180deg,var(--c2s) 0,#fff 46px)}
 .stat.s3{--pri:var(--c3)}.stat.s3{background:linear-gradient(180deg,var(--c3s) 0,#fff 46px)}
@@ -7598,7 +7603,20 @@ function renderHome(){
    โรงเรียนเปิดดูได้เองโดยไม่ต้องเข้าสู่ระบบ ว่าแต่ละรายการมีกี่ทีมและใครลงแข่งบ้าง
    เว็บของเขตแสดงทีมระดับเขต เว็บของกลุ่มแสดงทีมของกลุ่มนั้น
    ระดับความละเอียดตั้งได้ที่หน้า “หน้าเว็บ & แบนเนอร์” (จำนวนล้วน / ถึงชื่อโรงเรียน / ถึงชื่อผู้เข้าแข่งขัน) */
-let ENT=null, ENT_AT=0, ENT_KEY='';
+let ENT=null, ENT_AT=0, ENT_KEY='', EN_VIEW='act';
+/** สลับมุมมองรายชื่อ — กดจากการ์ดสรุปด้านบน หรือจากแถบปุ่มเหนือรายชื่อ */
+function enView(v){
+  if(EN_VIEW===v && v==='act') return;
+  EN_VIEW=v; drawEntrants();
+  const b=$('#enBody'); if(b) b.scrollIntoView({behavior:'smooth',block:'start'});
+}
+/** แถบปุ่มสลับมุมมอง — ให้เห็นว่ากำลังดูแบบไหนและเปลี่ยนได้โดยไม่ต้องเลื่อนกลับขึ้นไป */
+function enTabs(){
+  return '<div class="row" style="margin:4px 0 12px">'+
+    [['act','📋 ตามรายการแข่งขัน'],['school','🏫 ตามโรงเรียน'],['person','🧑‍🎓 รายชื่อผู้เข้าแข่งขัน']]
+      .map(([v,t])=>`<button class="btn${EN_VIEW===v?'':' g'} sm" onclick="enView('${v}')">${t}</button>`).join('')+
+    '</div>';
+}
 async function entrants(force){
   const key=(SCOPE==='ALL'?'':SCOPE);
   if(ENT && !force && ENT_KEY===key && Date.now()-ENT_AT<120000) return ENT;
@@ -7625,10 +7643,16 @@ function drawEntrants(){
   if(!ENT) return;
   const where = SCOPE==='ALL' ? 'ระดับเขต — '+districtName() : groupName(SCOPE);
   $('#enSub').textContent = where+' · ข้อมูล ณ '+String(ENT.serverTime||'').slice(0,16);
-  $('#enStat').innerHTML=[['ทีมที่สมัคร',ENT.teams,'ทีม'],['รายการที่มีผู้สมัคร',ENT.acts,'จาก '+actsOf().length+' รายการ'],
-    ['โรงเรียนที่ส่งเข้าแข่ง',ENT.schools,'โรงเรียน'],['นักเรียนที่เข้าแข่งขัน',ENT.students,'คน']]
-    .map(([l,v,u],i)=>`<div class="stat s${(i%4)+1}"><div class="l">${l}</div>
-      <div class="v">${Number(v||0).toLocaleString()}</div><div class="s">${u}</div></div>`).join('');
+  /* การ์ดสรุปกดได้ — แต่ละใบสลับมุมมองของรายชื่อด้านล่าง */
+  $('#enStat').innerHTML=[
+    ['ทีมที่สมัคร',ENT.teams,'ทีม','act','ดูแยกตามรายการแข่งขัน'],
+    ['รายการที่มีผู้สมัคร',ENT.acts,'จาก '+actsOf().length+' รายการ','act','ดูแยกตามรายการแข่งขัน'],
+    ['โรงเรียนที่ส่งเข้าแข่ง',ENT.schools,'โรงเรียน','school','ดูแยกตามโรงเรียน'],
+    ['นักเรียนที่เข้าแข่งขัน',ENT.students,'คน','person','ดูรายชื่อผู้เข้าแข่งขันทั้งหมด']]
+    .map(([l,v,u,view,tip],i)=>`<div class="stat s${(i%4)+1}${EN_VIEW===view?' on':''}" role="button" tabindex="0"
+        title="${tip}" onclick="enView('${view}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enView('${view}')}"
+        style="cursor:pointer;position:relative"><div class="l">${l}</div>
+      <div class="v">${Number(v||0).toLocaleString()}</div><div class="s">${u} <span style="opacity:.75">›</span></div></div>`).join('');
 
   const q=($('#enQ').value||'').trim(), c=$('#enCat').value, l=$('#enLvl').value, only=$('#enOnly').value;
   const cnt=ENT.counts||{}, byAct={};
@@ -7649,15 +7673,69 @@ function drawEntrants(){
 
   if(!A.length){
     const none = !ENT.teams;
-    $('#enBody').innerHTML = none
+    $('#enBody').innerHTML = (none?'':enTabs()) + (none
       ? '<div class="note i"><span>📝</span><div>ยังไม่มีโรงเรียนสมัครเข้าแข่งขันใน'
         +(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE))+'<br>'
         +'<span class="hint">เมื่อโรงเรียนเริ่มสมัคร จำนวนทีมและรายชื่อจะขึ้นที่หน้านี้เอง '
         +'หรือเลือก “ทุกรายการ” เพื่อดูรายการแข่งขันทั้งหมดก่อน</span></div></div>'
-      : '<div class="note i"><span>🔎</span><div>ไม่พบรายการตามที่ค้นหา</div></div>';
+      : '<div class="note i"><span>🔎</span><div>ไม่พบรายการตามที่ค้นหา</div></div>');
     return; }
 
-  let last=null, h='';
+  /* ---- มุมมองรายโรงเรียน ---- */
+  if(EN_VIEW==='school'){
+    if(ENT.detail==='count'){
+      $('#enBody').innerHTML=enTabs()+'<div class="note w"><span>!</span><div>ขณะนี้ตั้งค่าให้หน้าสาธารณะแสดงเฉพาะจำนวน จึงดูรายโรงเรียนไม่ได้</div></div>';
+      return; }
+    const keep={}; A.forEach(a=>keep[a.act_id]=a);
+    const bySch={};
+    (ENT.rows||[]).forEach(r=>{ const a=keep[r.act_id]; if(!a) return;
+      const k=r.smis||r.school; (bySch[k]=bySch[k]||{name:r.school,from:r.from_group,items:[]}).items.push({a,r}); });
+    const ks=Object.keys(bySch).sort((x,y)=>String(bySch[x].name).localeCompare(String(bySch[y].name),'th'));
+    if(!ks.length){ $('#enBody').innerHTML=enTabs()+'<div class="note i"><span>🔎</span><div>ไม่พบโรงเรียนตามที่ค้นหา</div></div>'; return; }
+    $('#enBody').innerHTML=enTabs()+ks.map(k=>{ const s=bySch[k];
+      return `<div class="card" style="margin-bottom:10px"><div class="ch">
+        <h3 style="min-width:0">${qq(cleanName(s.name||''))}</h3><span class="sp"></span>
+        ${s.from?`<span class="pill i">${qq(s.from)}</span>`:''}
+        <span class="pill ok">${s.items.length} ทีม</span></div>
+        <div class="cb" style="padding:0;overflow:auto"><table>
+        <thead><tr><th style="width:44px">ที่</th><th>รายการแข่งขัน</th><th>ระดับชั้น</th>
+        ${ENT.detail==='full'?'<th>ผู้เข้าแข่งขัน</th><th>ครูผู้ฝึกสอน</th>':''}</tr></thead><tbody>`+
+        s.items.map((it,i)=>`<tr><td class="num" style="color:var(--ink-3)">${i+1}</td>
+          <td><b>${qq(it.a.act_name)}</b><br><span class="hint">${qq(it.a.category||'')}</span></td>
+          <td>${qq(it.a.level||'')}</td>`+
+          (ENT.detail==='full'
+            ? `<td>${(it.r.students||[]).map(x=>qq(x.name)).join('<br>')||'—'}</td>
+               <td>${(it.r.coaches||[]).map(qq).join('<br>')||'—'}</td>` : '')+'</tr>').join('')+
+        '</tbody></table></div></div>'; }).join('');
+    return;
+  }
+  /* ---- มุมมองรายบุคคล ---- */
+  if(EN_VIEW==='person'){
+    if(ENT.detail!=='full'){
+      $('#enBody').innerHTML=enTabs()+'<div class="note w"><span>!</span><div>ขณะนี้ตั้งค่าให้หน้าสาธารณะไม่แสดงชื่อบุคคล จึงดูรายบุคคลไม่ได้</div></div>';
+      return; }
+    const keep={}; A.forEach(a=>keep[a.act_id]=a);
+    const ppl=[];
+    (ENT.rows||[]).forEach(r=>{ const a=keep[r.act_id]; if(!a) return;
+      (r.students||[]).forEach(s=>ppl.push({name:s.name,lv:s.level,school:r.school,a,
+        coach:(r.coaches||[]).join(' · ')})); });
+    ppl.sort((x,y)=>String(x.name).localeCompare(String(y.name),'th'));
+    if(!ppl.length){ $('#enBody').innerHTML=enTabs()+'<div class="note i"><span>🔎</span><div>ไม่พบผู้เข้าแข่งขันตามที่ค้นหา</div></div>'; return; }
+    $('#enBody').innerHTML=enTabs()+
+      `<div class="card"><div class="ch"><h3>รายชื่อผู้เข้าแข่งขัน</h3><span class="sp"></span>
+        <span class="pill ok">${ppl.length} คน</span></div>
+       <div class="cb" style="padding:0;overflow:auto;max-height:70vh"><table>
+       <thead><tr><th style="width:52px">ที่</th><th>ชื่อ-สกุล</th><th>ชั้น</th><th>โรงเรียน</th>
+       <th>รายการแข่งขัน</th><th>ครูผู้ฝึกสอน</th></tr></thead><tbody>`+
+       ppl.map((p,i)=>`<tr><td class="num" style="color:var(--ink-3)">${i+1}</td>
+         <td><b>${qq(p.name)}</b></td><td>${qq(p.lv||'')}</td>
+         <td>${qq(cleanName(p.school||''))}</td>
+         <td>${qq(p.a.act_name)}<br><span class="hint">${qq(p.a.level||'')}</span></td>
+         <td>${qq(p.coach||'—')}</td></tr>`).join('')+'</tbody></table></div></div>';
+    return;
+  }
+
+  let last=null, h=enTabs();
   A.forEach(a=>{
     if(a.category!==last){ last=a.category; h+=`<h3 style="margin:22px 0 8px">${qq(a.category||'อื่น ๆ')}</h3>`; }
     const n=(cnt[a.act_id]||{}).teams||0, ns=(cnt[a.act_id]||{}).schools||0;
