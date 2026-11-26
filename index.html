@@ -8449,6 +8449,17 @@ function editEntry(id){
   if(!act) return alert('เลือกรายการแข่งขันก่อน');
   const S=schoolsOf(SCOPE==='ALL'?'ALL':SCOPE).filter(s=>s.can_register==='Y')
     .filter(s=>!/^ม\./.test(String(act.level))||s.is_expansion==='Y');
+  /* บัญชีโรงเรียนสมัครให้ตนเองเท่านั้น จึงไม่ต้องเลือกโรงเรียน — แสดงชื่อโรงเรียนไว้ให้เห็นแทน
+     ส่วนผู้ดูแลกลุ่มที่สมัครแทนโรงเรียนในกลุ่ม ยังเลือกโรงเรียนได้เหมือนเดิม */
+  const isSchool = !!(ME && ME.role==='school');
+  const mySmis = isSchool? String(ME.scope||'') : '';
+  const myRow = isSchool
+    ? (schoolsOf(SCOPE==='ALL'?'ALL':SCOPE).find(s=>String(s.smis)===mySmis) || {school_name:ME.name||''})
+    : null;
+  if(isSchool && !S.some(s=>String(s.smis)===mySmis))
+    return alert(/^ม\./.test(String(act.level))
+      ? 'รายการระดับมัธยมศึกษาสมัครได้เฉพาะโรงเรียนขยายโอกาส\nโรงเรียนของท่านจึงสมัครรายการนี้ไม่ได้ค่ะ'
+      : 'ขณะนี้โรงเรียนของท่านยังไม่อยู่ในสถานะที่สมัครแข่งขันได้\nกรุณาติดต่อผู้ดูแลกลุ่มโรงเรียน');
   const n=Number(act.team_max||1);
   const cls=classesFor(act.level);
   const inpCss='padding:8px;border:1px solid var(--line);border-radius:9px';
@@ -8473,9 +8484,16 @@ function editEntry(id){
      <input placeholder="ชื่อ-สกุล ครูผู้ฝึกสอนคนที่ ${i+1}" value="${esc(v.name)}" style="flex:1;min-width:150px;${inpCss}" data-cn>
      <select style="width:190px;${selCss}" data-cs>${optList(OPT_COACH_POS.indexOf(posFull)>=0?OPT_COACH_POS:OPT_COACH_POS.concat([posFull]), posFull)}</select></div>`;}).join('');
   openModal('สมัครแข่งขัน — '+act.act_name,
-    `<div class="fld"><label>โรงเรียน</label><select id="f_sch">${S.map(s=>`<option value="${s.smis}" ${String(cur.school_smis)===String(s.smis)?'selected':''}>${s.school_name} (${s.tambon})</option>`).join('')}</select></div>
-     <div class="note i" style="margin-bottom:12px"><span>ℹ️</span><div>รายการนี้ต้องมีนักเรียน <b>${act.team_min==act.team_max?act.team_min:act.team_min+"-"+act.team_max}</b> คน · ครูผู้ฝึกสอน ${act.coaches||1} คน
-       ${/^ม\./.test(String(act.level))?'· แสดงเฉพาะโรงเรียนขยายโอกาส':''}</div></div>
+    (isSchool
+      ? `<div class="fld"><label>โรงเรียน</label>
+          <div style="padding:10px 13px;border:1px solid var(--line);border-radius:10px;
+                      background:var(--pri-soft);font-weight:600;line-height:1.5">
+            🏫 ${qq(cleanName(myRow.school_name||''))}${myRow.tambon?' <span class="hint" style="font-weight:400">· ต.'+qq(myRow.tambon)+'</span>':''}</div>
+          <input type="hidden" id="f_sch" value="${esc(mySmis)}"></div>`
+      : `<div class="fld"><label>โรงเรียน</label><select id="f_sch">${S.map(s=>`<option value="${s.smis}" ${String(cur.school_smis)===String(s.smis)?'selected':''}>${s.school_name} (${s.tambon})</option>`).join('')}</select>
+          <div class="hint">สมัครแทนโรงเรียนในกลุ่มได้ — เลือกโรงเรียนที่ต้องการ</div></div>`)+
+    `<div class="note i" style="margin-bottom:12px"><span>ℹ️</span><div>รายการนี้ต้องมีนักเรียน <b>${act.team_min==act.team_max?act.team_min:act.team_min+"-"+act.team_max}</b> คน · ครูผู้ฝึกสอน ${act.coaches||1} คน
+       ${(!isSchool && /^ม\./.test(String(act.level)))?'· แสดงเฉพาะโรงเรียนขยายโอกาส':''}</div></div>
      <label style="font-size:13.8px;font-weight:600">นักเรียน</label><div id="stList">${stRows}</div>
      <label style="font-size:13.8px;font-weight:600;display:block;margin-top:12px">ครูผู้ฝึกสอน</label>
      <div id="coList">${coachRows}</div>`,
