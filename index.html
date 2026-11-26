@@ -1268,13 +1268,17 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
     <!-- ---------- ผู้สมัคร ---------- -->
     <section class="page" id="p-entries">
       <div class="hd"><div><h2>ผู้สมัครแข่งขัน</h2><p id="entSub"></p></div><span class="sp"></span>
-        <button class="btn g sm" onclick="go('print')">🖨️ พิมพ์ใบรายชื่อ</button>
-        <button class="btn" id="entAddBtn" onclick="editEntry(null)">+ เพิ่มผู้สมัคร</button></div>
-      
-      <!-- เลือกรายการที่จะสมัครใหม่ ไว้บนสุดเพราะเป็นงานที่ทำบ่อยที่สุด -->
+        <button class="btn g sm" onclick="printEntryList()">🖨️ พิมพ์ใบรายชื่อ</button></div>
+
+      <!-- กล่องตัวอย่างบัญชีรายชื่อก่อนพิมพ์ — เวลาพิมพ์จะพิมพ์เฉพาะกล่องนี้ -->
+      <div id="entPrintArea" class="printarea"></div>
+
+      <!-- เลือกรายการที่จะสมัครใหม่ ไว้บนสุดเพราะเป็นงานที่ทำบ่อยที่สุด
+           ปุ่ม “+ เพิ่มผู้สมัคร” อยู่ติดกับช่องเลือกรายการ เพื่อให้เห็นว่ากำลังเพิ่มให้รายการใด -->
       <label style="font-size:13.8px;font-weight:600;display:block;margin-bottom:5px">เลือกรายการที่จะสมัคร</label>
       <div class="row" style="margin-bottom:6px">
         <select id="entAct" onchange="renderEntries()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
+        <button class="btn" id="entAddBtn" onclick="editEntry(null)">+ เพิ่มผู้สมัคร</button>
       </div>
       <div class="hint" id="entPickHint" style="margin-bottom:14px"></div>
       <!-- ตารางผู้สมัครรายรายการ — ซ่อนในหน้าจอของบัญชีโรงเรียน เพราะดูรวมที่ตารางล่างได้แล้ว -->
@@ -8471,6 +8475,74 @@ function drawMyEntries(force){
       ยังไม่มีโรงเรียนใดในกลุ่มสมัครเข้าแข่งขัน</td></tr>`);
   }).catch(e=>{ if(cnt) cnt.textContent=''; box.innerHTML='<tbody><tr><td style="padding:18px;color:var(--bad)">โหลดไม่สำเร็จ — '+qq(e.message||e)+'</td></tr></tbody>'; });
 }
+/* ---------- พิมพ์บัญชีรายชื่อผู้สมัคร (ปุ่ม 🖨️ พิมพ์ใบรายชื่อ) ----------
+   แยกตามกิจกรรม · บัญชีโรงเรียนได้เฉพาะของโรงเรียนตนเอง
+   ผู้ดูแลกลุ่ม/เขตได้ทั้งกลุ่ม พร้อมคอลัมน์โรงเรียน */
+function printEntryList(){
+  const box=$('#entPrintArea'); if(!box) return;
+  const isSchool=!!(ME&&ME.role==='school');
+  box.innerHTML='<div class="note i" style="margin:12px 0">กำลังจัดหน้าบัญชีรายชื่อ…</div>';
+  myEntries(false).then(list=>{
+    if(!list.length){ box.innerHTML=''; return alert(isSchool
+      ? 'โรงเรียนของท่านยังไม่ได้สมัครรายการใด จึงยังพิมพ์บัญชีรายชื่อไม่ได้ค่ะ'
+      : 'ยังไม่มีโรงเรียนใดสมัครเข้าแข่งขัน จึงยังพิมพ์บัญชีรายชื่อไม่ได้ค่ะ'); }
+    const S=schoolsOf('ALL'), A={};
+    (DB.activities||[]).forEach(a=>A[a.act_id]=a);
+    const nameOf=sm=>{const x=S.find(v=>String(v.smis)===String(sm)); return x? cleanName(x.school_name):String(sm||'');};
+    const stuName=s=>qq([s.prefix,s.first_name,s.last_name].filter(Boolean).join(' ').replace(/\s+/g,' ').trim());
+    const coName=c=>qq([c.prefix,c.name].filter(Boolean).join('').trim());
+    const byAct={}, ord=[];
+    list.forEach(e=>{ const k=String(e.act_id);
+      if(!byAct[k]){ byAct[k]=[]; ord.push(k); } byAct[k].push(e); });
+    ord.sort((x,y)=>{ const ax=A[x]||{}, ay=A[y]||{};
+      return String(ax.category||'').localeCompare(String(ay.category||''),'th')
+        || String(ax.act_code||x).localeCompare(String(ay.act_code||y)); });
+    const who = isSchool ? (nameOf(ME.scope)||cleanName(ME.name||''))
+      : (SCOPE==='ALL' ? districtName() : groupName(SCOPE)+' · รอบคัดเลือกระดับกลุ่มโรงเรียน');
+    const nSch = new Set(list.map(e=>String(e.school_smis))).size;
+
+    let h=`<div class="row noprint" style="margin:12px 0 10px">
+        <b>ตัวอย่างบัญชีรายชื่อผู้สมัครก่อนพิมพ์</b><span class="sp" style="flex:1"></span>
+        <button class="btn d" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
+        <button class="btn g" onclick="document.getElementById('entPrintArea').innerHTML=''">ปิด</button></div>
+      <div class="sheetdoc">
+        <div class="dochd"><img class="dlogo" src="logo-mark74.webp" alt="" onerror="this.remove()">
+          <div class="dt"><b>${eventName()}</b><br>${qq(who)}<br>${prtDateLine()}</div>
+          <div class="dtag">บัญชีรายชื่อ</div></div>
+        <div class="dline"><b>บัญชีรายชื่อผู้สมัครเข้าแข่งขัน</b> แยกตามกิจกรรม</div>
+        <div class="dsub">
+          <span>${isSchool? '' : 'จำนวน '+nSch+' โรงเรียน · '}รวม ${list.length} ทีม · ${ord.length} กิจกรรม</span>
+          <span>พิมพ์เมื่อ ${thDateLong(todayBE())}</span></div>`;
+
+    ord.forEach((k,gi)=>{
+      const a=A[k]||{}, es=byAct[k].slice().sort((x,y)=>
+        String(nameOf(x.school_smis)).localeCompare(String(nameOf(y.school_smis)),'th'));
+      h+=`<div class="dline" style="margin-top:16px;page-break-inside:avoid">
+          ${gi+1}. <b>${qq(a.act_name||k)}</b> ${qq(a.level||'')}
+          <span class="tiny">· ${qq(a.category||'')} · รหัส ${qq(k)} · ${es.length} ทีม</span></div>
+        <table class="sm" style="margin-top:4px;width:100%"><thead><tr>
+          <th style="width:34px">ที่</th>${isSchool? '' : '<th>โรงเรียน</th>'}
+          <th>ผู้เข้าแข่งขัน</th><th>ครูผู้ฝึกสอน</th>
+          <th style="width:58px">สถานะ</th></tr></thead><tbody>`+
+        es.map((e,i)=>`<tr><td class="num">${i+1}</td>`+
+          (isSchool? '' : `<td>${qq(nameOf(e.school_smis))}${
+            e.from_group? '<br><span class="tiny">ตัวแทน '+qq(groupName(e.from_group))+'</span>':''}</td>`)+
+          `<td>${(e.students||[]).map((s,n)=>(n+1)+'. '+stuName(s)).join('<br>')||'—'}</td>
+           <td>${(e.coaches||[]).map((c,n)=>(n+1)+'. '+coName(c)).join('<br>')||'—'}</td>
+           <td class="num">${qq(e.status||'')}</td></tr>`).join('')+
+        `</tbody></table>`;
+    });
+
+    h+=`<div class="dfoot" style="page-break-inside:avoid">
+        ขอรับรองว่ารายชื่อผู้สมัครเข้าแข่งขันข้างต้นถูกต้อง
+        <div class="sign"><div><div class="ln"></div>${PRT_DOTS}<br>
+          <b>${isSchool? 'ผู้อำนวยการโรงเรียน' : 'ประธานกลุ่มโรงเรียน'}</b></div></div></div>
+      </div>`;
+    box.innerHTML=h;
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+  }).catch(e=>{ box.innerHTML='<div class="note b" style="margin:12px 0">โหลดรายชื่อไม่สำเร็จ — '+qq(e.message||e)+'</div>'; });
+}
+
 /** กดแก้ไขจากตารางสรุป — เลือกรายการนั้นให้ก่อน แล้วค่อยเปิดฟอร์ม */
 function goEntryAct(actId, entryId){
   const sel=$('#entAct'); if(sel && sel.value!==actId){ sel.value=actId; renderEntries(); }
