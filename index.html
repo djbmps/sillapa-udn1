@@ -2244,10 +2244,10 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <span class="sp"></span>
         <button class="btn g" onclick="go('cards')">🪪 บัตรประจำตัว</button>
         <button class="btn g" onclick="goStaffCert()">🎖️ เกียรติบัตร</button>
-        <button class="btn" onclick="openStaffImport()">📥 นำเข้าหลายคน</button></div>
+        <button class="btn" onclick="openStaffImport()">📥 นำเข้ารายชื่อหลายคน</button></div>
       <div class="row" style="margin:2px 0 14px">
-        <button class="btn sm" onclick="go('staff')">👥 รายชื่อคณะกรรมการ</button>
-        <button class="btn g sm" onclick="go('order')">📑 จุดแข่งขัน &amp; ชุดคณะ · ดาวน์โหลดบัญชีรายชื่อ</button>
+        <button class="btn sm" onclick="go('staff')">👥 รายชื่อกรรมการ &amp; ดาวน์โหลด</button>
+        <button class="btn g sm" onclick="go('order')">⚙️ ตั้งจุดแข่งขัน &amp; ชุดคณะ</button>
       </div>
 
       <div class="grid g4" id="stStat" style="margin-bottom:14px"></div>
@@ -2263,31 +2263,34 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         </div>
         <div class="row" style="margin-top:10px">
           <button class="btn sm" onclick="editStaff(null)">+ เพิ่มรายชื่อทีละคน</button>
-          <button class="btn g sm" onclick="openStaffImport()">📥 วางรายชื่อจาก Word / Excel</button>
-          <button class="btn g sm" onclick="staffTemplateXlsx()">⬇ เทมเพลตนำเข้า (Excel)</button>
-          <button class="btn g sm" onclick="staffXlsx()">⬇ รายชื่อทั้งหมด (Excel)</button>
+          <span class="hint">ใส่หลายคนพร้อมกัน กด “📥 นำเข้ารายชื่อหลายคน” ด้านบน (มีเทมเพลต Excel ให้ในนั้น)</span>
           <span class="sp" style="flex:1"></span>
           <span class="hint" id="stCount"></span>
         </div>
       </div></div>
 
-      <div class="card"><div class="ch"><h3 id="stTblTitle">บัญชีรายชื่อ</h3><span class="sp"></span>
+      <div class="card" style="margin-bottom:14px"><div class="ch"><h3 id="stTblTitle">บัญชีรายชื่อ</h3><span class="sp"></span>
         <button class="btn g sm" onclick="clearStaffGroup()">🗑️ ล้างรายชื่อในคณะนี้</button></div>
         <div class="cb" style="padding:0;overflow:auto"><table id="stTbl"></table></div></div>
 
-      
+      <!-- ดาวน์โหลด/พิมพ์บัญชีรายชื่อ — รวมไว้ที่เดียว ใช้รายชื่อทุกชุด ทุกคณะ ไม่ใช่เฉพาะที่กรองอยู่ -->
+      <div class="card noprint"><div class="ch"><h3>ดาวน์โหลด &amp; พิมพ์บัญชีรายชื่อ</h3>
+        <span class="sp"></span><span class="hint">ได้ครบทุกจุดแข่งขันและทุกคณะในไฟล์เดียว</span></div>
+        <div class="cb"><div class="row">
+          <button class="btn g" onclick="orderXlsx()">⬇ บัญชีรายชื่อ (Excel)</button>
+          <button class="btn g" onclick="orderDocx()">⬇ บัญชีรายชื่อ (Word)</button>
+          <button class="btn" onclick="orderPreview()">👁️ ดูตัวอย่าง / พิมพ์</button>
+        </div></div></div>
+
+      <div id="orderArea" class="printarea" style="margin-top:16px"></div>
     </section>
 
-    <!-- ---------- คณะกรรมการ & ดาวน์โหลดรายชื่อ (หลังบ้าน) ---------- -->
+    <!-- ---------- คณะกรรมการดำเนินงาน · แท็บตั้งจุดแข่งขัน & ชุดคณะ (หลังบ้าน) ---------- -->
     <section class="page" id="p-order">
-      <div class="hd"><div><h2>คณะกรรมการดำเนินงาน</h2><p id="odSub"></p></div>
-        <span class="sp"></span>
-        <button class="btn g" onclick="orderXlsx()">⬇ Excel</button>
-        <button class="btn g" onclick="orderDocx()">⬇ รายชื่อ (Word)</button>
-        <button class="btn" onclick="orderPreview()">👁️ ดูตัวอย่าง / พิมพ์</button></div>
-      <div class="row noprint" style="margin:2px 0 14px">
-        <button class="btn g sm" onclick="go('staff')">👥 รายชื่อคณะกรรมการ</button>
-        <button class="btn sm" onclick="go('order')">📑 จุดแข่งขัน &amp; ชุดคณะ · ดาวน์โหลดบัญชีรายชื่อ</button>
+      <div class="hd"><div><h2>คณะกรรมการดำเนินงาน</h2><p id="odSub"></p></div></div>
+      <div class="row" style="margin:2px 0 14px">
+        <button class="btn g sm" onclick="go('staff')">👥 รายชื่อกรรมการ &amp; ดาวน์โหลด</button>
+        <button class="btn sm" onclick="go('order')">⚙️ ตั้งจุดแข่งขัน &amp; ชุดคณะ</button>
       </div>
 
       <div class="card" style="margin-bottom:14px"><div class="ch"><h3>จุดแข่งขัน</h3><span class="sp"></span>
@@ -2298,8 +2301,6 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn g sm" onclick="seedCommittee()">✨ สร้างชุดคณะตั้งต้น</button>
         <button class="btn g sm" onclick="editCommittee(null)">+ เพิ่มคณะ</button></div>
         <div class="cb" style="padding:0;overflow:auto"><table id="odTbl"></table></div></div>
-
-      <div id="orderArea" class="printarea" style="margin-top:16px"></div>
     </section>
 
     <!-- ---------- ตั้งค่า ---------- -->
@@ -6706,11 +6707,12 @@ function unitLabel(u){
 }
 
 function renderStaff(local){
-  $('#stSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
-    ' · บัญชีรายชื่อนี้ใช้ทำคำสั่งแต่งตั้ง บัตรประจำตัว และเกียรติบัตร';
+  $('#stSub').textContent=(SCOPE==='ALL'? 'ระดับเขต — '+districtName() : groupName(SCOPE))+
+    ' · ขั้นที่ 2 ใส่รายชื่อในแต่ละคณะ — ใช้ทำคำสั่งแต่งตั้ง บัตรประจำตัว และเกียรติบัตร';
   /* วาดจากข้อมูลที่มีในเครื่องได้ทันที (เพิ่งบันทึกเอง) แล้วค่อยซิงก์เบื้องหลัง */
   if(local && window.__STAFF){ fillStaffUnit(); fillStaffDuty(); drawStaff();
     staffSyncBG(); return; }
+  const oa=$('#orderArea'); if(oa) oa.innerHTML='';
   $('#stCount').textContent='กำลังโหลด…';
   Promise.all([api('listStaff',{scope:SCOPE}), api('orderSetup',{scope:SCOPE})])
     .then(([rows,od])=>{ window.__STAFF=rows||[]; ORDER=od||{committees:[],order:{}};
@@ -6833,34 +6835,8 @@ function refreshStaff(local){ if(PAGE==='certadm') renderCertAdm();
   else if(PAGE==='order') renderOrder(local); else renderStaff(local); }
 
 /* ---------- นำเข้ารายชื่อทีละหลายคน ---------- */
-const STAFF_IMPORT_COLS=['คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ'];
-function staffTemplateXlsx(){
-  const rows=[STAFF_IMPORT_COLS,
-    ['นาย','สาคร เสียงเย็น','รอง ผอ.สพป.อุดรธานี เขต 1','สพป.อุดรธานี เขต 1','ประธานกรรมการ'],
-    ['นาง','เอื้อมพรพิชญ์ แสงศิลา','ผอ.กลุ่มนิเทศ ติดตามและประเมินผลฯ','สพป.อุดรธานี เขต 1','รองประธานกรรมการ'],
-    ['นางสาว','ดวงใจ บุญมีประเสริฐ','ศึกษานิเทศก์','สพป.อุดรธานี เขต 1','กรรมการและเลขานุการ'],
-    ['','','','',''],['','','','','']];
-  saveBlob('เทมเพลตนำเข้ารายชื่อคณะกรรมการ.xlsx',
-    xlsxBlob([{name:'รายชื่อ', rows:rows},
-              {name:'คำอธิบาย', rows:[['วิธีใช้'],
-                ['1) กรอกรายชื่อทีละแถว หนึ่งแถวต่อหนึ่งคน'],
-                ['2) ช่องบทบาทในคณะ ใช้คำว่า '+ROLE_OPTS.join(' / ')],
-                ['3) คัดลอกทั้งตาราง (ไม่ต้องเอาหัวคอลัมน์ก็ได้) ไปวางในช่องนำเข้าของระบบ'],
-                ['4) เลือกชุด/จุด และคณะที่จะนำเข้า แล้วกดตรวจสอบ → บันทึก']]}]));
-}
-function staffXlsx(){
-  const all=(window.__STAFF||[]).slice().sort((a,b)=>{
-    const ua=String(a.unit||''), ub=String(b.unit||'');
-    if(ua!==ub) return ua<ub?-1:1;
-    const da=dutyNo(ua,String(a.duty||'')), db=dutyNo(ub,String(b.duty||''));
-    if(da!==db) return da-db;
-    return (Number(a.seq)||0)-(Number(b.seq)||0);
-  });
-  const rows=[['ชุด / จุดแข่งขัน','คณะกรรมการ','ที่','คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ']];
-  all.forEach(x=>rows.push([unitLabel(x.unit), x.duty||'', Number(x.seq)||'', x.prefix||'', x.name||'',
-    x.position||'', cleanRaw(x.org||''), x.role||'กรรมการ']));
-  saveBlob('รายชื่อคณะกรรมการดำเนินงาน.xlsx', xlsxBlob([{name:'รายชื่อ', rows:rows}]));
-}
+/* เทมเพลตนำเข้าและไฟล์ส่งออกใช้ชุดเดียวกับหน้าดาวน์โหลดบัญชีรายชื่อ (staffTemplate / orderXlsx)
+   จึงไม่มีปุ่มเทมเพลตหรือปุ่มส่งออกซ้ำซ้อนในหน้ารายชื่ออีก */
 /* ---------- นำเข้ารายชื่อจากไฟล์ Excel ----------
    เทมเพลตสร้างจากชุดคณะกรรมการที่ตั้งไว้แล้ว ผู้ใช้เปิดด้วย Excel กรอกชื่อใต้คณะของตัวเอง
    แล้วอัปโหลดกลับ ระบบจะแยกเข้าคณะให้เองทุกคณะในไฟล์เดียว */
@@ -7229,8 +7205,8 @@ async function delStaff(id){
 
 /* ============================ คำสั่งแต่งตั้งคณะกรรมการ ============================ */
 function renderOrder(local){
-  $('#odSub').textContent=(SCOPE==='ALL'?'ระดับเขต — สพป.อุดรธานี เขต 1':groupName(SCOPE))+
-    ' · ตั้งชื่อคณะ ใส่รายชื่อ แล้วดาวน์โหลดไปแปะในบันทึกข้อความ';
+  $('#odSub').textContent=(SCOPE==='ALL'? 'ระดับเขต — '+districtName() : groupName(SCOPE))+
+    ' · ขั้นที่ 1 ตั้งจุดแข่งขันและชุดคณะกรรมการ แล้วไปใส่รายชื่อที่แท็บ “รายชื่อกรรมการ”';
   /* เพิ่งบันทึกเอง — วาดจากข้อมูลในเครื่องทันที แล้วค่อยซิงก์เบื้องหลัง */
   if(local && ORDER && window.__STAFF){ drawCommittees(); staffSyncBG(); return; }
   $('#orderArea').innerHTML='';
