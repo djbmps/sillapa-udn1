@@ -1051,8 +1051,8 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       </div></div>
 
       <div class="ng" data-sec="jd"><span class="ngh" onclick="togSec(this)">คณะกรรมการ<i class="cv">▾</i></span><div class="ngb">
-        <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกกรรมการ</button>
-        <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบกรรมการตัดสิน</button>
+        <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกคณะกรรมการตัดสิน</button>
+        <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบคณะกรรมการตัดสิน</button>
         <!-- รวมสองหน้าเดิม (รายชื่อกรรมการ + จุดแข่งขัน/ชุดคณะ) ไว้ในเมนูเดียว
              สลับกันได้ด้วยแถบแท็บบนหัวหน้าทั้งสองหน้า -->
         <button class="nv" data-p="staff" data-role="district_admin,group_admin" data-perm="certadm"><i>👥</i>คณะกรรมการดำเนินงาน</button>
@@ -1486,7 +1486,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       </div>
     </section>
 
-    <!-- ---------- รับสมัคร & คัดเลือกกรรมการ (หลังบ้าน) ---------- -->
+    <!-- ---------- รับสมัคร & คัดเลือกคณะกรรมการตัดสิน (หลังบ้าน) ---------- -->
     <section class="page" id="p-judgeapp">
       <div class="hd"><div><h2>รับสมัคร &amp; คัดเลือกคณะกรรมการตัดสิน</h2><p id="jaSub"></p></div></div>
 
@@ -1772,7 +1772,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div id="cardArea" class="printarea" style="margin-top:16px;overflow:auto"></div>
     </section>
 
-    <!-- ---------- ทำเนียบกรรมการตัดสิน (หลังบ้าน) ---------- -->
+    <!-- ---------- ทำเนียบคณะกรรมการตัดสิน (หลังบ้าน) ---------- -->
     <section class="page" id="p-judges">
       <div class="hd"><div><h2>ทำเนียบคณะกรรมการตัดสิน</h2><p id="jgSub"></p></div>
         <span class="sp"></span><button class="btn" onclick="newJudge()">+ เพิ่มกรรมการ</button></div>
@@ -2148,7 +2148,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <label style="font-size:13.8px;font-weight:600">ล้างเพิ่มเติมด้วยหรือไม่ (ติ๊กเฉพาะที่ต้องการ)</label>
             <div class="grid g2" style="margin-top:7px">
               <label class="hint"><input type="checkbox" id="ss_news"> ข่าวประชาสัมพันธ์และเอกสารดาวน์โหลด</label>
-              <label class="hint"><input type="checkbox" id="ss_people"> ทำเนียบกรรมการตัดสินและคณะกรรมการดำเนินงาน</label>
+              <label class="hint"><input type="checkbox" id="ss_people"> ทำเนียบคณะกรรมการตัดสินและคณะกรรมการดำเนินงาน</label>
               <label class="hint"><input type="checkbox" id="ss_venues"> สนามแข่งขันทั้งหมด</label>
               <label class="hint"><input type="checkbox" id="ss_log"> ประวัติการใช้งาน (AuditLog)</label>
             </div>
@@ -3440,7 +3440,7 @@ function demoApi(action,p){
       if(!ME||['district_admin','selector'].indexOf(ME.role)<0)
         throw new Error('ไม่มีสิทธิ์ใช้คำสั่งนี้');
       if(ME.role!=='selector'&&!canDo('judges'))
-        throw new Error('บัญชีของท่านไม่ได้รับสิทธิ์ใน “ทำเนียบกรรมการตัดสิน” — ติดต่อผู้ดูแลหลักให้เปิดสิทธิ์ให้');
+        throw new Error('บัญชีของท่านไม่ได้รับสิทธิ์ใน “ทำเนียบคณะกรรมการตัดสิน” — ติดต่อผู้ดูแลหลักให้เปิดสิทธิ์ให้');
       let rows=(MEM.applies||[]);
       if(ME.role==='selector'&&ME.scope&&ME.scope!=='ALL') rows=rows.filter(r=>r.category===ME.scope);
       return {window:demoJaWin(), status_list:JA_STATUS,
@@ -3454,7 +3454,7 @@ function demoApi(action,p){
       if(!ME||['district_admin','selector'].indexOf(ME.role)<0)
         throw new Error('ไม่มีสิทธิ์ใช้คำสั่งนี้');
       if(ME.role!=='selector'&&!canDo('judges'))
-        throw new Error('บัญชีของท่านไม่ได้รับสิทธิ์ใน “ทำเนียบกรรมการตัดสิน”');
+        throw new Error('บัญชีของท่านไม่ได้รับสิทธิ์ใน “ทำเนียบคณะกรรมการตัดสิน”');
       const r=(MEM.applies||[]).find(x=>x.apply_id===p.apply_id);
       if(!r) throw new Error('ไม่พบใบสมัครนี้');
       if(ME.role==='selector'&&ME.scope&&ME.scope!=='ALL'&&r.category!==ME.scope)
@@ -4003,7 +4003,7 @@ function applyScope(){
     if(ME.role!=='district_admin' && ME.role!=='group_admin'){ b.style.display=''; return; }
     b.style.display = canDo(b.dataset.perm) ? '' : 'none';
   });
-  /* กรรมการคัดเลือกเห็นเมนูเดียว — หน้ารับสมัคร & คัดเลือกกรรมการ */
+  /* กรรมการคัดเลือกเห็นเมนูเดียว — หน้ารับสมัคร & คัดเลือกคณะกรรมการตัดสิน */
   if(ME && ME.role==='selector'){
     $$('#navAdmin .nv').forEach(b=>{
       b.style.display = (b.dataset.p==='judgeapp' || b.dataset.always==='1')?'':'none'; });
@@ -4045,7 +4045,7 @@ function promoteLabel(){
 }
 function canDo(key){ return !!(ME && (ME.own || (ME.perm||[]).indexOf(key)>=0)); }
 const PERM_LABEL={actedit:'จัดการรายการ & เกณฑ์',entries:'ลงทะเบียนแข่งขัน',score:'บันทึกคะแนนผลการแข่งขัน',
-  publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',judges:'ทำเนียบกรรมการตัดสิน',
+  publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',judges:'ทำเนียบคณะกรรมการตัดสิน',
   certadm:'ระบบเกียรติบัตร & คณะกรรมการดำเนินงาน',cards:'บัตรประจำตัว',newsmgr:'ประชาสัมพันธ์',
   site:'หน้าเว็บ & แบนเนอร์',print:'พิมพ์เอกสาร',perm:'เปิด-ปิดสิทธิ์การพิมพ์',
   sched:'ตารางแข่งขัน & สนามแข่งขัน'};
@@ -5166,8 +5166,8 @@ function cardEmpty(){
              '📝 ไปหน้าลงทะเบียนแข่งขัน','entries'],
     coach:['ยังไม่มีรายชื่อครูผู้ฝึกสอน','รายชื่อครูผู้ฝึกสอนจะขึ้นที่นี่อัตโนมัติเมื่อกรอกไว้ในใบสมัครแข่งขันแล้ว',
              '📝 ไปหน้าลงทะเบียนแข่งขัน','entries'],
-    judge:['ยังไม่มีรายชื่อคณะกรรมการตัดสิน','เพิ่มรายชื่อกรรมการที่หน้าทำเนียบกรรมการตัดสินก่อน แล้วกลับมาอัปโหลดรูปที่นี่',
-             '⚖️ ไปหน้าทำเนียบกรรมการตัดสิน','judges'],
+    judge:['ยังไม่มีรายชื่อคณะกรรมการตัดสิน','เพิ่มรายชื่อกรรมการที่หน้าทำเนียบคณะกรรมการตัดสินก่อน แล้วกลับมาอัปโหลดรูปที่นี่',
+             '⚖️ ไปหน้าทำเนียบคณะกรรมการตัดสิน','judges'],
     staff:['ยังไม่มีรายชื่อคณะกรรมการดำเนินงาน','เพิ่มรายชื่อได้ที่เมนู “คณะกรรมการดำเนินงาน” แล้วกลับมาอัปโหลดรูปที่นี่',
              '👥 ไปหน้าคณะกรรมการดำเนินงาน','staff']
   }[CURCARD]||['ยังไม่มีรายชื่อในประเภทนี้','','',''];
@@ -5214,7 +5214,7 @@ function printCards(){
   $('#cardArea').scrollIntoView({behavior:'smooth'});
 }
 
-/* ============================ ทำเนียบกรรมการตัดสิน ============================ */
+/* ============================ ทำเนียบคณะกรรมการตัดสิน ============================ */
 let JUDGES=[];
 function renderJudges(pre){
   Promise.resolve(pre || api('listJudges',{scope:SCOPE})).then(rows=>{
@@ -7497,7 +7497,7 @@ function go(p){
     entries:'ลงทะเบียนแข่งขัน',score:'บันทึกคะแนนผลการแข่งขัน',publish:'ประกาศผล',promote:promoteLabel(),
     print:'พิมพ์เอกสาร',setup:'ตั้งค่า',news:'ข่าวประชาสัมพันธ์',docs:'เอกสารดาวน์โหลด',
     site:'หน้าเว็บ & แบนเนอร์',newsmgr:'ประชาสัมพันธ์',cert:'เกียรติบัตร',certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',
-    judges:'ทำเนียบกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกกรรมการ',apply:'สมัครคณะกรรมการตัดสิน',
+    judges:'ทำเนียบคณะกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกคณะกรรมการตัดสิน',apply:'สมัครคณะกรรมการตัดสิน',
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
@@ -9882,7 +9882,7 @@ async function notifyApplicants(){
   }catch(e){ alert(e.message); }
 }
 async function importJudges(){
-  if(!confirm('ส่งผู้ผ่านคุณสมบัติทั้งหมดเข้าทำเนียบกรรมการตัดสิน และมอบหมายรายการที่อนุมัติไว้?')) return;
+  if(!confirm('ส่งผู้ผ่านคุณสมบัติทั้งหมดเข้าทำเนียบคณะกรรมการตัดสิน และมอบหมายรายการที่อนุมัติไว้?')) return;
   try{
     const r=await api('importApprovedJudges',{});
     alert('บรรจุเข้าทำเนียบกรรมการแล้ว '+r.judges+' ท่าน · มอบหมายรายการ '+r.assigned+' รายการ');
