@@ -1271,18 +1271,19 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn g sm" onclick="go('print')">🖨️ พิมพ์ใบรายชื่อ</button>
         <button class="btn" id="entAddBtn" onclick="editEntry(null)">+ เพิ่มผู้สมัคร</button></div>
       
-      <!-- รายการที่สมัครไปแล้วทั้งหมด — ให้โรงเรียนตรวจทานได้โดยไม่ต้องไล่เลือกทีละรายการ -->
-      <div class="card" style="margin-bottom:14px"><div class="ch">
-        <h3 id="entMineTitle">รายการที่สมัครแล้ว</h3><span class="sp"></span>
-        <span class="hint" id="entMineCount"></span>
-        <button class="btn g sm" onclick="drawMyEntries(1)">↻ ตรวจสอบอีกครั้ง</button></div>
-        <div class="cb" style="padding:0;overflow:auto;max-height:48vh"><table id="entMine"></table></div></div>
-
-      <label style="font-size:13.8px;font-weight:600;display:block;margin-bottom:5px">เพิ่ม / แก้ไขรายการ</label>
+      <!-- เลือกรายการที่จะสมัครใหม่ ไว้บนสุดเพราะเป็นงานที่ทำบ่อยที่สุด -->
+      <label style="font-size:13.8px;font-weight:600;display:block;margin-bottom:5px">เลือกรายการที่จะสมัคร</label>
       <div class="row" style="margin-bottom:12px">
         <select id="entAct" onchange="renderEntries()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
       </div>
-      <div class="card"><div class="cb" style="padding:0;overflow:auto;max-height:66vh"><table id="entTbl"></table></div></div>
+      <div class="card" style="margin-bottom:18px"><div class="cb" style="padding:0;overflow:auto;max-height:50vh"><table id="entTbl"></table></div></div>
+
+      <!-- รายการที่สมัครไปแล้วทั้งหมด — ให้โรงเรียนตรวจทานได้โดยไม่ต้องไล่เลือกทีละรายการ -->
+      <div class="card"><div class="ch">
+        <h3 id="entMineTitle">รายการที่สมัครแล้ว</h3><span class="sp"></span>
+        <span class="hint" id="entMineCount"></span>
+        <button class="btn g sm" onclick="drawMyEntries(1)">↻ ตรวจสอบอีกครั้ง</button></div>
+        <div class="cb" style="padding:0;overflow:auto;max-height:56vh"><table id="entMine"></table></div></div>
     </section>
 
     <!-- ---------- ให้คะแนน ---------- -->
