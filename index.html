@@ -1636,6 +1636,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <div class="fld"><label>ตั้งแต่วันที่</label><div id="st_open_at_wrap"></div></div>
             <div class="fld"><label>ถึงวันที่</label><div id="st_close_at_wrap"></div></div>
           </div>
+          <div class="hint" id="st_dateHint" style="margin:-6px 0 12px"></div>
           <div class="fld" id="fld_entdetail"><label>หน้าผู้เข้าแข่งขันสาธารณะ — แสดงละเอียดแค่ไหน</label>
             <select id="st_pub_entry_detail">
               <option value="full">ชื่อนักเรียนและครูผู้ฝึกสอน (แบบเว็บ สพฐ.)</option>
@@ -4160,11 +4161,23 @@ function siteCfg(){
           banner_subtitle:g.banner_subtitle||('รอบคัดเลือกระดับกลุ่มโรงเรียน · '+(DB.config||{}).district_name),
           banner_note:g.tagline, contact:g.contact};
 }
+/** ช่วงวันแข่งขันของขอบเขตที่เปิดอยู่
+    กลุ่มโรงเรียนตั้งวันแข่งของตนเองได้ที่หน้า “หน้าเว็บ & แบนเนอร์”
+    ถ้ากลุ่มเว้นว่างไว้ จะใช้ช่วงวันของเขตเหมือนเดิม */
+function scopeDates(){
+  const c=DB.config||{};
+  if(SCOPE!=='ALL'){
+    const g=(DB.groups||[]).find(x=>x.group_code===SCOPE)||{};
+    const a=dstr(g.open_at||''), b=dstr(g.close_at||'');
+    if(a||b) return {open_at:a, close_at:b, own:true};
+  }
+  return {open_at:dstr(c.open_at||''), close_at:dstr(c.close_at||''), own:false};
+}
 /** ช่วงวันจัดการแข่งขัน — “ · แข่งขันระหว่างวันที่ 1 – 4 มีนาคม 2570” */
 function eventDateLine(){
-  const c=DB.config||{}, a=dstr(c.open_at||''), b=dstr(c.close_at||'');
+  const d=scopeDates(), a=d.open_at, b=d.close_at;
   if(!a && !b) return '';
-  if(a && b){
+  if(a && b && a!==b){
     const ma=a.match(/^(\d{4})-(\d{2})-(\d{2})$/), mb=b.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if(ma && mb && ma[1]===mb[1] && ma[2]===mb[2])
       return ' · แข่งขันระหว่างวันที่ '+Number(ma[3])+' – '+Number(mb[3])+' '+TH_MONTH[Number(mb[2])-1]+' '+mb[1];
@@ -4219,7 +4232,8 @@ function renderBanner(){
   setBannerImage(c.banner_url? imgSrc(c.banner_url) : '');
   $('#bKw').textContent = SCOPE==='ALL'? shortName() : 'รอบคัดเลือกระดับกลุ่มโรงเรียน';
   $('#bH1').textContent = c.banner_title || (SCOPE==='ALL'? shortName() : groupName(SCOPE));
-  const sub=(c.banner_subtitle||'').trim(), dl=(SCOPE==='ALL'? eventDateLine() : '');
+  const sub=(c.banner_subtitle||'').trim();
+  const dl=(SCOPE==='ALL' || scopeDates().own)? eventDateLine() : '';
   $('#bP').textContent = sub ? sub+dl : dl.replace(/^\s*·\s*/,'');
   const n=$('#bannerNote');
   n.style.display = c.banner_note? 'block':'none'; n.textContent = c.banner_note||'';
@@ -4378,8 +4392,8 @@ function beDate(v){
 /** ป้ายนับถอยหลังบนแบนเนอร์ — อ่านวันแข่งขันจากหน้า “ตั้งค่าการแข่งขัน” */
 function drawCountdown(){
   const el=$('#cdPill'); if(!el) return;
-  const c=DB.config||{};
-  const a=beDate(c.open_at), b=beDate(c.close_at)||a;
+  const w=scopeDates();
+  const a=beDate(w.open_at), b=beDate(w.close_at)||a;
   if(!a){ el.style.display='none'; return; }
   const t0=new Date(); t0.setHours(0,0,0,0);
   const d=Math.round((a-t0)/86400000), dEnd=Math.round(((b||a)-t0)/86400000);
@@ -4750,10 +4764,20 @@ function renderSite(){
   if($('#st_banner_url').value) showThumb('bnThumb',$('#st_banner_url').value,null,DEMO());
   else $('#bnThumb').style.display='none';
   $('#st_event_name').value=(DB.config||{}).event_name||'';
-  dateSelSet('st_open_at', (DB.config||{}).open_at||'');
-  dateSelSet('st_close_at', (DB.config||{}).close_at||'');
+  /* วันที่จัดการแข่งขัน — เขตตั้งของทั้งเขต · กลุ่มตั้งวันแข่งรอบคัดเลือกของตนเองได้
+     กลุ่มที่เว้นว่างไว้จะใช้ช่วงวันของเขตเหมือนเดิม */
+  const gRow = isDist? null : ((DB.groups||[]).find(x=>x.group_code===SCOPE)||{});
+  dateSelSet('st_open_at',  isDist? ((DB.config||{}).open_at||'')  : (gRow.open_at||''));
+  dateSelSet('st_close_at', isDist? ((DB.config||{}).close_at||'') : (gRow.close_at||''));
   $('#fld_event').style.display = isDist?'':'none';
-  $('#fld_dates').style.display = isDist?'':'none';
+  $('#fld_dates').style.display = '';
+  const dh=$('#st_dateHint');
+  if(dh) dh.innerHTML = isDist
+    ? 'ใช้กับป้ายนับถอยหลังบนแบนเนอร์ และหัวเอกสารที่พิมพ์ทุกฉบับของเขต'
+    : 'วันแข่งขันรอบคัดเลือกของ'+groupName(SCOPE)+' — จะขึ้นบนแบนเนอร์และหัวเอกสารของกลุ่ม'+
+      '<br>ถ้าเว้นว่างทั้งสองช่อง จะใช้ช่วงวันของเขต ('+
+      (((DB.config||{}).open_at||'')? thDateLong(dstr((DB.config||{}).open_at))+
+        (((DB.config||{}).close_at||'')? ' ถึง '+thDateLong(dstr((DB.config||{}).close_at)) : '') : 'ยังไม่ได้กำหนด')+')';
   /* ระดับความละเอียดของหน้าผู้เข้าแข่งขันเป็นค่ากลางของทั้งเขต จึงตั้งได้ที่เว็บระดับเขตเท่านั้น */
   const fe=$('#fld_entdetail');
   if(fe){ fe.style.display = isDist?'':'none';
@@ -4780,7 +4804,8 @@ async function saveSite(){
     o.pub_entry_detail=$('#st_pub_entry_detail').value; }
   /* ฝั่งเซิร์ฟเวอร์เก็บข้อความแจ้งเตือนของกลุ่มไว้ที่คอลัมน์ tagline ไม่ใช่ banner_note
      ถ้าไม่ส่งชื่อนี้ไปด้วย ข้อความที่กลุ่มพิมพ์จะหายทุกครั้งที่บันทึก */
-  if(SCOPE!=='ALL') o.tagline=o.banner_note;
+  if(SCOPE!=='ALL'){ o.tagline=o.banner_note;
+    o.open_at=dateSelVal('st_open_at'); o.close_at=dateSelVal('st_close_at'); }
   const btn=document.querySelector('#p-site .hd .btn');
   if(btn){ btn.disabled=true; btn.textContent='⏳ กำลังบันทึก…'; }
   try{ await api('saveSiteSettings',o);
@@ -4788,9 +4813,11 @@ async function saveSite(){
     if(SCOPE==='ALL'){ DB.config=Object.assign({}, DB.config||{}, o); delete DB.config.scope; }
     else { const g=(DB.groups||[]).find(x=>x.group_code===SCOPE);
       if(g) Object.assign(g,{banner_url:o.banner_url,banner_title:o.banner_title,
-        banner_subtitle:o.banner_subtitle,tagline:o.banner_note,contact:o.contact}); }
+        banner_subtitle:o.banner_subtitle,tagline:o.banner_note,contact:o.contact,
+        open_at:o.open_at,close_at:o.close_at}); }
     try{ if(!DEMO()) snapSave(DB, SCOPE==='ALL'?'':SCOPE); }catch(e2){}
-    renderBanner(); alert('บันทึกแล้ว — หน้าเว็บสาธารณะเปลี่ยนทันที');
+    renderBanner(); try{ drawCountdown(); }catch(e3){}
+    alert('บันทึกแล้ว — หน้าเว็บสาธารณะเปลี่ยนทันที');
   }catch(e){ alert(e.message); }
   if(btn){ btn.disabled=false; btn.textContent='บันทึก'; }
 }
