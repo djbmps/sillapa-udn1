@@ -1486,7 +1486,9 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
 
     <!-- ---------- รับสมัครคณะกรรมการตัดสิน (หลังบ้าน) ---------- -->
     <section class="page" id="p-judgeapp">
-      <div class="hd"><div><h2>รับสมัครคณะกรรมการตัดสิน</h2><p id="jaSub"></p></div></div>
+      <div class="hd"><div><h2>รับสมัครคณะกรรมการตัดสิน</h2><p id="jaSub"></p></div>
+        <span class="sp"></span>
+        <button class="btn g" onclick="openPublicApply()">🔗 ดูหน้าสมัครที่ผู้สมัครเห็น</button></div>
 
       <div class="card" id="jaWinCard" style="margin-bottom:14px">
         <div class="ch"><h3>ช่วงเวลารับสมัคร</h3><span class="sp"></span><span id="jaWinState"></span></div>
@@ -7460,7 +7462,12 @@ function go(p){
   /* กันไม่ให้ผู้ที่ยังไม่เข้าสู่ระบบเปิดหน้าหลังบ้าน แม้จะพิมพ์ URL เข้ามาเอง */
   if(isAdminPage(p) && !ME){ p='home'; VIEW='public'; }   /* ลิงก์เก่าของหน้าหลังบ้าน → กลับหน้าแรก (ไม่เด้งหน้าเข้าสู่ระบบ) */
   if(p==='setup' && ME && ME.role!=='district_admin'){ p='dash'; }
-  if(p==='apply' && SCOPE!=='ALL') p='home';   /* สมัครคณะกรรมการตัดสิน มีเฉพาะเว็บระดับเขต */
+  /* สมัครคณะกรรมการตัดสินมีที่เว็บระดับเขตที่เดียว — ถ้าเปิดจากเว็บกลุ่มให้พาไปเว็บเขตให้เลย
+     (เดิมเด้งกลับหน้าแรกเงียบ ๆ ทำให้เหมือนเมนูนี้ใช้ไม่ได้) */
+  if(p==='apply' && SCOPE!=='ALL'){
+    if(!lockedScope()){ switchSite('ALL','apply'); return; }
+    p='home';
+  }
   /* เอกสารการแข่งขันเป็นงานของกลุ่มโรงเรียนและเขต โรงเรียนพิมพ์ได้เฉพาะเกียรติบัตร */
   if(p==='print' && ME && ME.role!=='district_admin' && ME.role!=='group_admin'){
     p = (ME.role==='school') ? 'cert' : 'dash'; }
@@ -9670,6 +9677,12 @@ function apBuildSelects(v){
     value="${String(v.major||'').replace(/"/g,'&quot;')}">`;
   $('#ap_past_wrap').innerHTML   = selOther('ap_past', OPT_JUDGE_EXP, v.past_judge||'', '', false);
 }
+/** เปิดหน้า “สมัครคณะกรรมการตัดสิน” ที่ผู้สมัครเห็น — หน้านี้มีเฉพาะเว็บระดับเขต
+    จึงสลับไปเว็บเขตให้ก่อนถ้ากำลังอยู่ในเว็บกลุ่ม */
+function openPublicApply(){
+  if(SCOPE!=='ALL' && !lockedScope()) setScope('ALL');
+  setView('public'); go('apply');
+}
 function renderApply(){
   const gKeep=$('#ap_group')? $('#ap_group').value : '';
   $('#ap_group').innerHTML='<option value="">— เลือกกลุ่มโรงเรียน —</option>'+
@@ -9774,7 +9787,8 @@ async function renderJudgeApp(){
   $('#jaImport').style.display  = dist? '' : 'none';
   $('#jaSub').textContent = ME.role==='selector'
     ? 'พิจารณาคุณสมบัติผู้สมัครเป็นกรรมการตัดสิน กลุ่มสาระ '+(ME.scope||'-')
-    : 'เปิด-ปิดรับสมัคร · ตั้งคณะกรรมการคัดเลือกรายกลุ่มสาระ · พิจารณาคุณสมบัติผู้สมัคร';
+    : 'เปิด-ปิดรับสมัคร · ตั้งคณะกรรมการคัดเลือกรายกลุ่มสาระ · พิจารณาคุณสมบัติผู้สมัคร'
+      +' — ผู้สมัครกรอกใบสมัครที่หน้าเว็บสาธารณะระดับเขต เมนู “สมัครคณะกรรมการตัดสิน”';
   try{ JAB = await api('listJudgeApplications',{}); }catch(e){
     $('#jaList').innerHTML=`<div class="note w"><span>⚠️</span><div>${e.message}</div></div>`; return; }
 
