@@ -1049,7 +1049,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       <div class="ng" data-sec="sc"><span class="ngh" onclick="togSec(this)">บันทึกคะแนน &amp; ประกาศผล<i class="cv">▾</i></span><div class="ngb">
         <!-- กรรมการตัดสินส่งใบบันทึกคะแนนกระดาษ แล้วเจ้าหน้าที่ ICT คีย์เข้าระบบ
              เมนูนี้จึงเปิดให้เฉพาะผู้ดูแลเขตและผู้ดูแลกลุ่ม (ตามสิทธิ์ score) -->
-        <button class="nv" data-p="score" data-role="district_admin,group_admin" data-perm="score"><i>✍️</i>ให้คะแนน</button>
+        <button class="nv" data-p="score" data-role="district_admin,group_admin" data-perm="score"><i>✍️</i>บันทึกคะแนนผลการแข่งขัน</button>
         <button class="nv" data-p="publish" data-role="district_admin,group_admin" data-perm="publish"><i>✅</i>ตรวจทาน &amp; ประกาศผล</button>
         <button class="nv" data-p="promote" data-role="district_admin,group_admin" data-perm="promote"><i>⬆️</i><span id="nvPromote">ตัวแทนเข้าเขต</span></button>
         <button class="nv" data-p="region" data-role="district_admin" data-perm="promote" data-dist="1"><i>🏅</i>ตัวแทนเข้าภาค</button>
@@ -1274,7 +1274,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
 
     <!-- ---------- ให้คะแนน ---------- -->
     <section class="page" id="p-score">
-      <div class="hd"><div><h2>ให้คะแนน</h2></div></div>
+      <div class="hd"><div><h2>บันทึกคะแนนผลการแข่งขัน</h2></div></div>
       <div class="row" style="margin-bottom:12px">
         <select id="scAct" onchange="renderScore()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
         <select id="scJudge" onchange="renderScore()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
@@ -4016,7 +4016,7 @@ function promoteLabel(){
   return g ? 'ตัวแทนเข้าเขต' : 'รับโอนตัวแทนจากกลุ่ม';
 }
 function canDo(key){ return !!(ME && (ME.own || (ME.perm||[]).indexOf(key)>=0)); }
-const PERM_LABEL={actedit:'จัดการรายการ & เกณฑ์',entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',
+const PERM_LABEL={actedit:'จัดการรายการ & เกณฑ์',entries:'ผู้สมัครแข่งขัน',score:'บันทึกคะแนนผลการแข่งขัน',
   publish:'ประกาศผล',promote:'โอนตัวแทนเข้าเขต',judges:'ทำเนียบกรรมการตัดสิน',
   certadm:'ระบบเกียรติบัตร & คณะกรรมการดำเนินงาน',cards:'บัตรประจำตัว',newsmgr:'ประชาสัมพันธ์',
   site:'หน้าเว็บ & แบนเนอร์',print:'พิมพ์เอกสาร',perm:'เปิด-ปิดสิทธิ์การพิมพ์',
@@ -6796,27 +6796,148 @@ function staffXlsx(){
     x.position||'', cleanRaw(x.org||''), x.role||'กรรมการ']));
   saveBlob('รายชื่อคณะกรรมการดำเนินงาน.xlsx', xlsxBlob([{name:'รายชื่อ', rows:rows}]));
 }
+/* ---------- นำเข้ารายชื่อจากไฟล์ Excel ----------
+   เทมเพลตสร้างจากชุดคณะกรรมการที่ตั้งไว้แล้ว ผู้ใช้เปิดด้วย Excel กรอกชื่อใต้คณะของตัวเอง
+   แล้วอัปโหลดกลับ ระบบจะแยกเข้าคณะให้เองทุกคณะในไฟล์เดียว */
+const XLSX_CDN='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+let XLSX_P=null;
+function loadXlsx(){
+  if(window.XLSX) return Promise.resolve(window.XLSX);
+  if(XLSX_P) return XLSX_P;
+  XLSX_P=new Promise((ok,bad)=>{
+    const s=document.createElement('script');
+    s.src=XLSX_CDN;
+    s.onload=()=>window.XLSX? ok(window.XLSX) : bad(new Error('โหลดตัวอ่านไฟล์ Excel ไม่สำเร็จ'));
+    s.onerror=()=>bad(new Error('โหลดตัวอ่านไฟล์ Excel ไม่สำเร็จ — กรุณาตรวจการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่'));
+    document.head.appendChild(s);
+  });
+  return XLSX_P;
+}
+const XL_HEAD=['ชุด / จุดแข่งขัน','คณะกรรมการ','คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน','บทบาทในคณะ'];
+/** สร้างไฟล์เทมเพลตจากคณะกรรมการที่ตั้งไว้ แล้วให้เบราว์เซอร์ดาวน์โหลด */
+async function staffTemplate(){
+  const btn=event&&event.currentTarget;
+  const done=btn? btnBusy(btn,'กำลังสร้างไฟล์…') : ()=>{};
+  try{
+    const XL=await loadXlsx();
+    const us=staffUnits();
+    const aoa=[XL_HEAD];
+    let nC=0;
+    us.forEach(u=>{
+      const names=dutyNamesOf(u);
+      (names.length?names:['คณะกรรมการดำเนินงาน']).forEach(nm=>{
+        nC++;
+        for(let i=0;i<3;i++) aoa.push([unitLabel(u), nm, '', '', '', '', i===0?'ประธานกรรมการ':'กรรมการ']);
+      });
+    });
+    const ws=XL.utils.aoa_to_sheet(aoa);
+    ws['!cols']=[{wch:28},{wch:34},{wch:10},{wch:24},{wch:26},{wch:26},{wch:22}];
+    ws['!freeze']={xSplit:0,ySplit:1};
+    const tips=[['วิธีกรอกเทมเพลตรายชื่อคณะกรรมการดำเนินงาน'],[''],
+      ['1. กรอกชื่อ-สกุลในคอลัมน์ “ชื่อ-สกุล” ใต้คณะที่ต้องการ · คอลัมน์ “ชุด / จุดแข่งขัน” และ “คณะกรรมการ” มีให้แล้ว ไม่ต้องแก้'],
+      ['2. ถ้าคณะใดมีกรรมการมากกว่า 3 คน ให้แทรกแถวเพิ่มได้ โดยคัดลอกค่าในสองคอลัมน์แรกลงมาให้ตรงกัน'],
+      ['3. แถวที่ไม่ได้กรอกชื่อ-สกุล ระบบจะข้ามให้เอง ไม่ต้องลบทิ้ง'],
+      ['4. ลำดับของกรรมการในคณะ จะเรียงตามลำดับแถวในไฟล์'],
+      ['5. บันทึกไฟล์เป็น .xlsx หรือ .csv แล้วอัปโหลดกลับที่หน้าคณะกรรมการดำเนินงาน'],[''],
+      ['บทบาทในคณะ ที่ระบบรองรับ'], ...ROLE_OPTS.map(r=>[r]),[''],
+      ['คำนำหน้า ที่ระบบรู้จัก (ถ้าเว้นว่างไว้ ระบบจะแยกจากชื่อให้เอง)'],
+      [PREFIX_LIST.join('  ·  ')]];
+    const wb=XL.utils.book_new();
+    XL.utils.book_append_sheet(wb, ws, 'รายชื่อ');
+    XL.utils.book_append_sheet(wb, XL.utils.aoa_to_sheet(tips), 'คำแนะนำ');
+    const who=(SCOPE==='ALL'? 'เขต' : groupName(SCOPE)).replace(/[\\/:*?"<>|]/g,'');
+    XL.writeFile(wb, 'เทมเพลตคณะกรรมการดำเนินงาน '+who+'.xlsx');
+    toast('✓ ดาวน์โหลดเทมเพลตแล้ว — '+nC+' คณะ');
+  }catch(e){ alert(e.message||e); }
+  done();
+}
+/** อ่านไฟล์ที่อัปโหลด แล้วแปลงเป็นรายชื่อพร้อมนำเข้า */
+async function imPickFile(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  const msg=$('#im_filemsg');
+  try{
+    if(msg) msg.textContent='กำลังอ่านไฟล์…';
+    const XL=await loadXlsx();
+    const buf=await f.arrayBuffer();
+    const wb=XL.read(buf,{type:'array'});
+    const sh=wb.Sheets['รายชื่อ']||wb.Sheets[wb.SheetNames[0]];
+    const aoa=XL.utils.sheet_to_json(sh,{header:1,blankrows:false,defval:''});
+    IM_FILE=xlRows(aoa);
+    if(msg) msg.textContent=f.name+' · พบ '+IM_FILE.length+' รายชื่อ';
+    imPreview();
+  }catch(e){ IM_FILE=[]; if(msg) msg.textContent=''; alert(e.message||e); imPreview(); }
+}
+let IM_FILE=[];
+/** แปลงตารางจากไฟล์เป็นรายชื่อ — เติมชุด/คณะลงมาให้เองถ้าแถวต่อมาเว้นว่าง */
+function xlRows(aoa){
+  const idx={}, want={'ชุด':'unit','จุด':'unit','คณะ':'duty','คำนำหน้า':'prefix','ชื่อ':'name',
+    'ตำแหน่ง':'position','หน่วยงาน':'org','บทบาท':'role'};
+  let head=-1;
+  for(let i=0;i<Math.min(aoa.length,10);i++){
+    const r=(aoa[i]||[]).map(x=>String(x||'').trim());
+    if(r.some(c=>/ชื่อ-?สกุล|ชื่อ/.test(c)) && r.some(c=>/คณะ/.test(c))){ head=i;
+      r.forEach((c,j)=>{ for(const k in want){ if(c.indexOf(k)===0 || c===k){ if(idx[want[k]]===undefined) idx[want[k]]=j; break; } } });
+      break; }
+  }
+  if(head<0) throw new Error('ไม่พบหัวตารางในไฟล์ — กรุณาใช้เทมเพลตที่ดาวน์โหลดจากระบบ');
+  const main=unitLabel('');
+  let lastU='', lastD='';
+  const out=[];
+  for(let i=head+1;i<aoa.length;i++){
+    const r=aoa[i]||[];
+    const get=k=>idx[k]===undefined? '' : String(r[idx[k]]==null?'':r[idx[k]]).replace(/ /g,' ').trim();
+    let unit=get('unit'), duty=get('duty');
+    if(unit) lastU=unit; else unit=lastU;
+    if(duty) lastD=duty; else duty=lastD;
+    let name=get('name'), prefix=get('prefix');
+    if(!name) continue;
+    if(!prefix || PREFIX_LIST.indexOf(prefix)<0){ const s=splitPrefix((prefix?prefix+' ':'')+name); prefix=s.prefix; name=s.name; }
+    if(!name) continue;
+    out.push({ unit:(unit===main||unit==='-')?'':unit, duty:duty,
+      prefix:prefix, name:name, position:get('position'), org:get('org'),
+      role:normRole(get('role')||'กรรมการ') });
+  }
+  return out;
+}
+
 function openStaffImport(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   const us=staffUnits();
-  const names=committeesOf(STAFF_UNIT).map(c=>String(c.name));
+  IM_FILE=[];
   openModal('นำเข้ารายชื่อทีละหลายคน',
-    `<div class="grid g2">
+    `<div class="card" style="margin-bottom:14px"><div class="cb">
+       <b style="display:block;margin-bottom:4px">วิธีที่ 1 · นำเข้าจากไฟล์ Excel (ได้ครบทุกคณะในครั้งเดียว)</b>
+       <div class="hint" style="margin-bottom:9px">ดาวน์โหลดเทมเพลตที่มีชื่อคณะครบตามที่ตั้งไว้ กรอกชื่อใน Excel แล้วอัปโหลดกลับ</div>
+       <div class="row">
+         <button type="button" class="btn g sm" onclick="staffTemplate()">⬇ ดาวน์โหลดเทมเพลต Excel</button>
+         <button type="button" class="btn g sm" onclick="document.getElementById('im_file').click()">📤 เลือกไฟล์ที่กรอกแล้ว</button>
+         <input type="file" id="im_file" accept=".xlsx,.xls,.csv" style="display:none" onchange="imPickFile(this)">
+         <span class="hint" id="im_filemsg"></span></div>
+     </div></div>
+     <div class="grid g2">
       <div class="fld"><label>ชุด / จุดแข่งขัน</label>
         <select id="im_unit" onchange="imFillDuty()">${us.map(u=>`<option value="${esc(u)}" ${u===STAFF_UNIT?'selected':''}>${esc(unitLabel(u))}</option>`).join('')}</select></div>
       <div class="fld"><label>นำเข้าเข้าคณะ</label><select id="im_duty"></select></div>
      </div>
-     
-     <div class="fld"><label>วางรายชื่อตรงนี้</label>
+     <div class="fld"><label>วิธีที่ 2 · วางรายชื่อจากคำสั่งเดิม (ทีละคณะ ตามที่เลือกด้านบน)</label>
        <textarea id="im_text" rows="9" oninput="imPreview()" placeholder="นายสาคร เสียงเย็น\tรอง ผอ.สพป.อุดรธานี เขต 1\tประธานกรรมการ
 นางเอื้อมพรพิชญ์ แสงศิลา\tผอ.กลุ่มนิเทศ ติดตามและประเมินผลฯ\tรองประธานกรรมการ"></textarea></div>
-     <label style="font-size:14.3px"><input type="checkbox" id="im_replace"> ล้างรายชื่อเดิมในคณะนี้ก่อนนำเข้า</label>
+     <label style="font-size:14.3px"><input type="checkbox" id="im_replace"> ล้างรายชื่อเดิมของคณะที่นำเข้าก่อน</label>
      <div id="imPrev" style="margin-top:10px"></div>`,
     async()=>{
+      const rep=$('#im_replace').checked?'Y':'N';
+      if(IM_FILE.length){
+        const r=await api('importStaffBulk',{scope:SCOPE, replace:rep, rows:IM_FILE});
+        IM_FILE=[]; renderStaff();
+        alert('นำเข้าจากไฟล์แล้ว '+r.added+' รายชื่อ · '+r.groups+' คณะ'+
+          (r.removed?'\nลบรายชื่อเดิม '+r.removed+' รายการ':'')+
+          (r.skipped?'\nข้าม '+r.skipped+' แถวที่ไม่มีชื่อหรือไม่ระบุคณะ':''));
+        return;
+      }
       const rows=imParse();
-      if(!rows.length) throw new Error('ยังไม่มีรายชื่อให้นำเข้า');
+      if(!rows.length) throw new Error('ยังไม่มีรายชื่อให้นำเข้า — เลือกไฟล์ Excel หรือวางรายชื่อในช่องด้านล่าง');
       const r=await api('importStaff',{scope:SCOPE, unit:$('#im_unit').value, duty:$('#im_duty').value,
-        replace:$('#im_replace').checked?'Y':'N', rows:rows});
+        replace:rep, rows:rows});
       STAFF_UNIT=$('#im_unit').value; STAFF_DUTY=$('#im_duty').value;
       renderStaff();
       alert('นำเข้าแล้ว '+r.added+' รายชื่อ'+(r.removed?' · ลบของเดิม '+r.removed+' รายชื่อ':'')+
@@ -6878,8 +6999,25 @@ function normRole(r){
   return 'กรรมการ';
 }
 function imPreview(){
-  const rows=imParse(), box=$('#imPrev'); if(!box) return;
-  if(!rows.length){ box.innerHTML='<p class="hint">ยังไม่มีข้อมูล — วางรายชื่อในช่องด้านบน</p>'; return; }
+  const box=$('#imPrev'); if(!box) return;
+  /* มาจากไฟล์ = แสดงแยกตามคณะ เพราะไฟล์เดียวมีได้หลายคณะ */
+  if(IM_FILE.length){
+    const gr={}, ord=[];
+    IM_FILE.forEach(r=>{ const k=(r.unit||'')+'|'+r.duty;
+      if(!gr[k]){ gr[k]={unit:r.unit||'',duty:r.duty,rows:[]}; ord.push(k); } gr[k].rows.push(r); });
+    box.innerHTML='<p class="hint" style="margin:0 0 6px">ตรวจสอบก่อนบันทึก — พบ <b>'+IM_FILE.length+
+      '</b> รายชื่อ ใน <b>'+ord.length+'</b> คณะ</p>'+
+      '<div style="max-height:36vh;overflow:auto;border:1px solid var(--line);border-radius:10px">'+
+      '<table><thead><tr><th>ที่</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>หน่วยงาน</th><th>บทบาท</th></tr></thead><tbody>'+
+      ord.map(k=>{ const b=gr[k];
+        return `<tr><td colspan="5" style="background:var(--line-2);font-weight:700">${esc(unitLabel(b.unit))} › ${esc(b.duty)} <span class="hint">(${b.rows.length} คน)</span></td></tr>`+
+          b.rows.map((r,i)=>`<tr><td>${i+1}</td><td><b>${esc((r.prefix||'')+r.name)}</b></td>
+            <td>${esc(r.position)}</td><td>${esc(r.org)}</td><td>${esc(r.role)}</td></tr>`).join('');
+      }).join('')+'</tbody></table></div>';
+    return;
+  }
+  const rows=imParse();
+  if(!rows.length){ box.innerHTML='<p class="hint">ยังไม่มีข้อมูล — เลือกไฟล์ Excel หรือวางรายชื่อในช่องด้านบน</p>'; return; }
   box.innerHTML='<p class="hint" style="margin:0 0 6px">ตรวจสอบก่อนบันทึก — พบ <b>'+rows.length+'</b> รายชื่อ</p>'+
     '<div style="max-height:34vh;overflow:auto;border:1px solid var(--line);border-radius:10px">'+
     '<table><thead><tr><th>ที่</th><th>คำนำหน้า</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>หน่วยงาน</th><th>บทบาท</th></tr></thead><tbody>'+
@@ -7313,7 +7451,7 @@ function go(p){
   openActiveSec(); syncNavSections();
   const t={home:'หน้าหลัก',acts:'รายการแข่งขัน',sched:'ตารางแข่งขัน',results:'ผลการแข่งขัน',medals:'ตารางเหรียญ',
     schools:'ทะเบียนโรงเรียน',groups:'กลุ่มโรงเรียน',dash:'แดชบอร์ด',actedit:'จัดการรายการ & เกณฑ์',
-    entries:'ผู้สมัครแข่งขัน',score:'ให้คะแนน',publish:'ประกาศผล',promote:promoteLabel(),
+    entries:'ผู้สมัครแข่งขัน',score:'บันทึกคะแนนผลการแข่งขัน',publish:'ประกาศผล',promote:promoteLabel(),
     print:'พิมพ์เอกสาร',setup:'ตั้งค่า',news:'ข่าวประชาสัมพันธ์',docs:'เอกสารดาวน์โหลด',
     site:'หน้าเว็บ & แบนเนอร์',newsmgr:'ประชาสัมพันธ์',cert:'เกียรติบัตร',certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',
     judges:'ทำเนียบกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกกรรมการ',apply:'สมัครกรรมการตัดสิน',
