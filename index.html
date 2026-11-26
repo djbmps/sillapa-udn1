@@ -1051,7 +1051,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       </div></div>
 
       <div class="ng" data-sec="jd"><span class="ngh" onclick="togSec(this)">คณะกรรมการ<i class="cv">▾</i></span><div class="ngb">
-        <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัคร &amp; คัดเลือกคณะกรรมการตัดสิน</button>
+        <button class="nv" data-p="judgeapp" data-role="district_admin,selector" data-perm="judges"><i>🧑‍⚖️</i>รับสมัครคณะกรรมการตัดสิน</button>
         <button class="nv" data-p="judges" data-role="district_admin,group_admin" data-perm="judges"><i>⚖️</i>ทำเนียบคณะกรรมการตัดสิน</button>
         <!-- รวมสองหน้าเดิม (รายชื่อกรรมการ + จุดแข่งขัน/ชุดคณะ) ไว้ในเมนูเดียว
              สลับกันได้ด้วยแถบแท็บบนหัวหน้าทั้งสองหน้า -->
@@ -1486,9 +1486,9 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       </div>
     </section>
 
-    <!-- ---------- รับสมัคร & คัดเลือกคณะกรรมการตัดสิน (หลังบ้าน) ---------- -->
+    <!-- ---------- รับสมัครคณะกรรมการตัดสิน (หลังบ้าน) ---------- -->
     <section class="page" id="p-judgeapp">
-      <div class="hd"><div><h2>รับสมัคร &amp; คัดเลือกคณะกรรมการตัดสิน</h2><p id="jaSub"></p></div></div>
+      <div class="hd"><div><h2>รับสมัครคณะกรรมการตัดสิน</h2><p id="jaSub"></p></div></div>
 
       <div class="card" id="jaWinCard" style="margin-bottom:14px">
         <div class="ch"><h3>ช่วงเวลารับสมัคร</h3><span class="sp"></span><span id="jaWinState"></span></div>
@@ -4003,7 +4003,7 @@ function applyScope(){
     if(ME.role!=='district_admin' && ME.role!=='group_admin'){ b.style.display=''; return; }
     b.style.display = canDo(b.dataset.perm) ? '' : 'none';
   });
-  /* กรรมการคัดเลือกเห็นเมนูเดียว — หน้ารับสมัคร & คัดเลือกคณะกรรมการตัดสิน */
+  /* กรรมการคัดเลือกเห็นเมนูเดียว — หน้ารับสมัครคณะกรรมการตัดสิน */
   if(ME && ME.role==='selector'){
     $$('#navAdmin .nv').forEach(b=>{
       b.style.display = (b.dataset.p==='judgeapp' || b.dataset.always==='1')?'':'none'; });
@@ -7497,7 +7497,7 @@ function go(p){
     entries:'ลงทะเบียนแข่งขัน',score:'บันทึกคะแนนผลการแข่งขัน',publish:'ประกาศผล',promote:promoteLabel(),
     print:'พิมพ์เอกสาร',setup:'ตั้งค่า',news:'ข่าวประชาสัมพันธ์',docs:'เอกสารดาวน์โหลด',
     site:'หน้าเว็บ & แบนเนอร์',newsmgr:'ประชาสัมพันธ์',cert:'เกียรติบัตร',certadm:'ระบบเกียรติบัตร',cards:'บัตรประจำตัว',
-    judges:'ทำเนียบคณะกรรมการตัดสิน',judgeapp:'รับสมัคร & คัดเลือกคณะกรรมการตัดสิน',apply:'สมัครคณะกรรมการตัดสิน',
+    judges:'ทำเนียบคณะกรรมการตัดสิน',judgeapp:'รับสมัครคณะกรรมการตัดสิน',apply:'สมัครคณะกรรมการตัดสิน',
     perm:'เปิด-ปิดระบบ & สิทธิ์การพิมพ์',
     season:'ปีการศึกษา & สำรอง/ล้างข้อมูล',backup:'สำรอง & กู้คืนข้อมูล',admins:'จัดการผู้ดูแล',
     subs:'ขอเปลี่ยนตัว',submgr:'ขอเปลี่ยนตัวนักเรียน',
@@ -9610,7 +9610,7 @@ function catOptions(){
   return [...new Set((DB.activities||[]).map(a=>a.category).filter(Boolean))];
 }
 
-/* ============================ รับสมัคร & คัดเลือกคณะกรรมการตัดสิน ============================ */
+/* ============================ รับสมัครคณะกรรมการตัดสิน ============================ */
 let APW=null, JAB=null;
 
 /* ---------- หน้าสาธารณะ: ใบสมัคร ---------- */
