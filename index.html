@@ -7628,7 +7628,7 @@ function enView(v){
 /** แถบปุ่มสลับมุมมอง — ให้เห็นว่ากำลังดูแบบไหนและเปลี่ยนได้โดยไม่ต้องเลื่อนกลับขึ้นไป */
 function enTabs(){
   return '<div class="row" style="margin:4px 0 12px">'+
-    [['act','📋 ตามรายการแข่งขัน'],['school','🏫 ตามโรงเรียน'],['person','🧑‍🎓 รายชื่อผู้เข้าแข่งขัน']]
+    [['act','📋 ตามรายการแข่งขัน'],['school','🏫 ตามโรงเรียน']]
       .map(([v,t])=>`<button class="btn${EN_VIEW===v?'':' g'} sm" onclick="enView('${v}')">${t}</button>`).join('')+
     '</div>';
 }
@@ -7663,11 +7663,15 @@ function drawEntrants(){
     ['ทีมที่สมัคร',ENT.teams,'ทีม','act','ดูแยกตามรายการแข่งขัน'],
     ['รายการที่มีผู้สมัคร',ENT.acts,'จาก '+actsOf().length+' รายการ','act','ดูแยกตามรายการแข่งขัน'],
     ['โรงเรียนที่ส่งเข้าแข่ง',ENT.schools,'โรงเรียน','school','ดูแยกตามโรงเรียน'],
-    ['นักเรียนที่เข้าแข่งขัน',ENT.students,'คน','person','ดูรายชื่อผู้เข้าแข่งขันทั้งหมด']]
-    .map(([l,v,u,view,tip],i)=>`<div class="stat s${(i%4)+1}${EN_VIEW===view?' on':''}" role="button" tabindex="0"
+    ['นักเรียนที่เข้าแข่งขัน',ENT.students,'คน','','']]
+    .map(([l,v,u,view,tip],i)=>{
+      const on = view? `${EN_VIEW===view?' on':''}" role="button" tabindex="0"
         title="${tip}" onclick="enView('${view}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enView('${view}')}"
-        style="cursor:pointer;position:relative"><div class="l">${l}</div>
-      <div class="v">${Number(v||0).toLocaleString()}</div><div class="s">${u} <span style="opacity:.75">›</span></div></div>`).join('');
+        style="cursor:pointer;position:relative` : '';
+      return `<div class="stat s${(i%4)+1}${on}"><div class="l">${l}</div>
+      <div class="v">${Number(v||0).toLocaleString()}</div>
+      <div class="s">${u}${view? ' <span style="opacity:.75">›</span>':''}</div></div>`;
+    }).join('');
 
   const q=($('#enQ').value||'').trim(), c=$('#enCat').value, l=$('#enLvl').value, only=$('#enOnly').value;
   const cnt=ENT.counts||{}, byAct={};
@@ -7724,32 +7728,6 @@ function drawEntrants(){
         '</tbody></table></div></div>'; }).join('');
     return;
   }
-  /* ---- มุมมองรายบุคคล ---- */
-  if(EN_VIEW==='person'){
-    if(ENT.detail!=='full'){
-      $('#enBody').innerHTML=enTabs()+'<div class="note w"><span>!</span><div>ขณะนี้ตั้งค่าให้หน้าสาธารณะไม่แสดงชื่อบุคคล จึงดูรายบุคคลไม่ได้</div></div>';
-      return; }
-    const keep={}; A.forEach(a=>keep[a.act_id]=a);
-    const ppl=[];
-    (ENT.rows||[]).forEach(r=>{ const a=keep[r.act_id]; if(!a) return;
-      (r.students||[]).forEach(s=>ppl.push({name:s.name,lv:s.level,school:r.school,a,
-        coach:(r.coaches||[]).join(' · ')})); });
-    ppl.sort((x,y)=>String(x.name).localeCompare(String(y.name),'th'));
-    if(!ppl.length){ $('#enBody').innerHTML=enTabs()+'<div class="note i"><span>🔎</span><div>ไม่พบผู้เข้าแข่งขันตามที่ค้นหา</div></div>'; return; }
-    $('#enBody').innerHTML=enTabs()+
-      `<div class="card"><div class="ch"><h3>รายชื่อผู้เข้าแข่งขัน</h3><span class="sp"></span>
-        <span class="pill ok">${ppl.length} คน</span></div>
-       <div class="cb" style="padding:0;overflow:auto;max-height:70vh"><table>
-       <thead><tr><th style="width:52px">ที่</th><th>ชื่อ-สกุล</th><th>ชั้น</th><th>โรงเรียน</th>
-       <th>รายการแข่งขัน</th><th>ครูผู้ฝึกสอน</th></tr></thead><tbody>`+
-       ppl.map((p,i)=>`<tr><td class="num" style="color:var(--ink-3)">${i+1}</td>
-         <td><b>${qq(p.name)}</b></td><td>${qq(p.lv||'')}</td>
-         <td>${qq(cleanName(p.school||''))}</td>
-         <td>${qq(p.a.act_name)}<br><span class="hint">${qq(p.a.level||'')}</span></td>
-         <td>${qq(p.coach||'—')}</td></tr>`).join('')+'</tbody></table></div></div>';
-    return;
-  }
-
   let last=null, h=enTabs();
   A.forEach(a=>{
     if(a.category!==last){ last=a.category; h+=`<h3 style="margin:22px 0 8px">${qq(a.category||'อื่น ๆ')}</h3>`; }
