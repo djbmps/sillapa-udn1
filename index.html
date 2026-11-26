@@ -1273,10 +1273,12 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
       
       <!-- เลือกรายการที่จะสมัครใหม่ ไว้บนสุดเพราะเป็นงานที่ทำบ่อยที่สุด -->
       <label style="font-size:13.8px;font-weight:600;display:block;margin-bottom:5px">เลือกรายการที่จะสมัคร</label>
-      <div class="row" style="margin-bottom:12px">
+      <div class="row" style="margin-bottom:6px">
         <select id="entAct" onchange="renderEntries()" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
       </div>
-      <div class="card" style="margin-bottom:18px"><div class="cb" style="padding:0;overflow:auto;max-height:50vh"><table id="entTbl"></table></div></div>
+      <div class="hint" id="entPickHint" style="margin-bottom:14px"></div>
+      <!-- ตารางผู้สมัครรายรายการ — ซ่อนในหน้าจอของบัญชีโรงเรียน เพราะดูรวมที่ตารางล่างได้แล้ว -->
+      <div class="card" id="entTblWrap" style="margin-bottom:18px"><div class="cb" style="padding:0;overflow:auto;max-height:50vh"><table id="entTbl"></table></div></div>
 
       <!-- รายการที่สมัครไปแล้วทั้งหมด — ให้โรงเรียนตรวจทานได้โดยไม่ต้องไล่เลือกทีละรายการ -->
       <div class="card"><div class="ch">
@@ -8419,34 +8421,54 @@ function drawMyEntries(force){
   const box=$('#entMine'); if(!box) return;
   const isSchool=!!(ME&&ME.role==='school');
   const cnt=$('#entMineCount'), ttl=$('#entMineTitle');
-  if(ttl) ttl.textContent = isSchool? 'รายการที่โรงเรียนของท่านสมัครแล้ว' : 'รายการที่สมัครแล้วทั้งหมด';
+  if(ttl) ttl.textContent = isSchool? 'รายการที่โรงเรียนของท่านสมัครแล้ว' : 'รายการที่สมัครแล้ว แยกตามกิจกรรม';
   if(cnt) cnt.textContent='กำลังโหลด…';
   myEntries(force).then(list=>{
     const S=schoolsOf('ALL'), A={};
     (DB.activities||[]).forEach(a=>A[a.act_id]=a);
     const nameOf=sm=>{const x=S.find(v=>String(v.smis)===String(sm)); return x? cleanName(x.school_name):String(sm||'');};
-    const rows=list.slice().sort((x,y)=>{
-      if(!isSchool){ const c=String(nameOf(x.school_smis)).localeCompare(String(nameOf(y.school_smis)),'th'); if(c) return c; }
-      return String((A[x.act_id]||{}).act_name||'').localeCompare(String((A[y.act_id]||{}).act_name||''),'th');
-    });
-    if(cnt) cnt.textContent = rows.length
-      ? 'สมัครแล้ว '+rows.length+' รายการ'+(isSchool? '' : ' · '+new Set(rows.map(e=>String(e.school_smis))).size+' โรงเรียน')
+    const actName=e=>String((A[e.act_id]||{}).act_name||e.act_id);
+    if(cnt) cnt.textContent = list.length
+      ? 'สมัครแล้ว '+list.length+' รายการ'+(isSchool? ''
+          : ' · '+new Set(list.map(e=>String(e.school_smis))).size+' โรงเรียน · '
+            +new Set(list.map(e=>String(e.act_id))).size+' กิจกรรม')
       : '';
-    const head=['ที่'].concat(isSchool?[]:['โรงเรียน'])
-      .concat(['รายการแข่งขัน','ระดับชั้น','นักเรียน','ครูผู้ฝึกสอน','สถานะ','จัดการ']);
-    tbl(box, head, rows.map((e,i)=>{ const a=A[e.act_id]||{};
-      return `<tr><td class="num" style="color:var(--ink-3)">${i+1}</td>`+
-        (isSchool? '' : `<td><b>${qq(nameOf(e.school_smis))}</b></td>`)+
-        `<td><b>${qq(a.act_name||e.act_id)}</b>${e.from_group?'<br><span class="pill i">ตัวแทน '+qq(groupName(e.from_group))+'</span>':''}</td>
-        <td style="white-space:nowrap">${qq(a.level||'')}</td>
-        <td>${(e.students||[]).map(x=>qq((x.prefix||'')+x.first_name+' '+x.last_name)).join('<br>')||'—'}</td>
+    const cell=e=>`<td>${(e.students||[]).map(x=>qq((x.prefix||'')+x.first_name+' '+x.last_name)).join('<br>')||'—'}</td>
         <td>${(e.coaches||[]).map(x=>qq((x.prefix||'')+x.name)).join('<br>')||'—'}</td>
         <td><span class="pill ${e.status==='ยืนยัน'?'ok':'w'}">${qq(e.status||'')}</span></td>
         <td style="white-space:nowrap"><button class="btn g sm" onclick="goEntryAct('${e.act_id}','${e.entry_id}')">แก้ไข</button>
-          <button class="btn g sm" onclick="delEntry('${e.entry_id}')">ลบ</button></td></tr>`;
+          <button class="btn g sm" onclick="delEntry('${e.entry_id}')">ลบ</button></td>`;
+
+    /* ---- บัญชีโรงเรียน : ไล่ตามรายการที่ตนเองสมัคร ---- */
+    if(isSchool){
+      const rows=list.slice().sort((x,y)=>actName(x).localeCompare(actName(y),'th'));
+      const head=['ที่','รายการแข่งขัน','ระดับชั้น','นักเรียน','ครูผู้ฝึกสอน','สถานะ','จัดการ'];
+      tbl(box, head, rows.map((e,i)=>{ const a=A[e.act_id]||{};
+        return `<tr><td class="num" style="color:var(--ink-3)">${i+1}</td>
+          <td><b>${qq(a.act_name||e.act_id)}</b></td>
+          <td style="white-space:nowrap">${qq(a.level||'')}</td>`+cell(e)+`</tr>`;
+      }).join('') || `<tr><td colspan="${head.length}" style="padding:24px;text-align:center;color:var(--ink-3)">
+        โรงเรียนของท่านยังไม่ได้สมัครรายการใด — เลือกรายการแข่งขันด้านบนแล้วกด “+ เพิ่มผู้สมัคร”</td></tr>`);
+      return;
+    }
+    /* ---- ผู้ดูแลกลุ่ม/เขต : จัดกลุ่มตามกิจกรรม แล้วไล่รายโรงเรียนในแต่ละกิจกรรม ---- */
+    const byAct={}, ord=[];
+    list.forEach(e=>{ const k=String(e.act_id);
+      if(!byAct[k]){ byAct[k]=[]; ord.push(k); } byAct[k].push(e); });
+    ord.sort((x,y)=>{ const ax=A[x]||{}, ay=A[y]||{};
+      return String(ax.category||'').localeCompare(String(ay.category||''),'th')
+        || String(ax.act_code||x).localeCompare(String(ay.act_code||y)); });
+    const head=['ที่','โรงเรียน','นักเรียน','ครูผู้ฝึกสอน','สถานะ','จัดการ'];
+    tbl(box, head, ord.map(k=>{ const a=A[k]||{}, es=byAct[k].slice()
+        .sort((x,y)=>String(nameOf(x.school_smis)).localeCompare(String(nameOf(y.school_smis)),'th'));
+      return `<tr><td colspan="${head.length}" style="background:var(--line-2);font-weight:700">
+          ${qq(a.act_name||k)} <span class="hint">· ${qq(a.level||'')} · ${qq(a.category||'')}</span>
+          <span class="pill ok" style="margin-left:6px">${es.length} ทีม</span></td></tr>`+
+        es.map((e,i)=>`<tr><td class="num" style="color:var(--ink-3)">${i+1}</td>
+          <td><b>${qq(nameOf(e.school_smis))}</b>${e.from_group?'<br><span class="pill i">ตัวแทน '+qq(groupName(e.from_group))+'</span>':''}</td>`
+          +cell(e)+`</tr>`).join('');
     }).join('') || `<tr><td colspan="${head.length}" style="padding:24px;text-align:center;color:var(--ink-3)">
-      ${isSchool? 'โรงเรียนของท่านยังไม่ได้สมัครรายการใด — เลือกรายการแข่งขันด้านล่างแล้วกด “+ เพิ่มผู้สมัคร”'
-                : 'ยังไม่มีโรงเรียนใดในกลุ่มสมัครเข้าแข่งขัน'}</td></tr>`);
+      ยังไม่มีโรงเรียนใดในกลุ่มสมัครเข้าแข่งขัน</td></tr>`);
   }).catch(e=>{ if(cnt) cnt.textContent=''; box.innerHTML='<tbody><tr><td style="padding:18px;color:var(--bad)">โหลดไม่สำเร็จ — '+qq(e.message||e)+'</td></tr></tbody>'; });
 }
 /** กดแก้ไขจากตารางสรุป — เลือกรายการนั้นให้ก่อน แล้วค่อยเปิดฟอร์ม */
@@ -8455,13 +8477,33 @@ function goEntryAct(actId, entryId){
   setTimeout(()=>editEntry(entryId), 60);
 }
 
+/** นำรายชื่อชุดใหม่ที่ได้มาพร้อมการบันทึก มาใช้แทนของที่จำไว้ทันที */
+function setMyEntries(all){
+  if(!all) { MYENT=null; return; }
+  MYENT=all; MYENT_AT=Date.now(); MYENT_KEY=entryRound()+'|'+(ME? ME.role+':'+ME.scope : '');
+}
+/** หลังบันทึก/ลบ — ใช้ข้อมูลชุดเดียวที่ส่งกลับมาเติมทั้งสองตาราง ไม่ต้องยิงซ้ำ */
+function afterEntrySave(all, actId){
+  setMyEntries(all);
+  renderEntries(all? all.filter(e=>String(e.act_id)===String(actId)) : null);
+}
+
 function renderEntries(pre){
   const act=$('#entAct').value;
   const dist=(SCOPE==='ALL');
+  /* บัญชีโรงเรียนสมัครให้ตนเองเท่านั้น จึงไม่ต้องมีตารางรายรายการ — ดูรวมได้ที่ตารางด้านล่าง
+     ส่วนผู้ดูแลกลุ่มยังต้องเห็นว่าแต่ละรายการมีโรงเรียนใดสมัครมาบ้าง */
+  const isSchool=!!(ME&&ME.role==='school');
   $('#entSub').textContent = dist? 'ระดับเขต · เฉพาะทีมตัวแทนที่โอนมาจากกลุ่มโรงเรียน' : groupName(SCOPE);
   const ab=$('#entAddBtn'); if(ab) ab.style.display = dist? 'none':'';
   const nt=$('#entDistrictNote'); if(nt) nt.style.display = dist? 'flex':'none';
-  drawMyEntries(!!pre);          /* เพิ่งบันทึกมา = ดึงใหม่ ไม่งั้นใช้ของที่จำไว้ */
+  const tw=$('#entTblWrap'); if(tw) tw.style.display = isSchool? 'none':'';
+  const hint=$('#entPickHint');
+  if(hint) hint.textContent = isSchool
+    ? 'เลือกรายการที่ต้องการ แล้วกด “+ เพิ่มผู้สมัคร” · เมื่อบันทึกแล้วจะขึ้นในตารางด้านล่างทันที'
+    : 'ตารางถัดไปคือผู้สมัครของรายการที่เลือก · ตารางล่างสุดคือรายการที่สมัครแล้วทั้งกลุ่ม';
+  drawMyEntries(false);
+  if(isSchool){ window.__ENT=MYENT||[]; return; }
   Promise.resolve(pre || api('listEntries',{group:entryRound(), act_id:act})).then(ent=>{
     const S=schoolsOf('ALL');
     window.__ENT=ent;
@@ -8489,16 +8531,16 @@ async function delEntry(id){
     +'รายชื่อนักเรียน ครูผู้ฝึกสอน และคะแนนของทีมนี้จะถูกลบไปด้วย และกู้คืนไม่ได้')) return;
   try{
     const rr=await apiThen('deleteEntry',{entry_id:id, group:entryRound()},
-      'listEntries',{group:entryRound(), act_id:$('#entAct').value});
-    renderEntries(rr.then);
+      'listEntries',{group:entryRound()});
+    afterEntrySave(rr.then, e.act_id||$('#entAct').value);
   }catch(err){
     const m=String(err.message||err);
     if(m.indexOf('ยืนยันอีกครั้ง')<0) return alert(m);
     if(!confirm(m+'\n\nยืนยันการลบหรือไม่?')) return;
     try{ const rr=await apiThen('deleteEntry',{entry_id:id, group:entryRound(), confirm:'Y'},
-        'listEntries',{group:entryRound(), act_id:$('#entAct').value});
+        'listEntries',{group:entryRound()});
       alert('ลบแล้ว — อย่าลืมประมวลผลและประกาศผลรายการนี้ใหม่');
-      renderEntries(rr.then);
+      afterEntrySave(rr.then, e.act_id||$('#entAct').value);
     }catch(e2){ alert(e2.message||e2); }
   }
 }
@@ -8527,7 +8569,8 @@ function editEntry(id){
   const inpCss='padding:8px;border:1px solid var(--line);border-radius:9px';
   const selCss='padding:8px;border:1px solid var(--line);border-radius:9px;background:#fff';
   /* แก้ไขใบสมัครเดิม — ดึงนักเรียนและครูเดิมมาแสดงไว้ให้ครบ */
-  const cur=(window.__ENT||[]).find(x=>x.entry_id===id)||{};
+  const cur=(window.__ENT||[]).find(x=>x.entry_id===id)
+         || (MYENT||[]).find(x=>String(x.entry_id)===String(id)) || {};
   const stOld=cur.students||[], coOld=cur.coaches||[];
   const esc=v=>String(v||'').replace(/"/g,'&quot;');
   const stRows=Array.from({length:Math.max(n, stOld.length)},(_,i)=>{ const v=stOld[i]||{};
@@ -8572,8 +8615,9 @@ function editEntry(id){
       if(st.some(x=>!x.prefix||!x.class_level)) throw new Error('เลือกคำนำหน้าและระดับชั้นของนักเรียนให้ครบ');
       const rr=await apiThen('saveEntry',
         {entry:{entry_id:id||'',act_id:actId,school_smis:$('#f_sch').value}, students:st, coaches:co},
-        'listEntries',{group:entryRound(), act_id:$('#entAct').value});
-      renderEntries(rr.then);
+        'listEntries',{group:entryRound()});
+      afterEntrySave(rr.then, actId);
+      toast('✓ บันทึกการสมัครแล้ว — ดูได้ที่ตาราง “รายการที่สมัครแล้ว” ด้านล่าง');
     });
 }
 
