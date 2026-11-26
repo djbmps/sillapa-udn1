@@ -283,6 +283,9 @@ body[data-view="public"] .hero{display:none}
    ให้พอดีเนื้อหา (shrink-to-fit) ทำให้การ์ดเรียงลงมาคอลัมน์เดียว ต้องกำหนด width:100% ไว้ด้วย */
 body[data-view="public"] .main{width:100%;max-width:1180px;margin:0 auto;padding-top:18px}
 body[data-view="admin"] #pubHead{display:none}
+/* หลังบ้านเป็นระบบจัดการแข่งขันล้วน ๆ — เมนูข้อมูลสาธารณะซ้ำกับหน้าเว็บจริง
+   ดูได้จากปุ่ม “ไปหน้าเว็บสาธารณะ” ท้ายเมนูอยู่แล้ว จึงไม่ต้องแสดงซ้ำในแถบข้าง */
+body[data-view="admin"] #navPublic{display:none!important}
 /* เปิดหน้าเข้าสู่ระบบ = เห็นเฉพาะหน้าเข้าสู่ระบบ ไม่ให้แถบหัวเว็บและส่วนท้ายโผล่ต่อท้าย */
 body.login-on #pubHead, body.login-on .pfoot, body.login-on .shell{display:none!important}
 body.login-on{overflow:hidden}
@@ -7494,6 +7497,11 @@ function go(p){
   }
   if(isAdminPage(p) && VIEW!=='admin'){ VIEW='admin'; LS.setItem(K.view,'admin');
     document.body.dataset.view='admin'; }
+  /* ตรงกันข้าม — เปิดหน้าข้อมูลสาธารณะขณะอยู่หลังบ้าน ให้ออกไปโหมดหน้าเว็บสาธารณะให้เลย
+     หลังบ้านจึงเหลือเฉพาะงานจัดการแข่งขัน ไม่มีเมนูสาธารณะปนอยู่
+     ยกเว้นเกียรติบัตร ซึ่งเป็นเมนูของบัญชีโรงเรียนในหลังบ้านด้วย */
+  if(VIEW==='admin' && p!=='cert' && PUBLIC_PAGES.some(x=>x[0]===p)){
+    VIEW='public'; LS.setItem(K.view,'public'); document.body.dataset.view='public'; }
   if(p==='schools' && VIEW==='public') p='home';   /* ทะเบียนโรงเรียนเป็นหน้าหลังบ้าน */
   if(p==='news') p='home';                         /* ข่าวประชาสัมพันธ์รวมอยู่ในหน้าแรกแล้ว */
   PAGE=p; $$('.page').forEach(x=>x.classList.remove('on'));
