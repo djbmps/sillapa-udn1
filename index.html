@@ -1775,7 +1775,9 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
     <!-- ---------- ทำเนียบคณะกรรมการตัดสิน (หลังบ้าน) ---------- -->
     <section class="page" id="p-judges">
       <div class="hd"><div><h2>ทำเนียบคณะกรรมการตัดสิน</h2><p id="jgSub"></p></div>
-        <span class="sp"></span><button class="btn" onclick="newJudge()">+ เพิ่มกรรมการ</button></div>
+        <span class="sp"></span>
+        <button class="btn g" onclick="openJudgeImport()">📥 นำเข้ารายชื่อจาก Excel</button>
+        <button class="btn" onclick="newJudge()">+ เพิ่มกรรมการ</button></div>
       <!-- อธิบายว่ารายชื่อในทำเนียบมาจากไหน — เดิมหน้าว่างแล้วไม่รู้ว่าต้องทำอะไรต่อ -->
       <div id="jgNote" style="margin-bottom:14px"></div>
       <div class="card"><div class="ch"><h3>รายชื่อกรรมการ</h3><span class="sp"></span>
@@ -2845,8 +2847,10 @@ function demoApi(action,p){
     case 'deleteJudge':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.judges=(MEM.judges||[]).filter(x=>x.judge_id!==p.judge_id); memSave(); return true; }
     case 'listJudgeAssign':{
-      const rows=(MEM.jassign||[]);
-      return p.act_id? rows.filter(x=>String(x.act_id)===String(p.act_id)) : rows; }
+      let rows=(MEM.jassign||[]);
+      if(p.act_id) rows=rows.filter(x=>String(x.act_id)===String(p.act_id));
+      if(p.scope)  rows=rows.filter(x=>String(x.scope||'ALL')===String(p.scope));
+      return rows; }
     case 'saveJudgeAssign':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.jassign=MEM.jassign||[];
       const a=Object.assign({},p.assign||{});
@@ -2860,6 +2864,28 @@ function demoApi(action,p){
       memSave(); return a; }
     case 'deleteJudgeAssign':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.jassign=(MEM.jassign||[]).filter(x=>x.id!==p.id); memSave(); return true; }
+    case 'importJudgesBulk':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
+      MEM.judges=MEM.judges||[]; MEM.jassign=MEM.jassign||[];
+      const sc=(ME.role==='group_admin')? String(ME.scope||'') : (String(p.scope||'ALL')||'ALL');
+      const k=(n,o)=>String(n||'').replace(/\s+/g,'')+'|'+String(o||'').replace(/\s+/g,'');
+      const map={}; MEM.judges.forEach(j=>{ const g=String(j.group_code||'ALL');
+        if(g===sc||g==='ALL') map[k(j.name,j.org)]=j.judge_id; });
+      const A={}; (DB.activities||[]).forEach(a2=>A[a2.act_id]=a2);
+      let nj=0, na=0, skipped=0; const badAct=[];
+      (p.rows||[]).forEach(r=>{
+        if(!String(r.name||'').trim()){ skipped++; return; }
+        let jid=map[k(r.name,r.org)];
+        if(!jid){ jid='J'+String(MEM.judges.length+1).padStart(4,'0'); map[k(r.name,r.org)]=jid; nj++;
+          MEM.judges.push({judge_id:jid, group_code:sc, prefix:r.prefix||'', name:r.name,
+            position:r.position||'', org:r.org||'', phone:r.phone||'', email:r.email||'',
+            expertise:r.expertise||r.category||'', status:'อนุมัติ', photo_url:''}); }
+        const aid=String(r.act_id||'').trim(); if(!aid) return;
+        if(!A[aid]){ if(badAct.indexOf(aid)<0) badAct.push(aid); return; }
+        if(MEM.jassign.some(x=>String(x.act_id)===aid&&String(x.judge_id)===jid&&String(x.scope||'ALL')===sc)) return;
+        MEM.jassign.push({id:'JA'+String(MEM.jassign.length+1).padStart(5,'0'), act_id:aid,
+          judge_id:jid, role:r.role||'กรรมการ', scope:sc, note:'นำเข้าจากไฟล์'}); na++;
+      });
+      memSave(); return {judges:nj, assigned:na, skipped:skipped, badAct:badAct, scope:sc}; }
     case 'saveCertTemplate':{ if(!ME) throw new Error('กรุณาเข้าสู่ระบบ');
       MEM.tpl=MEM.tpl||SEED_TPL.map(t=>Object.assign({},t));
       const t=p.template; const i=MEM.tpl.findIndex(x=>x.tpl_id===t.tpl_id);
@@ -5257,6 +5283,153 @@ function jgDrawNote(){
   }).catch(()=>{ const el=$('#jgApplyStat'); if(el) el.textContent=''; });
 }
 
+/* ============================ นำเข้ารายชื่อคณะกรรมการตัดสินจากไฟล์ Excel ============================
+   ใช้เมื่อไม่มีผู้สมัครผ่านระบบรับสมัคร หรือมีคำสั่งแต่งตั้งอยู่แล้ว
+   เทมเพลตสร้างจากรายการแข่งขันจริง — แต่ละรายการมี 5 ที่นั่งตาม JUDGE_SEATS
+   แถวที่มีรหัสรายการ = มอบหมายเข้ารายการนั้นให้เลย · เว้นรหัสไว้ = เก็บเข้าทำเนียบเฉย ๆ */
+const JG_HEAD=['กลุ่มสาระ','รหัสรายการ (ห้ามแก้)','รายการแข่งขัน','ระดับชั้น',
+  'คำนำหน้า','ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน / โรงเรียน','บทบาทในคณะกรรมการ','เบอร์โทร','อีเมล'];
+const JG_CENTRAL=['ประธานกรรมการ','รองประธานกรรมการ','กรรมการ','กรรมการ','กรรมการ','กรรมการและเลขานุการ'];
+let JG_FILE=[];
+
+async function judgeTemplate(){
+  const btn=event&&event.currentTarget;
+  const done=btn? btnBusy(btn,'กำลังสร้างไฟล์…') : ()=>{};
+  try{
+    const XL=await loadXlsx();
+    const acts=actsOf().slice().sort((a,b)=>
+      String(a.category||'').localeCompare(String(b.category||''),'th')
+      || String(a.act_code||a.act_id).localeCompare(String(b.act_code||b.act_id),'th',{numeric:true}));
+    const aoa=[JG_HEAD];
+    let last=null;
+    acts.forEach(a=>{
+      if(a.category!==last){                       /* คณะกรรมการกลางของแต่ละกลุ่มสาระ */
+        last=a.category;
+        JG_CENTRAL.forEach(r=>aoa.push([a.category||'', '', '— คณะกรรมการกลางของกลุ่มสาระ —','', '','','','', r, '','']));
+      }
+      JUDGE_SEATS.forEach(r=>aoa.push([a.category||'', a.act_id, cleanTxt(a.act_name||''), a.level||'',
+        '','','','', r, '','']));
+    });
+    const tips=[['วิธีใช้ไฟล์นำเข้ารายชื่อคณะกรรมการตัดสิน'],[''],
+      ['1) กรอกเฉพาะช่อง คำนำหน้า · ชื่อ-สกุล · ตำแหน่ง · หน่วยงาน/โรงเรียน (เบอร์โทรและอีเมลจะกรอกหรือไม่ก็ได้)'],
+      ['2) ห้ามแก้คอลัมน์ "รหัสรายการ" เพราะระบบใช้จับคู่กับรายการแข่งขัน'],
+      ['3) แถวที่ไม่ได้กรอกชื่อ ระบบจะข้ามให้เอง ลบทิ้งหรือปล่อยว่างไว้ก็ได้'],
+      ['4) แถวที่รหัสรายการว่าง (คณะกรรมการกลาง) จะเก็บเข้าทำเนียบอย่างเดียว ไม่ผูกกับรายการแข่งขัน'],
+      ['5) เพิ่มแถวได้ ถ้ารายการใดต้องการกรรมการมากกว่า 5 คน — ก๊อบปี้แถวเดิมแล้วแก้ชื่อ'],
+      ['6) ชื่อ-สกุลที่ซ้ำกับคนเดิม (ชื่อและหน่วยงานตรงกัน) ระบบจะใช้รายชื่อเดิม ไม่สร้างซ้ำ'],
+      ['7) บันทึกไฟล์เป็น .xlsx แล้วอัปโหลดกลับที่ปุ่ม "นำเข้าไฟล์รายชื่อ"'],[''],
+      ['ตำแหน่งในคณะกรรมการที่ระบบรู้จัก : '+[...new Set(JUDGE_SEATS.concat(JG_CENTRAL))].join(' · ')]];
+    const wb=XL.utils.book_new();
+    XL.utils.book_append_sheet(wb, XL.utils.aoa_to_sheet(aoa), 'รายชื่อกรรมการ');
+    XL.utils.book_append_sheet(wb, XL.utils.aoa_to_sheet(tips), 'คำแนะนำ');
+    const who=(SCOPE==='ALL'? districtName() : groupName(SCOPE));
+    XL.writeFile(wb, 'เทมเพลตรายชื่อคณะกรรมการตัดสิน '+who+'.xlsx');
+  }catch(e){ alert(e.message||e); }
+  done();
+}
+
+/** แปลงบทบาทให้ตรงกับที่ระบบใช้ */
+function jgRole(v){
+  const t=String(v||'').replace(/\s+/g,'').replace(/[()]/g,'');
+  if(!t) return 'กรรมการ';
+  if(/เลขา/.test(t)) return /ผู้ช่วย/.test(t)? 'กรรมการและผู้ช่วยเลขานุการ' : 'กรรมการและเลขานุการ';
+  if(/^รองประธาน/.test(t)) return 'รองประธานกรรมการ';
+  if(/^ประธาน/.test(t)) return 'ประธานกรรมการ';
+  return 'กรรมการ';
+}
+/** อ่านตารางจากไฟล์ → แถวที่พร้อมส่งเข้าเซิร์ฟเวอร์ */
+function jgRows(aoa){
+  const want={cat:'กลุ่มสาระ',act:'รหัสรายการ',name:'ชื่อ-สกุล',prefix:'คำนำหน้า',
+    pos:'ตำแหน่ง',org:'หน่วยงาน',role:'บทบาท',phone:'เบอร์',mail:'อีเมล'};
+  let hi=-1, col={};
+  for(let i=0;i<Math.min(aoa.length,15);i++){
+    const row=(aoa[i]||[]).map(x=>String(x==null?'':x).trim());
+    if(row.some(c=>c.indexOf('ชื่อ-สกุล')>=0)){
+      hi=i;
+      row.forEach((c,j)=>{ Object.keys(want).forEach(k=>{ if(c.indexOf(want[k])>=0 && col[k]===undefined) col[k]=j; }); });
+      break;
+    }
+  }
+  if(hi<0) throw new Error('ไม่พบหัวตาราง — ต้องมีคอลัมน์ “ชื่อ-สกุล” กรุณาใช้ไฟล์เทมเพลตของระบบ');
+  if(col.name===undefined) throw new Error('ไม่พบคอลัมน์ “ชื่อ-สกุล”');
+  const out=[]; let cat='';
+  for(let i=hi+1;i<aoa.length;i++){
+    const r=(aoa[i]||[]).map(x=>String(x==null?'':x).trim());
+    if(col.cat!==undefined && r[col.cat]) cat=r[col.cat];
+    let full=r[col.name]||'';
+    if(!full) continue;
+    let prefix = col.prefix!==undefined? (r[col.prefix]||'') : '';
+    if(!prefix){ const sp=splitPrefix(full); prefix=sp.prefix; full=sp.name; }
+    out.push({ act_id: col.act!==undefined? (r[col.act]||'') : '',
+      prefix:prefix, name:full,
+      position: col.pos!==undefined? (r[col.pos]||'') : '',
+      org: col.org!==undefined? (r[col.org]||'') : '',
+      role: jgRole(col.role!==undefined? r[col.role] : ''),
+      phone: col.phone!==undefined? (r[col.phone]||'') : '',
+      email: col.mail!==undefined? (r[col.mail]||'') : '',
+      category: cat });
+  }
+  return out;
+}
+async function jgPickFile(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  const msg=$('#jg_filemsg');
+  try{
+    if(msg) msg.textContent='กำลังอ่านไฟล์…';
+    const XL=await loadXlsx();
+    const wb=XL.read(await f.arrayBuffer(),{type:'array'});
+    const sh=wb.Sheets['รายชื่อกรรมการ']||wb.Sheets[wb.SheetNames[0]];
+    JG_FILE=jgRows(XL.utils.sheet_to_json(sh,{header:1,blankrows:false,defval:''}));
+    const withAct=JG_FILE.filter(x=>x.act_id).length;
+    if(msg) msg.innerHTML=qq(f.name)+' · พบ <b>'+JG_FILE.length+'</b> รายชื่อ · มอบหมายเข้ารายการ '+withAct+' แถว';
+    jgPreview();
+  }catch(e){ JG_FILE=[]; if(msg) msg.textContent=''; alert(e.message||e); jgPreview(); }
+}
+function jgPreview(){
+  const box=$('#jgPrev'); if(!box) return;
+  if(!JG_FILE.length){ box.innerHTML=''; return; }
+  const A={}; (DB.activities||[]).forEach(a=>A[a.act_id]=a);
+  const bad=[...new Set(JG_FILE.filter(x=>x.act_id && !A[x.act_id]).map(x=>x.act_id))];
+  box.innerHTML='<div class="note '+(bad.length?'w':'g')+'"><span>'+(bad.length?'⚠️':'✅')+'</span><div>'+
+    'จะนำเข้า <b>'+JG_FILE.length+'</b> รายชื่อ · ผูกกับรายการแข่งขัน '+
+    JG_FILE.filter(x=>x.act_id && A[x.act_id]).length+' แถว'+
+    (bad.length? '<div class="hint" style="margin-top:6px">รหัสรายการที่ไม่พบในระบบ (จะข้ามการมอบหมายให้): '+qq(bad.join(', '))+'</div>':'')+
+    '</div></div>'+
+    '<div class="cb" style="padding:0;overflow:auto;max-height:34vh;margin-top:10px"><table>'+
+    '<thead><tr><th style="width:38px">ที่</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th>หน่วยงาน</th><th>บทบาท</th><th>รายการ</th></tr></thead><tbody>'+
+    JG_FILE.slice(0,80).map((x,i)=>`<tr><td class="num">${i+1}</td>
+      <td>${qq((x.prefix||'')+x.name)}</td><td>${qq(x.position||'')}</td><td>${qq(x.org||'')}</td>
+      <td>${qq(x.role||'')}</td><td>${qq(x.act_id? ((A[x.act_id]||{}).act_name||x.act_id) : '— ทำเนียบอย่างเดียว —')}</td></tr>`).join('')+
+    '</tbody></table></div>'+(JG_FILE.length>80? '<div class="hint" style="margin-top:6px">แสดง 80 แถวแรกจาก '+JG_FILE.length+' แถว</div>':'');
+}
+function openJudgeImport(){
+  if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
+  JG_FILE=[];
+  openModal('นำเข้ารายชื่อคณะกรรมการตัดสิน',
+    `<div class="note i" style="margin-bottom:12px"><span>ℹ️</span><div>
+       ใช้เมื่อมีคำสั่งแต่งตั้งอยู่แล้ว หรือยังไม่มีผู้สมัครผ่านระบบรับสมัคร ·
+       รายชื่อจะเข้าทำเนียบของ <b>${qq(SCOPE==='ALL'? districtName() : groupName(SCOPE))}</b>
+       และแถวที่มีรหัสรายการจะถูกมอบหมายเข้ารายการนั้นให้เลย</div></div>
+     <div class="card" style="margin-bottom:12px"><div class="cb">
+       <b style="display:block;margin-bottom:4px">ขั้นที่ 1 · ดาวน์โหลดเทมเพลต แล้วกรอกชื่อใน Excel</b>
+       <div class="hint" style="margin-bottom:9px">เทมเพลตมีรายการแข่งขันครบทุกรายการ พร้อมช่องกรรมการ 5 ที่นั่งต่อรายการ</div>
+       <div class="row">
+         <button type="button" class="btn g sm" onclick="judgeTemplate()">⬇ ดาวน์โหลดเทมเพลต Excel</button>
+         <button type="button" class="btn g sm" onclick="document.getElementById('jg_file').click()">📤 นำเข้าไฟล์รายชื่อ</button>
+         <input type="file" id="jg_file" accept=".xlsx,.xls,.csv" style="display:none" onchange="jgPickFile(this)">
+         <span class="hint" id="jg_filemsg"></span></div>
+     </div></div>
+     <div id="jgPrev"></div>`,
+    async()=>{
+      if(!JG_FILE.length) throw new Error('ยังไม่ได้เลือกไฟล์รายชื่อ');
+      const r=await api('importJudgesBulk',{scope:SCOPE, rows:JG_FILE});
+      JG_FILE=[]; renderJudges();
+      alert('นำเข้าแล้ว\nรายชื่อใหม่เข้าทำเนียบ '+r.judges+' ท่าน\nมอบหมายเข้ารายการแข่งขัน '+r.assigned+' รายการ'+
+        (r.skipped? '\nข้าม '+r.skipped+' แถวที่ไม่มีชื่อ':'')+
+        ((r.badAct&&r.badAct.length)? '\nรหัสรายการที่ไม่พบ: '+r.badAct.join(', ') : ''));
+    }, 'นำเข้ารายชื่อ');
+}
+
 /* ---------- มอบหมายกรรมการเข้ารายการแข่งขัน ----------
    คณะกรรมการตัดสินกิจกรรมละ 5 คนตาม JUDGE_SEATS
    รายชื่อที่มอบหมายถูกใช้ในใบปะหน้าซองและ DOC.3 ผ่าน printPack  */
@@ -5294,7 +5467,7 @@ function fillJAssignSelects(){
 function renderJAssign(pre){
   const act=$('#jaAct').value;
   if(!act){ tbl($('#jaTbl'),['กรรมการ','ตำแหน่งในคณะกรรมการ','หน่วยงาน',''],''); return; }
-  Promise.resolve(pre || api('listJudgeAssign',{act_id:act})).then(rows=>{
+  Promise.resolve(pre || api('listJudgeAssign',{act_id:act, scope:SCOPE})).then(rows=>{
     JASSIGN=rows||[];
     const need=Number((actsOf().find(a=>a.act_id===act)||{}).judges_required||5);
     $('#jaSub2').textContent = JASSIGN.length+' / '+need+' คน'+(JASSIGN.length<need? ' — ยังไม่ครบ':' ✓');
@@ -5311,13 +5484,13 @@ async function addJAssign(){
   if(!ME) return alert('กรุณาเข้าสู่ระบบก่อน');
   const act=$('#jaAct').value, jid=$('#jaJudge').value, role=$('#jaRole').value;
   if(!jid) return alert('ยังไม่มีรายชื่อกรรมการ — เพิ่มรายชื่อที่ตารางด้านบนก่อน');
-  try{ const rr=await apiThen('saveJudgeAssign',{assign:{act_id:act, judge_id:jid, role:role}},
-    'listJudgeAssign',{act_id:act}); renderJAssign(rr.then); }
+  try{ const rr=await apiThen('saveJudgeAssign',{assign:{act_id:act, judge_id:jid, role:role}, scope:SCOPE},
+    'listJudgeAssign',{act_id:act, scope:SCOPE}); renderJAssign(rr.then); }
   catch(e){ alert(e.message); }
 }
 async function delJAssign(id){
   if(!confirm('ถอนการมอบหมายกรรมการท่านนี้ออกจากรายการแข่งขัน?')) return;
-  try{ const rr=await apiThen('deleteJudgeAssign',{id:id},'listJudgeAssign',{act_id:$('#jaAct').value});
+  try{ const rr=await apiThen('deleteJudgeAssign',{id:id},'listJudgeAssign',{act_id:$('#jaAct').value, scope:SCOPE});
     renderJAssign(rr.then); }
   catch(e){ alert(e.message); }
 }
