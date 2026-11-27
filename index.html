@@ -1804,9 +1804,12 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <button class="btn g" onclick="document.getElementById('jgForm').style.display='none'">ยกเลิก</button></div>
         </div></div>
       <div class="card"><div class="ch"><h3>รายชื่อกรรมการ</h3><span class="sp"></span>
+        <span class="hint" id="jgCount"></span>
+        <select id="jg_cat" onchange="drawJudges()" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;max-width:230px"></select>
         <input id="jg_q" placeholder="ค้นชื่อ / โรงเรียน…" oninput="drawJudges()"
-               style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
-        <div class="cb" style="padding:0"><div style="overflow:auto"><table id="jgTbl"></table></div></div></div>
+               style="min-width:180px;padding:8px 12px;border:1px solid var(--line);border-radius:10px">
+        <button class="btn g sm" id="jgExpBtn" onclick="jgToggleAll()">กางทั้งหมด</button></div>
+        <div class="cb" style="padding:0"><div id="jgList" style="overflow:auto;max-height:70vh"></div></div></div>
 
       <!-- ---------- มอบหมายกรรมการเข้ารายการแข่งขัน ---------- -->
       <div class="card" style="margin-top:14px"><div class="ch"><h3>มอบหมายกรรมการเข้ารายการแข่งขัน</h3>
@@ -5560,19 +5563,64 @@ async function delJAssign(id){
     renderJAssign(rr.then); loadJudgeOv(1); }
   catch(e){ alert(e.message); }
 }
+/* รายชื่อกรรมการมีหลายร้อยคน — ยุบเป็นหมวดกลุ่มสาระไว้ก่อน กดเปิดเฉพาะหมวดที่ต้องการ
+   ค้นหาหรือเลือกกลุ่มสาระเมื่อไร จะกางให้อัตโนมัติ */
+const JG_OPEN={};
+function jgToggle(key){ JG_OPEN[key]=!JG_OPEN[key]; drawJudges(); }
+function jgToggleAll(){
+  const any=Object.keys(JG_OPEN).some(k=>JG_OPEN[k]);
+  const cats=[...new Set((JUDGES||[]).map(j=>String(j.expertise||'(ไม่ระบุกลุ่มสาระ)')))];
+  cats.forEach(c=>JG_OPEN[c]=!any);
+  drawJudges();
+}
 function drawJudges(){
+  const box=$('#jgList'); if(!box) return;
   const q=($('#jg_q').value||'').trim();
-  const rows=JUDGES.filter(j=>!q||[j.name,j.org,j.expertise,j.position].join(' ').includes(q));
-  tbl($('#jgTbl'),['ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน / โรงเรียน','ความเชี่ยวชาญ','โทรศัพท์','สถานะ','รูป',''],
-    rows.map(j=>{
-      const i=JUDGES.indexOf(j);
-      return `<tr><td><b>${cleanTxt(j.name||'')}</b></td><td>${cleanTxt(j.position||'')}</td>
-        <td>${cleanTxt(j.org||'')}</td><td>${cleanTxt(j.expertise||'')}</td><td>${qq(j.phone||'')}</td>
-        <td>${qq(j.status||'อนุมัติ')}</td>
-        <td>${j.photo_url?'✅':'<span style="color:var(--bad)">ยังไม่มี</span>'}</td>
-        <td style="white-space:nowrap"><button class="btn g sm" onclick="editJudge(${i})">แก้ไข</button>
-          <button class="btn g sm" onclick="delJudge('${j.judge_id}')">ลบ</button></td></tr>`;
-    }).join(''));
+  /* ช่องเลือกกลุ่มสาระ — สร้างจากรายชื่อที่มีจริง */
+  const sc=$('#jg_cat');
+  const cats=[...new Set((JUDGES||[]).map(j=>String(j.expertise||'(ไม่ระบุกลุ่มสาระ)')))]
+    .sort((x,y)=>String(x).localeCompare(String(y),'th'));
+  if(sc){ const keep=sc.value;
+    sc.innerHTML='<option value="">ทุกกลุ่มสาระ</option>'+cats.map(c=>`<option value="${qq(c)}">${qq(c)}</option>`).join('');
+    if(keep && (keep==='' || cats.indexOf(keep)>=0)) sc.value=keep; }
+  const pick=sc? sc.value : '';
+
+  let rows=JUDGES.filter(j=>!q||[j.name,j.org,j.expertise,j.position].join(' ').includes(q));
+  if(pick) rows=rows.filter(j=>String(j.expertise||'(ไม่ระบุกลุ่มสาระ)')===pick);
+  const cnt=$('#jgCount');
+  if(cnt) cnt.textContent = (q||pick)? 'พบ '+rows.length+' คน' : 'ทั้งหมด '+JUDGES.length+' คน';
+
+  const by={}, ord=[];
+  rows.forEach(j=>{ const k=String(j.expertise||'(ไม่ระบุกลุ่มสาระ)');
+    if(!by[k]){ by[k]=[]; ord.push(k); } by[k].push(j); });
+  ord.sort((x,y)=>String(x).localeCompare(String(y),'th'));
+  const auto = !!(q||pick);            /* ค้นหา/เลือกกลุ่มสาระ = กางให้เลย */
+
+  if(!ord.length){ box.innerHTML='<div class="hint" style="padding:24px;text-align:center">ไม่พบรายชื่อตามที่ค้นหา</div>'; return; }
+  const head=['ชื่อ-สกุล','ตำแหน่ง','หน่วยงาน / โรงเรียน','โทรศัพท์','สถานะ','รูป',''];
+  box.innerHTML = ord.map(k=>{
+    const open = auto || !!JG_OPEN[k];
+    const list = by[k].slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'th'));
+    return `<div style="border-bottom:1px solid var(--line)">
+      <div onclick="jgToggle(${JSON.stringify(k).replace(/"/g,'&quot;')})" role="button" tabindex="0"
+           style="display:flex;gap:10px;align-items:center;padding:11px 14px;cursor:pointer;background:var(--line-2)">
+        <span style="width:16px;display:inline-block">${open?'▾':'▸'}</span>
+        <b style="flex:1;min-width:0">${qq(k)}</b>
+        <span class="pill ok">${list.length} คน</span></div>
+      ${open? '<div style="overflow:auto"><table>'+
+        '<thead><tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+
+        list.map(j=>{ const i=JUDGES.indexOf(j);
+          return `<tr><td><b>${cleanTxt(j.name||'')}</b></td><td>${cleanTxt(j.position||'')}</td>
+            <td>${cleanTxt(j.org||'')}</td><td>${qq(j.phone||'')}</td>
+            <td>${qq(j.status||'อนุมัติ')}</td>
+            <td>${j.photo_url?'✅':'<span style="color:var(--bad)">ยังไม่มี</span>'}</td>
+            <td style="white-space:nowrap"><button class="btn g sm" onclick="event.stopPropagation();editJudge(${i})">แก้ไข</button>
+              <button class="btn g sm" onclick="event.stopPropagation();delJudge('${j.judge_id}')">ลบ</button></td></tr>`;
+        }).join('')+'</tbody></table></div>' : ''}
+    </div>`;
+  }).join('');
+  const eb=$('#jgExpBtn');
+  if(eb) eb.textContent = ord.some(k=>JG_OPEN[k])? 'ยุบทั้งหมด' : 'กางทั้งหมด';
 }
 function fillJudge(j){
   /* แยกคำนำหน้าออกจากชื่อ และแยกวิทยฐานะออกจากตำแหน่ง เพื่อเลือกจาก Dropdown */
