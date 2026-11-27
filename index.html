@@ -9650,10 +9650,19 @@ function apFillActs(i, keep){
 /** ตัวเลือกโรงเรียนในใบสมัคร — กรองตามกลุ่มโรงเรียนที่เลือกไว้ */
 const AP_NONE='ไม่มี / ไม่ได้สังกัดโรงเรียน';
 const AP_AREA='สำนักงานเขตพื้นที่การศึกษาประถมศึกษาอุดรธานี เขต 1';
+/* ใบสมัครต้องเลือกโรงเรียนได้ทุกกลุ่ม — ถ้าเปิดจากเว็บของกลุ่ม DB.schools จะมีเฉพาะโรงเรียนในกลุ่มนั้น
+   จึงโหลดรายชื่อโรงเรียนทั้งเขตมาเก็บไว้ต่างหาก (ขอครั้งเดียวต่อการเปิดเว็บ) */
+let AP_SCHOOLS=null;
+function apSchools(){ return (AP_SCHOOLS && AP_SCHOOLS.length)? AP_SCHOOLS : (DB.schools||[]); }
+function apLoadSchools(){
+  if(AP_SCHOOLS) return Promise.resolve(AP_SCHOOLS);
+  return api('publicSchools',{}).then(r=>{ AP_SCHOOLS=(r&&r.schools)||[]; return AP_SCHOOLS; })
+    .catch(()=>{ AP_SCHOOLS=null; return null; });
+}
 function apOrgOptions(g){
   if(!g) return [];
   if(g==='none') return [AP_NONE, AP_AREA];
-  return (DB.schools||[]).filter(x=>String(x.group_code)===String(g))
+  return apSchools().filter(x=>String(x.group_code)===String(g))
     .map(x=>x.school_name).concat([AP_AREA, AP_NONE]);
 }
 /** เลือกกลุ่มใหม่ → สร้างรายชื่อโรงเรียนในกลุ่มนั้นให้เลือก */
@@ -9693,6 +9702,8 @@ function renderApply(){
   if(gKeep) $('#ap_group').value=gKeep;
   if(!$('#ap_prefix')) apBuildSelects();
   if(!$('#ap_c1')) $('#apPicks').innerHTML=[1,2,3].map(apPickRow).join('');
+  /* รายชื่อโรงเรียนทั้งเขต — โหลดเสร็จแล้ววาดช่องโรงเรียนใหม่ให้ตรงกับกลุ่มที่เลือกไว้ */
+  if(!AP_SCHOOLS) apLoadSchools().then(ok=>{ if(ok && $('#ap_group')) apGroupChange(selVal('ap_org')||''); });
   api('judgeApplyConfig',{}).then(r=>{
     APW=r.window;
     const w=APW, open=w.open;
