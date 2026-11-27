@@ -1776,7 +1776,8 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
     <section class="page" id="p-judges">
       <div class="hd"><div><h2>ทำเนียบคณะกรรมการตัดสิน</h2><p id="jgSub"></p></div>
         <span class="sp"></span><button class="btn" onclick="newJudge()">+ เพิ่มกรรมการ</button></div>
-      
+      <!-- อธิบายว่ารายชื่อในทำเนียบมาจากไหน — เดิมหน้าว่างแล้วไม่รู้ว่าต้องทำอะไรต่อ -->
+      <div id="jgNote" style="margin-bottom:14px"></div>
       <div class="card"><div class="ch"><h3>รายชื่อกรรมการ</h3><span class="sp"></span>
         <input id="jg_q" placeholder="ค้นชื่อ / โรงเรียน…" oninput="drawJudges()"
                style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
@@ -5220,8 +5221,31 @@ function renderJudges(pre){
   Promise.resolve(pre || api('listJudges',{scope:SCOPE})).then(rows=>{
     JUDGES=rows||[];
     $('#jgSub').textContent=(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE))+' · '+JUDGES.length+' คน';
-    drawJudges(); fillJAssignSelects(); renderJAssign();
+    drawJudges(); fillJAssignSelects(); renderJAssign(); jgDrawNote();
   }).catch(e=>{ $('#jgSub').textContent='โหลดไม่สำเร็จ: '+e.message; });
+}
+/** กล่องอธิบายที่มาของรายชื่อ + สถานะใบสมัครจากระบบรับสมัครของเขต
+    ทำให้เห็นว่าทำเนียบว่างเพราะอะไร และขั้นต่อไปคืออะไร */
+function jgDrawNote(){
+  const box=$('#jgNote'); if(!box) return;
+  const dist=(SCOPE==='ALL'), isDistAdmin=!!(ME&&ME.role==='district_admin');
+  const mine=JUDGES.filter(j=>String(j.group_code||'')!=='ALL').length;
+  const central=JUDGES.length-mine;
+  const how = dist
+    ? 'รายชื่อในทำเนียบมาได้ 2 ทาง — ① ผู้สมัครที่ <b>ผ่านคุณสมบัติ</b> จากเมนู “รับสมัครคณะกรรมการตัดสิน” แล้วกดปุ่ม <b>ส่งผู้ผ่านเข้าทำเนียบกรรมการ</b> · ② เพิ่มเองด้วยปุ่ม <b>+ เพิ่มกรรมการ</b>'
+    : 'รายชื่อที่นี่มี 2 ส่วน — ① <b>กรรมการกลางของเขต</b> ที่เขตบรรจุจากระบบรับสมัคร (ทุกกลุ่มใช้ร่วมกัน) ขณะนี้ '+central+' คน · ② <b>กรรมการที่กลุ่มเพิ่มเอง</b> ด้วยปุ่ม “+ เพิ่มกรรมการ” ขณะนี้ '+mine+' คน';
+  box.innerHTML='<div class="note i"><span>ℹ️</span><div>'+how+
+    '<div class="hint" id="jgApplyStat" style="margin-top:6px">กำลังตรวจสถานะระบบรับสมัคร…</div></div></div>';
+  api('judgeApplyConfig',{}).then(r=>{
+    const st=r.stats, w=r.window||{}, el=$('#jgApplyStat'); if(!el) return;
+    if(!st){ el.textContent=''; return; }
+    const head = (w.open? 'ระบบรับสมัครของเขต: เปิดรับสมัครอยู่' : 'ระบบรับสมัครของเขต: ปิดรับสมัคร')
+      + ' · ใบสมัครทั้งหมด '+st.total+' ใบ · รอพิจารณา '+st.pending+' · ผ่านคุณสมบัติรอบรรจุ '+st.passed;
+    const tip = st.total===0
+      ? ' — ยังไม่มีใครยื่นใบสมัคร ทำเนียบจึงยังว่าง ระหว่างนี้เพิ่มรายชื่อเองได้ด้วยปุ่ม “+ เพิ่มกรรมการ”'
+      : (st.passed>0 && isDistAdmin ? ' — มีผู้ผ่านคุณสมบัติรอบรรจุ กดได้ที่หน้า “รับสมัครคณะกรรมการตัดสิน”' : '');
+    el.innerHTML=qq(head)+qq(tip);
+  }).catch(()=>{ const el=$('#jgApplyStat'); if(el) el.textContent=''; });
 }
 
 /* ---------- มอบหมายกรรมการเข้ารายการแข่งขัน ----------
