@@ -1831,6 +1831,18 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           <div style="overflow:auto"><table id="jaTbl"></table></div>
         </div></div>
 
+      <!-- ภาพรวมทั้งหมด — กรรมการที่มอบหมายแล้ว แยกตามกลุ่มสาระและรายการแข่งขัน -->
+      <div class="card" style="margin-top:14px"><div class="ch">
+        <h3>รายชื่อกรรมการแยกตามกลุ่มสาระและกิจกรรม</h3><span class="sp"></span>
+        <select id="jgOvCat" onchange="drawJudgeOv()" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff"></select>
+        <select id="jgOvSt" onchange="drawJudgeOv()" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#fff">
+          <option value="">ทุกรายการ</option>
+          <option value="y">เฉพาะรายการที่มีกรรมการแล้ว</option>
+          <option value="n">เฉพาะรายการที่ยังไม่มีกรรมการ</option></select>
+        <button class="btn g sm" onclick="loadJudgeOv(1)">↻ โหลดใหม่</button></div>
+        <div class="cb" style="padding:0"><div id="jgOvSum" class="hint" style="padding:10px 14px"></div>
+          <div style="overflow:auto;max-height:70vh"><table id="jgOvTbl"></table></div></div></div>
+
     </section>
 
     <!-- ---------- เปิด-ปิดระบบ & สิทธิ์การพิมพ์ (หลังบ้าน) ---------- -->
@@ -5257,8 +5269,63 @@ function renderJudges(pre){
     JUDGES=rows||[];
     $('#jgSub').textContent=(SCOPE==='ALL'?'ระดับเขต':groupName(SCOPE))+' · '+JUDGES.length+' คน';
     drawJudges(); fillJAssignSelects(); renderJAssign(); jgDrawNote();
+    JGOV=null; loadJudgeOv(1);
   }).catch(e=>{ $('#jgSub').textContent='โหลดไม่สำเร็จ: '+e.message; });
 }
+/* ---------- ภาพรวมการมอบหมาย แยกตามกลุ่มสาระและกิจกรรม ----------
+   ดูได้ทั้งหน้าว่ารายการไหนมีกรรมการครบแล้ว รายการไหนยังว่าง */
+let JGOV=null;
+function loadJudgeOv(force){
+  const box=$('#jgOvTbl'); if(!box) return;
+  if(JGOV && !force) return drawJudgeOv();
+  $('#jgOvSum').textContent='กำลังโหลด…';
+  api('listJudgeAssign',{scope:SCOPE}).then(rows=>{ JGOV=rows||[]; drawJudgeOv(); })
+    .catch(e=>{ $('#jgOvSum').textContent='โหลดไม่สำเร็จ — '+(e.message||e); });
+}
+const JG_ORDER={'ประธานกรรมการ':0,'รองประธานกรรมการ':1,'กรรมการ':2,
+  'กรรมการและผู้ช่วยเลขานุการ':3,'กรรมการและเลขานุการ':4};
+function drawJudgeOv(){
+  const box=$('#jgOvTbl'); if(!box || !JGOV) return;
+  const J={}; (JUDGES||[]).forEach(j=>J[String(j.judge_id)]=j);
+  const acts=actsOf().slice().sort((a,b)=>
+    String(a.category||'').localeCompare(String(b.category||''),'th')
+    || String(a.act_code||a.act_id).localeCompare(String(b.act_code||b.act_id),'th',{numeric:true}));
+  /* ช่องเลือกกลุ่มสาระ */
+  const sc=$('#jgOvCat');
+  if(sc && !sc.options.length){
+    const cats=[...new Set(acts.map(a=>a.category).filter(Boolean))].sort((x,y)=>String(x).localeCompare(String(y),'th'));
+    sc.innerHTML='<option value="">ทุกกลุ่มสาระ</option>'+cats.map(c=>`<option value="${qq(c)}">${qq(c)}</option>`).join('');
+  }
+  const cat=sc? sc.value:'', st=($('#jgOvSt')||{}).value||'';
+  const byAct={};
+  JGOV.forEach(a=>{ (byAct[String(a.act_id)]=byAct[String(a.act_id)]||[]).push(a); });
+  let list=acts;
+  if(cat) list=list.filter(a=>String(a.category||'')===cat);
+  if(st==='y') list=list.filter(a=>(byAct[a.act_id]||[]).length);
+  if(st==='n') list=list.filter(a=>!(byAct[a.act_id]||[]).length);
+
+  const head=['รายการแข่งขัน','ระดับชั้น','จำนวน','รายชื่อกรรมการตัดสิน'];
+  let last=null, html='';
+  list.forEach(a=>{
+    if(a.category!==last){ last=a.category;
+      html+=`<tr><td colspan="${head.length}" style="background:var(--line-2);font-weight:700">${qq(a.category||'อื่น ๆ')}</td></tr>`; }
+    const rows=(byAct[a.act_id]||[]).slice().sort((x,y)=>
+      (JG_ORDER[x.role]===undefined?2:JG_ORDER[x.role])-(JG_ORDER[y.role]===undefined?2:JG_ORDER[y.role]));
+    const need=Number(a.judges_required||5);
+    const names=rows.map(r=>{ const j=J[String(r.judge_id)]||{};
+      return `${qq((j.prefix||'')+(j.name||r.judge_id))}<span class="hint"> · ${qq(r.role||'กรรมการ')}${j.org? ' · '+qq(cleanName(j.org)):''}</span>`;
+    }).join('<br>');
+    html+=`<tr><td><b>${qq(a.act_code? a.act_code+' · ':'')}${qq(cleanTxt(a.act_name||''))}</b></td>
+      <td style="white-space:nowrap">${qq(a.level||'')}</td>
+      <td class="num" style="white-space:nowrap">${rows.length? `<span class="pill ${rows.length>=need?'ok':'w'}">${rows.length}/${need}</span>` : '<span class="pill b">ยังไม่มี</span>'}</td>
+      <td>${names||'<span class="hint">— ยังไม่ได้มอบหมาย —</span>'}</td></tr>`;
+  });
+  tbl(box, head, html || `<tr><td colspan="${head.length}" style="padding:22px;text-align:center;color:var(--ink-3)">ไม่มีรายการตามเงื่อนไขที่เลือก</td></tr>`);
+  const done=acts.filter(a=>(byAct[a.act_id]||[]).length).length;
+  $('#jgOvSum').innerHTML='มอบหมายแล้ว <b>'+done+'</b> จาก '+acts.length+' รายการ · รวม '+JGOV.length+
+    ' ที่นั่ง · แสดง '+list.length+' รายการ';
+}
+
 /** กล่องอธิบายที่มาของรายชื่อ + สถานะใบสมัครจากระบบรับสมัครของเขต
     ทำให้เห็นว่าทำเนียบว่างเพราะอะไร และขั้นต่อไปคืออะไร */
 function jgDrawNote(){
@@ -5485,13 +5552,13 @@ async function addJAssign(){
   const act=$('#jaAct').value, jid=$('#jaJudge').value, role=$('#jaRole').value;
   if(!jid) return alert('ยังไม่มีรายชื่อกรรมการ — เพิ่มรายชื่อที่ตารางด้านบนก่อน');
   try{ const rr=await apiThen('saveJudgeAssign',{assign:{act_id:act, judge_id:jid, role:role}, scope:SCOPE},
-    'listJudgeAssign',{act_id:act, scope:SCOPE}); renderJAssign(rr.then); }
+    'listJudgeAssign',{act_id:act, scope:SCOPE}); renderJAssign(rr.then); loadJudgeOv(1); }
   catch(e){ alert(e.message); }
 }
 async function delJAssign(id){
   if(!confirm('ถอนการมอบหมายกรรมการท่านนี้ออกจากรายการแข่งขัน?')) return;
   try{ const rr=await apiThen('deleteJudgeAssign',{id:id},'listJudgeAssign',{act_id:$('#jaAct').value, scope:SCOPE});
-    renderJAssign(rr.then); }
+    renderJAssign(rr.then); loadJudgeOv(1); }
   catch(e){ alert(e.message); }
 }
 function drawJudges(){
