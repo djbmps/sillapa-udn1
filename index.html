@@ -1788,12 +1788,21 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <span class="sp"></span><span class="hint" id="jaSub2"></span></div>
         <div class="cb">
           
+          <!-- เลือกกลุ่มสาระก่อน แล้วรายการแข่งขันจะเหลือเฉพาะในกลุ่มสาระนั้น — หารายการง่ายกว่าไล่จาก 187 รายการ -->
+          <div class="row" style="margin-bottom:8px">
+            <div class="fld" style="margin:0;min-width:230px"><label>กลุ่มสาระ</label>
+              <select id="jaCat" onchange="jaPickCat()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select></div>
+            <div class="fld" style="margin:0;flex:1;min-width:280px"><label>รายการแข่งขัน</label>
+              <select id="jaAct" onchange="renderJAssign()" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select></div>
+          </div>
           <div class="row" style="margin-bottom:12px">
-            <select id="jaAct" onchange="renderJAssign()" style="flex:1;min-width:240px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
-            <select id="jaJudge" style="min-width:200px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
-            <select id="jaRole" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select>
+            <div class="fld" style="margin:0;flex:1;min-width:220px"><label>รายชื่อกรรมการ</label>
+              <select id="jaJudge" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select></div>
+            <div class="fld" style="margin:0;min-width:190px"><label>ตำแหน่งในคณะกรรมการ</label>
+              <select id="jaRole" style="width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff"></select></div>
             <button class="btn" onclick="addJAssign()">+ มอบหมาย</button>
           </div>
+          <div class="hint" id="jaActCount" style="margin:-4px 0 10px"></div>
           <div style="overflow:auto"><table id="jaTbl"></table></div>
         </div></div>
 
@@ -5252,12 +5261,28 @@ function jgDrawNote(){
    คณะกรรมการตัดสินกิจกรรมละ 5 คนตาม JUDGE_SEATS
    รายชื่อที่มอบหมายถูกใช้ในใบปะหน้าซองและ DOC.3 ผ่าน printPack  */
 let JASSIGN=[];
+/** เลือกกลุ่มสาระใหม่ → วาดรายการแข่งขันในกลุ่มสาระนั้น แล้วโหลดผู้ที่มอบหมายไว้ */
+function jaPickCat(){ fillJAssignSelects(); renderJAssign(); }
 function fillJAssignSelects(){
   const sa=$('#jaAct'); if(!sa) return;
-  const acts=actsOf().slice().sort((a,b)=>String(a.act_code||'').localeCompare(String(b.act_code||''),'th',{numeric:true}));
+  const all=actsOf().slice().sort((a,b)=>String(a.act_code||'').localeCompare(String(b.act_code||''),'th',{numeric:true}));
+  /* ช่องกลุ่มสาระ — สร้างจากรายการแข่งขันจริง */
+  const sc=$('#jaCat');
+  if(sc){
+    const cats=[...new Set(all.map(a=>a.category).filter(Boolean))].sort((x,y)=>String(x).localeCompare(String(y),'th'));
+    const kc=sc.value;
+    sc.innerHTML='<option value="">ทุกกลุ่มสาระ</option>'+cats.map(c=>`<option value="${qq(c)}">${qq(c)}</option>`).join('');
+    if(kc && (kc==='' || cats.indexOf(kc)>=0)) sc.value=kc;
+  }
+  const cat=sc? sc.value : '';
+  const acts=cat? all.filter(a=>String(a.category||'')===cat) : all;
   const keep=sa.value;
-  sa.innerHTML=acts.map(a=>`<option value="${a.act_id}">${a.act_code||a.act_id} · ${cleanTxt(a.act_name||'')} · ${a.level||''}</option>`).join('');
+  sa.innerHTML=acts.length
+    ? acts.map(a=>`<option value="${a.act_id}">${a.act_code||a.act_id} · ${cleanTxt(a.act_name||'')} · ${a.level||''}</option>`).join('')
+    : '<option value="">— ไม่มีรายการในกลุ่มสาระนี้ —</option>';
   if(keep && acts.some(a=>a.act_id===keep)) sa.value=keep;
+  const ac=$('#jaActCount');
+  if(ac) ac.textContent = (cat? 'กลุ่มสาระ '+cat+' · ' : 'ทุกกลุ่มสาระ · ')+acts.length+' รายการให้เลือก';
   const sj=$('#jaJudge');
   sj.innerHTML = JUDGES.length
     ? JUDGES.map(j=>`<option value="${j.judge_id}">${cleanTxt(j.name||'')}${j.org? ' · '+cleanTxt(j.org):''}</option>`).join('')
