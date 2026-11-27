@@ -1780,6 +1780,29 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
         <button class="btn" onclick="newJudge()">+ เพิ่มกรรมการ</button></div>
       <!-- อธิบายว่ารายชื่อในทำเนียบมาจากไหน — เดิมหน้าว่างแล้วไม่รู้ว่าต้องทำอะไรต่อ -->
       <div id="jgNote" style="margin-bottom:14px"></div>
+      <div class="card" id="jgForm" style="display:none;margin-bottom:14px"><div class="ch"><h3 id="jgFormTitle">เพิ่มกรรมการ</h3></div>
+        <div class="cb">
+          <div class="grid g3">
+            <div class="fld"><label>คำนำหน้า *</label><div id="jg_prefix_wrap"></div></div>
+            <div class="fld" style="grid-column:span 2"><label>ชื่อ-สกุล *</label><input id="jg_name" placeholder="เช่น สมหญิง ใจดี"></div>
+          </div>
+          <div class="grid g2">
+            <div class="fld"><label>ตำแหน่ง</label><div id="jg_pos_wrap"></div></div>
+            <div class="fld"><label>วิทยฐานะ</label><div id="jg_rank_wrap"></div></div>
+          </div>
+          <div class="grid g2">
+            <div class="fld"><label>หน่วยงาน / โรงเรียน</label><div id="jg_org_wrap"></div></div>
+            <div class="fld"><label>ความเชี่ยวชาญ / กลุ่มสาระ</label><div id="jg_exp_wrap"></div></div>
+          </div>
+          <div class="grid g3">
+            <div class="fld"><label>โทรศัพท์</label><input id="jg_phone"></div>
+            <div class="fld"><label>อีเมล (ใช้เข้าระบบให้คะแนน)</label><input id="jg_email"></div>
+            <div class="fld"><label>สถานะ</label><select id="jg_status">
+              <option>อนุมัติ</option><option>รอยืนยัน</option><option>ระงับ</option></select></div>
+          </div>
+          <div class="row"><button class="btn" onclick="saveJudgeF()">บันทึก</button>
+            <button class="btn g" onclick="document.getElementById('jgForm').style.display='none'">ยกเลิก</button></div>
+        </div></div>
       <div class="card"><div class="ch"><h3>รายชื่อกรรมการ</h3><span class="sp"></span>
         <input id="jg_q" placeholder="ค้นชื่อ / โรงเรียน…" oninput="drawJudges()"
                style="min-width:200px;padding:8px 12px;border:1px solid var(--line);border-radius:10px"></div>
@@ -1808,29 +1831,6 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           <div style="overflow:auto"><table id="jaTbl"></table></div>
         </div></div>
 
-      <div class="card" id="jgForm" style="display:none;margin-top:14px"><div class="ch"><h3 id="jgFormTitle">เพิ่มกรรมการ</h3></div>
-        <div class="cb">
-          <div class="grid g3">
-            <div class="fld"><label>คำนำหน้า *</label><div id="jg_prefix_wrap"></div></div>
-            <div class="fld" style="grid-column:span 2"><label>ชื่อ-สกุล *</label><input id="jg_name" placeholder="เช่น สมหญิง ใจดี"></div>
-          </div>
-          <div class="grid g2">
-            <div class="fld"><label>ตำแหน่ง</label><div id="jg_pos_wrap"></div></div>
-            <div class="fld"><label>วิทยฐานะ</label><div id="jg_rank_wrap"></div></div>
-          </div>
-          <div class="grid g2">
-            <div class="fld"><label>หน่วยงาน / โรงเรียน</label><div id="jg_org_wrap"></div></div>
-            <div class="fld"><label>ความเชี่ยวชาญ / กลุ่มสาระ</label><div id="jg_exp_wrap"></div></div>
-          </div>
-          <div class="grid g3">
-            <div class="fld"><label>โทรศัพท์</label><input id="jg_phone"></div>
-            <div class="fld"><label>อีเมล (ใช้เข้าระบบให้คะแนน)</label><input id="jg_email"></div>
-            <div class="fld"><label>สถานะ</label><select id="jg_status">
-              <option>อนุมัติ</option><option>รอยืนยัน</option><option>ระงับ</option></select></div>
-          </div>
-          <div class="row"><button class="btn" onclick="saveJudgeF()">บันทึก</button>
-            <button class="btn g" onclick="document.getElementById('jgForm').style.display='none'">ยกเลิก</button></div>
-        </div></div>
     </section>
 
     <!-- ---------- เปิด-ปิดระบบ & สิทธิ์การพิมพ์ (หลังบ้าน) ---------- -->
@@ -5524,7 +5524,9 @@ function fillJudge(j){
   $('#jg_phone').value=j.phone||''; $('#jg_email').value=j.email||'';
   $('#jg_status').value=j.status||'อนุมัติ';
   window.__JG=j;
-  $('#jgForm').style.display=''; $('#jgForm').scrollIntoView({behavior:'smooth'});
+  /* ฟอร์มอยู่ส่วนบนของหน้า — เลื่อนขึ้นไปให้เห็นทั้งใบ */
+  $('#jgForm').style.display='';
+  $('#jgForm').scrollIntoView({behavior:'smooth', block:'start'});
 }
 function newJudge(){ $('#jgFormTitle').textContent='เพิ่มกรรมการ'; fillJudge({}); }
 function editJudge(i){ $('#jgFormTitle').textContent='แก้ไขข้อมูลกรรมการ'; fillJudge(Object.assign({},JUDGES[i])); }
