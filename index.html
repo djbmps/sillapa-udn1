@@ -5316,7 +5316,7 @@ function drawJudgeOv(){
       (JG_ORDER[x.role]===undefined?2:JG_ORDER[x.role])-(JG_ORDER[y.role]===undefined?2:JG_ORDER[y.role]));
     const need=Number(a.judges_required||5);
     const names=rows.map(r=>{ const j=J[String(r.judge_id)]||{};
-      return `${qq((j.prefix||'')+(j.name||r.judge_id))}<span class="hint"> · ${qq(r.role||'กรรมการ')}${j.org? ' · '+qq(cleanName(j.org)):''}</span>`;
+      return `${j.name? judgeName(j) : qq(r.judge_id)}<span class="hint"> · ${qq(r.role||'กรรมการ')}${j.org? ' · '+qq(cleanName(j.org)):''}</span>`;
     }).join('<br>');
     html+=`<tr><td><b>${qq(a.act_code? a.act_code+' · ':'')}${qq(cleanTxt(a.act_name||''))}</b></td>
       <td style="white-space:nowrap">${qq(a.level||'')}</td>
@@ -5527,7 +5527,7 @@ function fillJAssignSelects(){
   if(ac) ac.textContent = (cat? 'กลุ่มสาระ '+cat+' · ' : 'ทุกกลุ่มสาระ · ')+acts.length+' รายการให้เลือก';
   const sj=$('#jaJudge');
   sj.innerHTML = JUDGES.length
-    ? JUDGES.map(j=>`<option value="${j.judge_id}">${cleanTxt(j.name||'')}${j.org? ' · '+cleanTxt(j.org):''}</option>`).join('')
+    ? JUDGES.map(j=>`<option value="${j.judge_id}">${judgeName(j)}${j.org? ' · '+cleanTxt(j.org):''}</option>`).join('')
     : '<option value="">— ยังไม่มีรายชื่อกรรมการ —</option>';
   const sr=$('#jaRole');
   /* ที่นั่งซ้ำได้ (กรรมการ 3 คน) จึงไม่ตัดตัวเลือกที่ใช้ไปแล้วออก */
@@ -5543,7 +5543,7 @@ function renderJAssign(pre){
     tbl($('#jaTbl'),['กรรมการ','ตำแหน่งในคณะกรรมการ','หน่วยงาน / โรงเรียน',''],
       JASSIGN.map(a=>{
         const j=JUDGES.find(x=>String(x.judge_id)===String(a.judge_id))||{};
-        return `<tr><td><b>${cleanTxt(j.name||a.judge_id)}</b></td><td>${cleanTxt(a.role||'กรรมการ')}</td>
+        return `<tr><td><b>${j.name? judgeName(j) : qq(a.judge_id)}</b></td><td>${cleanTxt(a.role||'กรรมการ')}</td>
           <td>${cleanTxt(j.org||'')}</td>
           <td style="white-space:nowrap"><button class="btn g sm" onclick="delJAssign('${a.id}')">ถอน</button></td></tr>`;
       }).join(''));
@@ -5563,6 +5563,13 @@ async function delJAssign(id){
     renderJAssign(rr.then); loadJudgeOv(1); }
   catch(e){ alert(e.message); }
 }
+/** ชื่อเต็มของกรรมการ — บางรายเก็บคำนำหน้าแยกคอลัมน์ บางรายรวมอยู่ในชื่อแล้ว
+    ใส่ให้เฉพาะกรณีที่ชื่อยังไม่มีคำนำหน้านำอยู่ จะได้ไม่ซ้ำซ้อน */
+function judgeName(j){
+  const p=String((j&&j.prefix)||'').trim(), n=String((j&&j.name)||'').trim();
+  return cleanTxt(p && n.indexOf(p)!==0 ? p+n : n);
+}
+
 /* รายชื่อกรรมการมีหลายร้อยคน — ยุบเป็นหมวดกลุ่มสาระไว้ก่อน กดเปิดเฉพาะหมวดที่ต้องการ
    ค้นหาหรือเลือกกลุ่มสาระเมื่อไร จะกางให้อัตโนมัติ */
 const JG_OPEN={};
@@ -5610,7 +5617,7 @@ function drawJudges(){
       ${open? '<div style="overflow:auto"><table>'+
         '<thead><tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+
         list.map(j=>{ const i=JUDGES.indexOf(j);
-          return `<tr><td><b>${cleanTxt(j.name||'')}</b></td><td>${cleanTxt(j.position||'')}</td>
+          return `<tr><td><b>${judgeName(j)}</b></td><td>${cleanTxt(j.position||'')}</td>
             <td>${cleanTxt(j.org||'')}</td><td>${qq(j.phone||'')}</td>
             <td>${qq(j.status||'อนุมัติ')}</td>
             <td>${j.photo_url?'✅':'<span style="color:var(--bad)">ยังไม่มี</span>'}</td>
