@@ -1429,11 +1429,7 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
             <div class="fld" style="margin:0;width:180px"><label>วิทยฐานะ</label><div id="ap_rank_wrap"></div></div>
           </div>
           <div class="row" style="margin-top:10px">
-            <div class="fld" style="margin:0;width:190px"><label>ประเภทหน่วยงาน</label>
-              <select id="ap_orgtype" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%">
-                <option>สถานศึกษา</option><option>สำนักงานเขตพื้นที่การศึกษา</option>
-                <option>หน่วยงานอื่น</option><option>ผู้ทรงคุณวุฒิอิสระ</option></select></div>
-            <div class="fld" style="margin:0;width:230px"><label>กลุ่มโรงเรียน *</label>
+            <div class="fld" style="margin:0;width:250px"><label>กลุ่มโรงเรียน *</label>
               <select id="ap_group" onchange="apGroupChange()" style="padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%"></select></div>
             <div class="fld" style="margin:0;flex:1;min-width:260px"><label>โรงเรียน / หน่วยงานที่สังกัด *</label>
               <div id="ap_org_wrap"></div>
@@ -1455,10 +1451,12 @@ body[data-scope="group"] .hero{background:linear-gradient(118deg,#0B0706 0%,#2E1
           </div>
           <div class="fld" style="margin-top:10px"><label>ความรู้ ความสามารถ และผลงานที่เกี่ยวข้อง</label>
             <textarea id="ap_expertise" rows="3" placeholder="เช่น เป็นวิทยากรด้านภาษาไทย · ผ่านการอบรมกรรมการตัดสิน · ผลงานนักเรียนได้รับรางวัลระดับชาติ"></textarea></div>
-          <div class="fld" style="margin-top:10px"><label>ลิงก์เอกสารประกอบ (ถ้ามี — Google Drive ที่เปิดให้ดูได้)</label>
-            <input id="ap_doc" placeholder="https://drive.google.com/..."></div>
 
-          
+          <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
+            <h3 style="font-size:17.3px;margin-bottom:4px">กรุณาเลือกกิจกรรมที่ต้องการสมัคร</h3>
+            <div class="hint">เลือกกลุ่มสาระก่อน แล้วจึงเลือกรายการแข่งขัน · เลือกได้สูงสุด 3 อันดับ
+              (อย่างน้อย 1 อันดับ) คณะกรรมการคัดเลือกจะพิจารณาตามลำดับที่ท่านเลือก</div>
+          </div>
           <div id="apPicks" style="margin-top:10px"></div>
 
           <label style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;cursor:pointer">
@@ -10061,7 +10059,7 @@ function renderApply(){
   }).catch(()=>{});
 }
 function apClear(){
-  ['ap_name','ap_phone','ap_email','ap_exp','ap_expertise','ap_doc']
+  ['ap_name','ap_phone','ap_email','ap_exp','ap_expertise']
     .forEach(k=>{ const e=$('#'+k); if(e) e.value=''; });
   if($('#ap_group')) $('#ap_group').value='';
   apBuildSelects();
@@ -10077,12 +10075,12 @@ async function submitApply(){
   const rkA=selVal('ap_rank');
   const body={ prefix:selVal('ap_prefix'), full_name:$('#ap_name').value.trim(),
     position:[selVal('ap_position'), (rkA&&rkA!=='ไม่มีวิทยฐานะ')?rkA:''].filter(Boolean).join(' '),
-    org_type:$('#ap_orgtype').value,
+    org_type:'',
     org_name:selVal('ap_org'), group_code:($('#ap_group').value==='none'?'':$('#ap_group').value),
     phone:$('#ap_phone').value.trim(), email:$('#ap_email').value.trim(),
     education:selVal('ap_edu'), major:selVal('ap_major'),
     experience_years:$('#ap_exp').value, past_judge:selVal('ap_past'),
-    expertise:$('#ap_expertise').value.trim(), doc_url:$('#ap_doc').value.trim(),
+    expertise:$('#ap_expertise').value.trim(), doc_url:'',
     act1:$('#ap_a1').value, act2:$('#ap_a2').value, act3:$('#ap_a3').value };
   const ref=$('#apFormCard').dataset.ref||'';
   if(ref) body.ref_code=ref;
@@ -10120,10 +10118,10 @@ function editApply(json){
   $('#ap_group').value = a.group_code || (a.org_name? 'none' : '');
   apBuildSelects({prefix:a.prefix, position:pos, rank:rk, org_name:a.org_name,
                   education:a.education, major:a.major, past_judge:a.past_judge});
-  $('#ap_name').value=a.full_name||''; $('#ap_orgtype').value=a.org_type||'สถานศึกษา';
+  $('#ap_name').value=a.full_name||'';
   $('#ap_phone').value=a.phone||''; $('#ap_email').value=a.email||'';
   $('#ap_exp').value=a.experience_years||'';
-  $('#ap_expertise').value=a.expertise||''; $('#ap_doc').value=a.doc_url||'';
+  $('#ap_expertise').value=a.expertise||'';
   [1,2,3].forEach(i=>{
     const id=a['act'+i]||''; const act=(DB.activities||[]).find(x=>x.act_id===id);
     $('#ap_c'+i).value = act? act.category : ''; apFillActs(i, id);
