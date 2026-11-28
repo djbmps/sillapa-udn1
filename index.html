@@ -9862,6 +9862,9 @@ async function resetPass(id,name){
    รวมไว้ที่เดียว เพื่อให้ทุกฟอร์มกรอกข้อมูลรูปแบบเดียวกัน แก้ที่นี่ที่เดียวใช้ได้ทั้งระบบ   */
 const OPT_PREFIX_STU   = ['ด.ช.','ด.ญ.','นาย','นางสาว'];
 const OPT_PREFIX_ADULT = ['นาย','นาง','นางสาว','ว่าที่ ร.ต.','ว่าที่ ร.ต.หญิง','ว่าที่ ร.ท.','ดร.'];
+/* ใบสมัครคณะกรรมการตัดสินใช้คำนำหน้าตามทะเบียนราษฎร์ ไม่เอาวุฒิการศึกษา (ดร.)
+   ถ้าผู้สมัครต้องการระบุเอง ยังเลือก “อื่น ๆ (ระบุเอง)” ได้ */
+const OPT_PREFIX_APPLY = OPT_PREFIX_ADULT.filter(x=>x!=='ดร.');
 const OPT_CLASS_ALL    = ['อ.1','อ.2','อ.3','ป.1','ป.2','ป.3','ป.4','ป.5','ป.6','ม.1','ม.2','ม.3','ม.4','ม.5','ม.6'];
 const OPT_POSITION = ['ครู','ครูผู้ช่วย','ครูอัตราจ้าง','พนักงานราชการ','ผู้อำนวยการโรงเรียน',
   'รองผู้อำนวยการโรงเรียน','ศึกษานิเทศก์','ผู้อำนวยการกลุ่ม','นักวิชาการศึกษา',
@@ -10021,7 +10024,7 @@ function apGroupChange(keep){
 
 function apBuildSelects(v){
   v=v||{};
-  $('#ap_prefix_wrap').innerHTML = selOther('ap_prefix', OPT_PREFIX_ADULT, v.prefix||'', 'คำนำหน้าอื่น ๆ');
+  $('#ap_prefix_wrap').innerHTML = selOther('ap_prefix', OPT_PREFIX_APPLY, v.prefix||'', 'คำนำหน้าอื่น ๆ');
   $('#ap_pos_wrap').innerHTML    = selOther('ap_position', OPT_POSITION, v.position||'', 'ตำแหน่งอื่น ๆ');
   $('#ap_rank_wrap').innerHTML   = selOther('ap_rank', OPT_RANK, v.rank||'', '', false);
   if($('#ap_group')) apGroupChange(v.org_name||'');
